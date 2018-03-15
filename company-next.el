@@ -156,9 +156,9 @@
             (x (if company-next~with-icons
                    (- p-x (+ (* char-width 3) (/ char-width 2)))
                  (- p-x char-width))))
-      (set-frame-size frame (* (company-next~update-width t) char-width) height t)
-      (set-frame-position frame (+ (max x 0) left) (+ y top))
-      )))
+      (set-frame-size frame (company-next~update-width t (/ height char-height))
+                      height t)
+      (set-frame-position frame (+ (max x 0) left) (+ y top)))))
 
 (defun company-next~display (string)
   "Display the documentation."
@@ -166,7 +166,6 @@
   (unless (company-next~get-frame)
     (company-next~set-frame (company-next~make-frame)))
   (company-next~move-frame (company-next~get-frame))
-  ;; (redraw-frame (company-next~get-frame))
   (unless (frame-visible-p (company-next~get-frame))
     (make-frame-visible (company-next~get-frame))))
 
@@ -225,13 +224,9 @@
 (defun company-next-hide nil
   (make-frame-invisible (company-next~get-frame)))
 
-(defun company-next~update-width (&optional no-update)
-  (redisplay)
-  (let* ((window (frame-parameter nil 'company-next-window))
-         (start (window-start window))
-         (end (window-end window))
-         (max 0))
-    (with-current-buffer (window-buffer window)
+(defun company-next~calc-len (buffer start end char-width)
+  (let ((max 0))
+    (with-current-buffer buffer
       (save-excursion
         (goto-char start)
         (while (< (point) end)
@@ -239,10 +234,31 @@
             (when (> len max)
               (setq max len)))
           (forward-line))))
-    (setq max (+ max (if company-next~with-icons 6 2)))
-    (message "MAX: %s" max)
-    (or (and no-update max)
-        (set-frame-width (company-next~get-frame) max))))
+    (* (+ max (if company-next~with-icons 6 2))
+       char-width)))
+
+(defun company-next~update-width (&optional no-update height)
+  (unless no-update
+    (redisplay))
+  (-let* ((frame (company-next~get-frame))
+          (window (frame-parameter nil 'company-next-window))
+          (start (window-start window))
+          (char-width (frame-char-width frame))
+          (end (or (and height (with-current-buffer (window-buffer window)
+                                 (save-excursion
+                                   (goto-char start)
+                                   (forward-line height)
+                                   (point))))
+                   (window-end window)))
+          (width (if company-next-align-annotations
+                     ;; With align-annotations, `window-text-pixel-size' doesn't return
+                     ;; good values because of the display properties in the buffer
+                     ;; More specifically, because of the spaces specifications
+                     (company-next~calc-len (window-buffer window) start end char-width)
+                   (car (window-text-pixel-size window start end 10000 10000))))
+          (width (+ width char-width)))
+    (or (and no-update width)
+        (set-frame-width (company-next~get-frame) width nil t))))
 
 (defun company-next~change-line nil
   (let ((selection company-selection))
@@ -277,11 +293,9 @@ COMMAND: See `company-frontends'."
   ;; (message "point: %s" company-point)
   ;; (message "search-string: %s" company-search-string)
   ;;(message "last-command: %s" last-command)
-  (cl-case command
-    ;;(pre-command nil)
-    ;;(show (company-next-show))
-    (hide (company-next-hide))
-    (update (company-next-show))
+  (pcase command
+    ('hide (company-next-hide))
+    ('update (company-next-show))
     ))
 
 (defvar company-next-mode-map nil
