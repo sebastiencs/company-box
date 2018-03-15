@@ -33,21 +33,23 @@
 
 (defvar company-next-icons-unknown
   'fa_question_circle
-  "Icon used when on unknown item.")
+  "Icon used when on unknown item.
+See `company-next-icons-functions'.")
 
 (defvar company-next-icons~elisp
   '((fa_tag :face font-lock-function-name-face)
     (fa_cog :face font-lock-variable-name-face)
     (fa_cube :face font-lock-constant-face)
     (md_color_lens :face font-lock-doc-face))
-  ;;  '(fa_tag fa_cog fa_cube md_color_lens)
   "List of icons to use with Emacs Lisp candidates.
 It has the form:
-(FUNCTION VALUE FEATURE FACE).")
+(FUNCTION VALUE FEATURE FACE).
+See `company-next-icons-functions'.")
 
 (defvar company-next-icons~yasnippet
   'fa_bookmark
-  "Icon to use with yasnippet candidates.")
+  "Icon to use with yasnippet candidates.
+See `company-next-icons-functions'.")
 
 (defvar company-next-icons~lsp
   '((1 . fa_text_height) ;; Text
@@ -90,7 +92,8 @@ ICON can be a symbol, a list or a string.
 
 
 [1] https://github.com/Microsoft/language-server-protocol/blob/gh-pages/specification.md#completion-request-leftwards_arrow_with_hook
-.")
+
+See `company-next-icons-functions'.")
 
 (defun company-next-icons~lsp (candidate)
   (-when-let* ((lsp-item (get-text-property 0 'lsp-completion-item candidate))

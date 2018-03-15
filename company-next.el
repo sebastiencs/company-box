@@ -30,7 +30,23 @@
 ;;; Code:
 
 (require 'dash)
+(require 'company)
 (require 'company-next-icons)
+
+(defgroup company-next nil
+  "Front-end for Company."
+  :prefix "company-next-"
+  :group 'company)
+
+(defface company-next-annotation
+  '((t :inherit company-tooltip-annotation))
+  "Face used to color annotations."
+  :group 'company-next)
+
+(defface company-next-selection
+  '((t :inherit company-tooltip-selection))
+  "Face used to color annotations."
+  :group 'company-next)
 
 (defcustom company-next-align-annotations company-tooltip-align-annotations
   "When non-nil, align annotations to the right border."
@@ -85,6 +101,7 @@ If all functions returns nil, `company-next-icons-unknown' is used."
 (defvar-local company-next~ov nil)
 (defvar-local company-next~max 0)
 (defvar-local company-next~with-icons-p nil)
+(defvar-local company-next~x nil)
 
 (defmacro company-next~get-frame ()
   "Return the child frame."
@@ -149,7 +166,7 @@ If all functions returns nil, `company-next-icons-unknown' is used."
                     (line-beginning-position)
                     (line-beginning-position 2))
       (overlay-put (company-next~get-ov)
-                   'face 'company-tooltip-selection))))
+                   'face 'company-next-selection))))
 
 (defun company-next~point-bottom ()
   "Return the pos-y of the LINE on screen, in pixel."
@@ -161,8 +178,6 @@ If all functions returns nil, `company-next-icons-unknown' is used."
                   (and (redisplay t)
                        (window-line-height 'mode-line win))))
        (or (and win (nth 1 (window-edges win t nil t))) 0))))
-
-(defvar-local company-next~x nil)
 
 (defun company-next~move-frame (frame)
   (-let* (((left top right _bottom) (window-edges nil t nil t))
@@ -232,7 +247,7 @@ If all functions returns nil, `company-next-icons-unknown' is used."
                        (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))
                      " "))
                  (when annotation
-                   (propertize annotation 'face 'company-tooltip-annotation)))))
+                   (propertize annotation 'face 'company-next-annotation)))))
     (add-text-properties 0 (length line) (list 'company-next~len (+ len-c len-a)) line)
     line))
 
