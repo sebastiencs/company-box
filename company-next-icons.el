@@ -58,9 +58,9 @@ See `company-next-icons-functions'.")
     (4 . (fa_tag :face font-lock-function-name-face)) ;; Constructor
     (5 . (fa_cog :face font-lock-variable-name-face)) ;; Field
     (6 . (fa_cog :face font-lock-variable-name-face)) ;; Variable
-    (7 . (mfizz_aws :face font-lock-type-face)) ;; Class
-    (8 . (mfizz_aws :face font-lock-type-face)) ;; Interface
-    (9 . (mfizz_aws :face font-lock-type-face)) ;; Module
+    (7 . (fa_cube :face font-lock-type-face)) ;; Class
+    (8 . (fa_cube :face font-lock-type-face)) ;; Interface
+    (9 . (fa_cube :face font-lock-type-face)) ;; Module
     (10 . (fa_cog :face font-lock-variable-name-face)) ;; Property
     (11 . md_settings_system_daydream) ;; Unit
     (12 . (fa_cog :face font-lock-variable-name-face)) ;; Value
@@ -73,7 +73,7 @@ See `company-next-icons-functions'.")
     (19 . fa_folder_open) ;; Folder
     (20 . (md_closed_caption :face font-lock-type-face)) ;; EnumMember
     (21 . (fa_square :face font-lock-constant-face)) ;; Constant
-    (22 . (mfizz_aws :face font-lock-type-face)) ;; Struct
+    (22 . (fa_cube :face font-lock-type-face)) ;; Struct
     (23 . fa_calendar) ;; Event
     (24 . fa_square_o) ;; Operator
     (25 . fa_arrows)) ;; TypeParameter
