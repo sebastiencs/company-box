@@ -74,6 +74,11 @@ Only the 'background' color is used in this face."
   :type 'boolean
   :group 'company-next)
 
+(defcustom company-next-minimum-width 40
+  "Minimum width of the completion frame, in numbers of characters."
+  :type 'integer
+  :group 'company-next)
+
 (defcustom company-next-icons-functions
   '(company-next-icons~lsp company-next-icons~elisp company-next-icons~yasnippet)
   "Functions to call on each candidate that should return an icon.
@@ -114,7 +119,6 @@ If all functions returns nil, `company-next-icons-unknown' is used."
     (mouse-wheel-frame . nil)
     (no-other-frame . t)
     (cursor-type . nil)
-    (inhibit-double-buffering . t)
     (drag-internal-border . t)
     (no-special-glyphs . t))
   "Frame parameters used to create the frame.")
@@ -334,7 +338,8 @@ If all functions returns nil, `company-next-icons-unknown' is used."
                         (company-next~calc-len (window-buffer window) start end char-width)
                       (car (window-text-pixel-size window start end 10000 10000)))
                     char-width))
-          (width (min width max-width)))
+          (width (max (min width max-width)
+                      (* company-next-minimum-width char-width))))
     (or (and no-update width)
         (set-frame-width (company-next~get-frame) width nil t))))
 
