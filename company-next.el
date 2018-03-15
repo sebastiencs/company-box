@@ -191,7 +191,7 @@
            (11 'md_settings_system_daydream) ;; Unit
            (13 'md_storage) ;; Enum
            ((or 14 15 20) 'md_closed_caption) ;; Enum, Keyword, EnumMember
-           (16 'md_color_lens) ;; Enum, Keyword
+           (16 'md_color_lens) ;; Color
            (17 'fa_file_text_o) ;; File
            (18 'md_refresh) ;; Reference
            (19 'fa_folder_open) ;; Folder
@@ -200,6 +200,14 @@
            (24 'fa_square_o) ;; Operator
            (25 'fa_arrows) ;; TypeParameter
            )))
+      (when (derived-mode-p 'emacs-lisp-mode)
+        (icons-in-terminal
+         (let ((sym (intern candidate)))
+           (cond ((fboundp sym) 'fa_tag)
+                 ((boundp sym) 'fa_cog)
+                 ((featurep sym) 'fa_folder_open)
+                 ((facep sym) 'md_color_lens)
+                 (t 'fa_question_circle)))))
       (when (and (fboundp 'icons-in-terminal)
                  (get-text-property 0 'yas-annotation candidate))
         (icons-in-terminal 'fa_bookmark))
