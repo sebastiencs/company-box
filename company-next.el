@@ -38,6 +38,11 @@
   :prefix "company-next-"
   :group 'company)
 
+(defface company-next-candidate
+  '((t :inherit company-tooltip-common))
+  "Face used to color candidates."
+  :group 'company-next)
+
 (defface company-next-annotation
   '((t :inherit company-tooltip-annotation))
   "Face used to color annotations."
@@ -48,13 +53,24 @@
   "Face used to color annotations."
   :group 'company-next)
 
+(defface company-next-background
+  '((t :background "#2B303B"))
+  "Face used for frame's background.
+Only the 'background' color is used in this face."
+  :group 'company-next)
+
 (defcustom company-next-align-annotations company-tooltip-align-annotations
   "When non-nil, align annotations to the right border."
   :type 'boolean
   :group 'company-next)
 
 (defcustom company-next-color-icon t
-  "When non-nil, icons are colored."
+  "Whether or not to color icons."
+  :type 'boolean
+  :group 'company-next)
+
+(defcustom company-next-enable-icon t
+  "Whether or not to display icons."
   :type 'boolean
   :group 'company-next)
 
@@ -107,6 +123,7 @@ If all functions returns nil, `company-next-icons-unknown' is used."
 (defvar-local company-next~max 0)
 (defvar-local company-next~with-icons-p nil)
 (defvar-local company-next~x nil)
+(defvar-local company-next~space nil)
 
 (defmacro company-next~get-frame ()
   "Return the child frame."
@@ -124,13 +141,12 @@ If all functions returns nil, `company-next-icons-unknown' is used."
           "*"))
 
 (defun company-next~with-icons-p nil
-  (and (or (bound-and-true-p lsp--cur-workspace)
-           t)
-       (> (+ (- (current-column) (string-width company-prefix))
-             (/ (+ (car (window-edges nil t nil t))
-                   (car (nth 2 (posn-at-point))))
-                (frame-char-width)))
-          3)))
+  (let ((spaces (+ (- (current-column) (string-width company-prefix))
+                   (car (window-edges nil t)))))
+    (setq company-next~space spaces)
+    (and company-next-enable-icon
+         (fboundp 'icons-in-terminal)
+         (> spaces 1))))
 
 (defun company-next~make-frame ()
   "Create the child frame and return it."
@@ -140,7 +156,7 @@ If all functions returns nil, `company-next-icons-unknown' is used."
          (params (append company-next-frame-parameters
                          `((default-minibuffer-frame . ,(selected-frame))
                            (minibuffer . ,(minibuffer-window))
-                           (background-color . ,(face-background 'lsp-ui-doc-background nil t)))))
+                           (background-color . ,(face-background 'company-next-background nil t)))))
          (window (display-buffer-in-child-frame buffer `((child-frame-parameters . ,params))))
          (frame (window-frame window)))
     (set-frame-parameter nil 'company-next-buffer buffer)
@@ -206,7 +222,7 @@ If all functions returns nil, `company-next-icons-unknown' is used."
                         height))
             (x (if company-next~with-icons-p
                    (- p-x (+ (* char-width 3) (/ char-width 2)))
-                 (- p-x char-width))))
+                 (- p-x (if (= company-next~space 0) 0 char-width)))))
       (setq company-next~x (+ x left))
       (set-frame-size frame (company-next~update-width t (/ height char-height))
                       height t)
@@ -240,15 +256,16 @@ If all functions returns nil, `company-next-icons-unknown' is used."
 (defun company-next~add-icon (candidate)
   (concat
    (company-next~get-icon candidate)
-   (propertize " " 'display '(space :align-to (+ left-fringe 3.5)))))
+   (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-next~space 2) 3.5 2.5))))))
 
 (defun company-next~make-line (candidate)
   (-let* (((candidate annotation len-c len-a) candidate)
           (line (concat
-                 " "
+                 (unless (or (= company-next~space 2)
+                             (= company-next~space 0)) " ")
                  (when company-next~with-icons-p
                    (company-next~add-icon candidate))
-                 candidate
+                 (propertize candidate 'face 'company-next-candidate)
                  (when annotation
                    (if company-next-align-annotations
                        (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))
