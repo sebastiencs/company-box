@@ -53,6 +53,11 @@
   :type 'boolean
   :group 'company-next)
 
+(defcustom company-next-color-icon t
+  "When non-nil, icons are colored."
+  :type 'boolean
+  :group 'company-next)
+
 (defcustom company-next-icons-functions
   '(company-next-icons~lsp company-next-icons~elisp company-next-icons~yasnippet)
   "Functions to call on each candidate that should return an icon.
@@ -225,7 +230,9 @@ If all functions returns nil, `company-next-icons-unknown' is used."
     (setq icon (or icon company-next-icons-unknown))
     (cond
      ((listp icon)
-      (apply 'icons-in-terminal icon))
+      (if company-next-color-icon
+          (apply 'icons-in-terminal icon)
+        (icons-in-terminal (car icon))))
      ((symbolp icon)
       (icons-in-terminal icon))
      (t icon))))
