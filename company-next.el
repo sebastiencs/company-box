@@ -302,7 +302,8 @@ If all functions returns nil, `company-next-icons-unknown' is used."
        (company-next~display it)))
 
 (defun company-next-hide nil
-  (make-frame-invisible (company-next~get-frame)))
+  (-some-> (company-next~get-frame)
+           (make-frame-invisible)))
 
 (defun company-next~calc-len (buffer start end char-width)
   (let ((max 0))
@@ -376,10 +377,11 @@ COMMAND: See `company-frontends'."
   ;; (message "point: %s" company-point)
   ;; (message "search-string: %s" company-search-string)
   ;;(message "last-command: %s" last-command)
-  (pcase command
-    ('hide (company-next-hide))
-    ('update (company-next-show))
-    ))
+  (cond
+   ((or (eq command 'hide) (equal company-candidates-length 1))
+    (company-next-hide))
+   ((eq command 'update)
+    (company-next-show))))
 
 (defvar company-next-mode-map nil
   "Keymap when `company-next' is active")
