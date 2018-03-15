@@ -113,20 +113,18 @@
     (with-current-buffer (get-buffer-create (company-next~make-buffer-name))
       (erase-buffer)
       (insert string "\n")
-      (setq mode-line-format nil
-            scroll-step                         1
-            scroll-conservatively               10000
-            scroll-margin                       0
-            scroll-preserve-screen-position     t
-            )
+      (setq mode-line-format nil)
+      (setq-local scroll-step 1)
+      (setq-local scroll-conservatively 10000)
+      (setq-local scroll-margin  0)
+      (setq-local scroll-preserve-screen-position t)
       (goto-char 1)
       (forward-line selection)
       (move-overlay (company-next~get-ov)
                     (line-beginning-position)
                     (line-beginning-position 2))
       (overlay-put (company-next~get-ov)
-                   'face 'company-tooltip-selection)
-      )))
+                   'face 'company-tooltip-selection))))
 
 (defun company-next~line-height (&optional line)
   "Return the pos-y of the LINE on screen, in pixel."
@@ -202,7 +200,7 @@
                                (replace-regexp-in-string "[ \t\n\r]+" " ")
                                (company--clean-string)))
          (len-candidate (string-width candidate))
-         (len-annotation (or (and annotation (string-width annotation)) 0))
+         (len-annotation (if annotation (string-width annotation) 0))
          (len-total (+ len-candidate len-annotation)))
     (when (> len-total company-next~max)
       (setq company-next~max len-total))
@@ -211,15 +209,13 @@
           len-candidate
           len-annotation)))
 
-(defun company-next~make-lines nil
+(defun company-next-show nil
   (setq company-next~max 0)
   (setq company-next~with-icons (company-next~with-icons-p))
-  (let* ((candidates (mapcar 'company-next~make-candidate company-candidates))
-         (lines (mapcar 'company-next~make-line candidates)))
-    (mapconcat 'identity lines "\n")))
-
-(defun company-next-show nil
-  (company-next~display (company-next~make-lines)))
+  (--> (mapcar 'company-next~make-candidate company-candidates)
+       (mapcar 'company-next~make-line it)
+       (mapconcat 'identity it "\n")
+       (company-next~display it)))
 
 (defun company-next-hide nil
   (make-frame-invisible (company-next~get-frame)))
