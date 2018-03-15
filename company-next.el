@@ -4,7 +4,7 @@
 
 ;; Author: Sebastien Chapuis <sebastien@chapu.is>
 ;; URL: https://github.com/sebastiencs/company-next
-;; Keywords: company, font-end
+;; Keywords: company, front-end
 
 ;;; License
 ;;
@@ -29,9 +29,29 @@
 
 ;;; Code:
 
+(require 'dash)
+(require 'company-next-icons)
+
 (defcustom company-next-align-annotations company-tooltip-align-annotations
   "When non-nil, align annotations to the right border."
   :type 'boolean
+  :group 'company-next)
+
+(defcustom company-next-icons-functions
+  '(company-next-icons~lsp company-next-icons~elisp company-next-icons~yasnippet)
+  "Functions to call on each candidate that should return an icon.
+The functions takes 1 parameter, the completion candidate.
+
+It should return either a SYMBOL, a LIST, a STRING, or nil:
+
+- SYMBOL:  It is the name of the icon.
+- LIST:    The list is then `apply' to `icons-in-terminal' function.
+           Example: '(fa_icon :face some-face :foreground \"red\")
+- STRING:  A simple string which is inserted, should be of length 1
+
+If a function returns nil, it call the next function in the list.
+If all functions returns nil, `company-next-icons-unknown' is used."
+  :type 'list
   :group 'company-next)
 
 (defvar company-next-frame-parameters
@@ -178,41 +198,18 @@
     (make-frame-visible (company-next~get-frame))))
 
 (defun company-next~get-icon (candidate)
-  (or (-when-let* ((_ (fboundp 'icons-in-terminal))
-                   (lsp-item (get-text-property 0 'lsp-completion-item candidate))
-                   (kind (gethash "kind" lsp-item)))
-        (icons-in-terminal
-         (pcase kind
-           (1 'fa_text_height) ;; Text
-           (2 'fa_tags) ;; Method
-           ((or 3 4) 'fa_tag) ;; Method, Function, Constructor
-           ((or 5 6 10 12) 'fa_cog) ;; Field, Variable, Property, Value
-           ((or 7 8 9 22) 'mfizz_aws) ;; Class, Interface, Module, Struct
-           (11 'md_settings_system_daydream) ;; Unit
-           (13 'md_storage) ;; Enum
-           ((or 14 15 20) 'md_closed_caption) ;; Enum, Keyword, EnumMember
-           (16 'md_color_lens) ;; Color
-           (17 'fa_file_text_o) ;; File
-           (18 'md_refresh) ;; Reference
-           (19 'fa_folder_open) ;; Folder
-           (21 'fa_square) ;; Constant
-           (23 'fa_calendar) ;; Event
-           (24 'fa_square_o) ;; Operator
-           (25 'fa_arrows) ;; TypeParameter
-           )))
-      (when (derived-mode-p 'emacs-lisp-mode)
-        (icons-in-terminal
-         (let ((sym (intern candidate)))
-           (cond ((fboundp sym) 'fa_tag)
-                 ((boundp sym) 'fa_cog)
-                 ((featurep sym) 'fa_folder_open)
-                 ((facep sym) 'md_color_lens)
-                 (t 'fa_question_circle)))))
-      (when (and (fboundp 'icons-in-terminal)
-                 (get-text-property 0 'yas-annotation candidate))
-        (icons-in-terminal 'fa_bookmark))
-      (when (fboundp 'icons-in-terminal)
-        (icons-in-terminal 'fa_question_circle))))
+  (let ((list company-next-icons-functions)
+        icon)
+    (while (and (null icon) list)
+      (setq icon (funcall (car list) candidate))
+      (pop list))
+    (setq icon (or icon company-next-icons-unknown))
+    (cond
+     ((listp icon)
+      (apply 'icons-in-terminal icon))
+     ((symbolp icon)
+      (icons-in-terminal icon))
+     (t icon))))
 
 (defun company-next~add-icon (candidate)
   (concat
