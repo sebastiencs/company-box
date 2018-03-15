@@ -173,6 +173,18 @@ If all functions returns nil, `company-next-icons-unknown' is used."
   (or company-next~ov
       (setq company-next~ov (make-overlay 1 1))))
 
+(defun company-next~update-line (selection)
+  (goto-char 1)
+  (forward-line selection)
+  (move-overlay (company-next~get-ov)
+                (line-beginning-position)
+                (line-beginning-position 2))
+  (-if-let* ((color (get-text-property (point) 'company-next~color)))
+      (overlay-put (company-next~get-ov)
+                   'face (list :background color
+                               :foreground (face-foreground 'company-next-selection nil t)))
+    (overlay-put (company-next~get-ov) 'face 'company-next-selection)))
+
 (defun company-next~render-buffer (string)
   (let ((selection company-selection)
         (with-icons-p company-next~with-icons-p))
@@ -185,13 +197,7 @@ If all functions returns nil, `company-next-icons-unknown' is used."
       (setq-local scroll-conservatively 10000)
       (setq-local scroll-margin  0)
       (setq-local scroll-preserve-screen-position t)
-      (goto-char 1)
-      (forward-line selection)
-      (move-overlay (company-next~get-ov)
-                    (line-beginning-position)
-                    (line-beginning-position 2))
-      (overlay-put (company-next~get-ov)
-                   'face 'company-next-selection))))
+      (company-next~update-line selection))))
 
 (defun company-next~point-bottom ()
   "Return the pos-y of the LINE on screen, in pixel."
@@ -262,11 +268,24 @@ If all functions returns nil, `company-next-icons-unknown' is used."
    (company-next~get-icon candidate)
    (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-next~space 2) 3.5 2.5))))))
 
+(defvar company-next-backends-color
+  '((yas-annotation . "lime green")))
+
+(defun company-next~get-color (candidate)
+  (let ((list company-next-backends-color)
+        color)
+    (while (and (null color) list)
+      (when (get-text-property 0 (caar list) candidate)
+        (setq color (cadar list)))
+      (pop list))
+    color))
+
 (defun company-next~make-line (candidate)
   (-let* (((candidate annotation len-c len-a) candidate)
           (line (concat
                  (unless (or (= company-next~space 2)
-                             (= company-next~space 0)) " ")
+                             (= company-next~space 0))
+                   " ")
                  (when company-next~with-icons-p
                    (company-next~add-icon candidate))
                  (propertize candidate 'face 'company-next-candidate)
@@ -275,8 +294,14 @@ If all functions returns nil, `company-next-icons-unknown' is used."
                        (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))
                      " "))
                  (when annotation
-                   (propertize annotation 'face 'company-next-annotation)))))
-    (add-text-properties 0 (length line) (list 'company-next~len (+ len-c len-a)) line)
+                   (propertize annotation 'face 'company-next-annotation))))
+          (len (length line))
+          (color (company-next~get-color candidate)))
+    (when color
+      (add-face-text-property 0 len (list :foreground color) nil line))
+    (add-text-properties 0 len (list 'company-next~len (+ len-c len-a)
+                                     'company-next~color color)
+                         line)
     line))
 
 (defun company-next~make-candidate (candidate)
@@ -347,11 +372,7 @@ If all functions returns nil, `company-next-icons-unknown' is used."
 (defun company-next~change-line nil
   (let ((selection company-selection))
     (with-selected-window (get-buffer-window (company-next~make-buffer-name) t)
-      (goto-char 1)
-      (forward-line selection)
-      (move-overlay (company-next~get-ov)
-                    (line-beginning-position)
-                    (line-beginning-position 2)))))
+      (company-next~update-line selection))))
 
 (defun company-next~next-line nil
   (interactive)
