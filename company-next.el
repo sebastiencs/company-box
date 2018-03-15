@@ -62,9 +62,9 @@
     (no-special-glyphs . t))
   "Frame parameters used to create the frame.")
 
-(defvar-local company-next--buffer nil)
-(defvar-local company-next~point nil)
 (defvar-local company-next~ov nil)
+(defvar-local company-next~max 0)
+(defvar-local company-next~with-icons-p nil)
 
 (defmacro company-next~get-frame ()
   "Return the child frame."
@@ -109,7 +109,7 @@
 
 (defun company-next~render-buffer (string)
   (let ((selection company-selection)
-        (with-icons-p company-next~with-icons))
+        (with-icons-p company-next~with-icons-p))
     (with-current-buffer (get-buffer-create (company-next~make-buffer-name))
       (erase-buffer)
       (insert string "\n")
@@ -151,7 +151,7 @@
                              (> height (- mode-line-y y))
                              (- mode-line-y y))
                         height))
-            (x (if company-next~with-icons
+            (x (if company-next~with-icons-p
                    (- p-x (+ (* char-width 3) (/ char-width 2)))
                  (- p-x char-width))))
       (set-frame-size frame (company-next~update-width t (/ height char-height))
@@ -159,7 +159,7 @@
       (set-frame-position frame (+ (max x 0) left) (+ y top)))))
 
 (defun company-next~display (string)
-  "Display the documentation."
+  "Display the completions."
   (company-next~render-buffer string)
   (unless (company-next~get-frame)
     (company-next~set-frame (company-next~make-frame)))
@@ -167,21 +167,45 @@
   (unless (frame-visible-p (company-next~get-frame))
     (make-frame-visible (company-next~get-frame))))
 
-(defvar-local company-next~max 0)
-(defvar-local company-next~with-icons nil)
-
-(defvar random 0)
+(defun company-next~get-icon (candidate)
+  (or (-when-let* ((_ (fboundp 'icons-in-terminal))
+                   (lsp-item (get-text-property 0 'lsp-completion-item candidate))
+                   (kind (gethash "kind" lsp-item)))
+        (icons-in-terminal
+         (pcase kind
+           (1 'fa_text_height) ;; Text
+           (2 'fa_tags) ;; Method
+           ((or 3 4) 'fa_tag) ;; Method, Function, Constructor
+           ((or 5 6 10 12) 'fa_cog) ;; Field, Variable, Property, Value
+           ((or 7 8 9 22) 'mfizz_aws) ;; Class, Interface, Module, Struct
+           (11 'md_settings_system_daydream) ;; Unit
+           (13 'md_storage) ;; Enum
+           ((or 14 15 20) 'md_closed_caption) ;; Enum, Keyword, EnumMember
+           (16 'md_color_lens) ;; Enum, Keyword
+           (17 'fa_file_text_o) ;; File
+           (18 'md_refresh) ;; Reference
+           (19 'fa_folder_open) ;; Folder
+           (21 'fa_square) ;; Constant
+           (23 'fa_calendar) ;; Event
+           (24 'fa_square_o) ;; Operator
+           (25 'fa_arrows) ;; TypeParameter
+           )))
+      (when (and (fboundp 'icons-in-terminal)
+                 (get-text-property 0 'yas-annotation candidate))
+        (icons-in-terminal 'fa_bookmark))
+      (when (fboundp 'icons-in-terminal)
+        (icons-in-terminal 'fa_question_circle))))
 
 (defun company-next~add-icon (candidate)
   (concat
-   (icons-in-terminal (if (= (mod random 2) 0) 'fa_tag 'fa_cog))
+   (company-next~get-icon candidate)
    (propertize " " 'display '(space :align-to (+ left-fringe 3.5)))))
 
 (defun company-next~make-line (candidate)
   (-let* (((candidate annotation len-c len-a) candidate)
           (line (concat
                  " "
-                 (when company-next~with-icons
+                 (when company-next~with-icons-p
                    (company-next~add-icon candidate))
                  candidate
                  (when annotation
@@ -191,9 +215,7 @@
                  (when annotation
                    (propertize annotation 'face 'company-tooltip-annotation)))))
     (add-text-properties 0 (length line) (list 'company-next~len (+ len-c len-a)) line)
-    (setq random (1+ random))
-    line
-    ))
+    line))
 
 (defun company-next~make-candidate (candidate)
   (let* ((annotation (-some->> (company-call-backend 'annotation candidate)
@@ -211,7 +233,7 @@
 
 (defun company-next-show nil
   (setq company-next~max 0)
-  (setq company-next~with-icons (company-next~with-icons-p))
+  (setq company-next~with-icons-p (company-next~with-icons-p))
   (--> (mapcar 'company-next~make-candidate company-candidates)
        (mapcar 'company-next~make-line it)
        (mapconcat 'identity it "\n")
@@ -230,7 +252,7 @@
             (when (> len max)
               (setq max len)))
           (forward-line))))
-    (* (+ max (if company-next~with-icons 6 2))
+    (* (+ max (if company-next~with-icons-p 6 2))
        char-width)))
 
 (defun company-next~update-width (&optional no-update height)
