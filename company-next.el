@@ -84,7 +84,11 @@
 (defun company-next~with-icons-p nil
   (and (or (bound-and-true-p lsp--cur-workspace)
            t)
-       (> (- (current-column) (string-width company-prefix)) 3)))
+       (> (+ (- (current-column) (string-width company-prefix))
+             (/ (+ (car (window-edges nil t nil t))
+                   (car (nth 2 (posn-at-point))))
+                (frame-char-width)))
+          3)))
 
 (defun company-next~make-frame ()
   "Create the child frame and return it."
@@ -126,11 +130,16 @@
       (overlay-put (company-next~get-ov)
                    'face 'company-tooltip-selection))))
 
-(defun company-next~line-height (&optional line)
+(defun company-next~point-bottom ()
   "Return the pos-y of the LINE on screen, in pixel."
-  (nth 2 (or (window-line-height line)
-             (and (redisplay t)
-                  (window-line-height line)))))
+  (let* ((win (let ((tmp nil))
+                (while (window-in-direction 'below tmp)
+                  (setq tmp (window-in-direction 'below tmp)))
+                tmp)))
+    (+ (nth 2 (or (window-line-height 'mode-line win)
+                  (and (redisplay t)
+                       (window-line-height 'mode-line win))))
+       (or (and win (nth 1 (window-edges win t nil t))) 0))))
 
 (defun company-next~move-frame (frame)
   (-let* (((left top right _bottom) (window-edges nil t nil t))
@@ -138,7 +147,7 @@
           ((width . height) (window-text-pixel-size window nil nil 10000 10000))
           (frame-resize-pixelwise t))
     (-let* ((point (- (point) (length company-prefix)))
-            (mode-line-y (company-next~line-height 'mode-line))
+            (mode-line-y (company-next~point-bottom))
             ((p-x . p-y) (nth 2 (posn-at-point point)))
             (char-height (frame-char-height))
             (char-width (frame-char-width))
@@ -156,7 +165,7 @@
                  (- p-x char-width))))
       (set-frame-size frame (company-next~update-width t (/ height char-height))
                       height t)
-      (set-frame-position frame (+ (max x 0) left) (+ y top)))))
+      (set-frame-position frame (max (+ x left) 0) (+ y top)))))
 
 (defun company-next~display (string)
   "Display the completions."
