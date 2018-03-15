@@ -137,7 +137,8 @@ If all functions returns nil, `company-next-icons-unknown' is used."
     (with-current-buffer (get-buffer-create (company-next~make-buffer-name))
       (erase-buffer)
       (insert string "\n")
-      (setq mode-line-format nil)
+      (setq mode-line-format nil
+            truncate-lines t)
       (setq-local scroll-step 1)
       (setq-local scroll-conservatively 10000)
       (setq-local scroll-margin  0)
@@ -160,6 +161,8 @@ If all functions returns nil, `company-next-icons-unknown' is used."
                   (and (redisplay t)
                        (window-line-height 'mode-line win))))
        (or (and win (nth 1 (window-edges win t nil t))) 0))))
+
+(defvar-local company-next~x nil)
 
 (defun company-next~move-frame (frame)
   (-let* (((left top right _bottom) (window-edges nil t nil t))
@@ -184,6 +187,7 @@ If all functions returns nil, `company-next-icons-unknown' is used."
             (x (if company-next~with-icons-p
                    (- p-x (+ (* char-width 3) (/ char-width 2)))
                  (- p-x char-width))))
+      (setq company-next~x (+ x left))
       (set-frame-size frame (company-next~update-width t (/ height char-height))
                       height t)
       (set-frame-position frame (max (+ x left) 0) (+ y top)))))
@@ -283,13 +287,15 @@ If all functions returns nil, `company-next-icons-unknown' is used."
                                    (forward-line height)
                                    (point))))
                    (window-end window)))
-          (width (if company-next-align-annotations
-                     ;; With align-annotations, `window-text-pixel-size' doesn't return
-                     ;; good values because of the display properties in the buffer
-                     ;; More specifically, because of the spaces specifications
-                     (company-next~calc-len (window-buffer window) start end char-width)
-                   (car (window-text-pixel-size window start end 10000 10000))))
-          (width (+ width char-width)))
+          (max-width (- (frame-pixel-width) company-next~x) char-width)
+          (width (+ (if company-next-align-annotations
+                        ;; With align-annotations, `window-text-pixel-size' doesn't return
+                        ;; good values because of the display properties in the buffer
+                        ;; More specifically, because of the spaces specifications
+                        (company-next~calc-len (window-buffer window) start end char-width)
+                      (car (window-text-pixel-size window start end 10000 10000)))
+                    char-width))
+          (width (min width max-width)))
     (or (and no-update width)
         (set-frame-width (company-next~get-frame) width nil t))))
 
