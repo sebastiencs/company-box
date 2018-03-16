@@ -243,8 +243,9 @@ Examples:
                 (while (window-in-direction 'below tmp)
                   (setq tmp (window-in-direction 'below tmp)))
                 tmp)))
-    (+ (nth 2 (or (window-line-height 'mode-line win)
-                  (and (redisplay t) (window-line-height 'mode-line win))))
+    (+ (or (nth 2 (or (window-line-height 'mode-line win)
+                      (and (redisplay t) (window-line-height 'mode-line win))))
+           0)
        (or (and win (nth 1 (window-edges win t nil t))) 0))))
 
 (defun company-next~set-frame-position (frame)
@@ -341,9 +342,11 @@ Examples:
                           (if company-next-align-annotations
                               (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))
                             " ")))
+          (space company-next~space)
+          (icon-p company-next-enable-icon)
           (annotation-string (and annotation (propertize annotation 'face 'company-next-annotation)))
-          (line (concat (unless (or (= company-next~space 2) (= company-next~space 0))
-                          (propertize " " 'display `(space :width ,(if (= company-next~space 1) 1 0.75))))
+          (line (concat (unless (or (and (= space 2) icon-p) (= space 0))
+                          (propertize " " 'display `(space :width ,(if (or (= space 1) (not icon-p)) 1 0.75))))
                         (company-next~apply-color icon-string i-color)
                         (company-next~apply-color candidate-string c-color)
                         align-string
@@ -360,8 +363,7 @@ Examples:
 
 (defun company-next~make-candidate (candidate)
   (let* ((annotation (-some->> (company-call-backend 'annotation candidate)
-                               (replace-regexp-in-string "[ \t\n\r]+" " ")
-                               (company--clean-string)))
+                               (replace-regexp-in-string "[ \t\n\r]+" " ")))
          (len-candidate (string-width candidate))
          (len-annotation (if annotation (string-width annotation) 0))
          (len-total (+ len-candidate len-annotation))
