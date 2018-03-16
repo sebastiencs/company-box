@@ -238,18 +238,16 @@ Examples:
       (setq-local scroll-preserve-screen-position t)
       (company-next~update-line selection))))
 
-(defun company-next~point-bottom ()
-  "Return the pos-y of the LINE on screen, in pixel."
+(defun company-next~point-bottom nil
   (let* ((win (let ((tmp nil))
                 (while (window-in-direction 'below tmp)
                   (setq tmp (window-in-direction 'below tmp)))
                 tmp)))
     (+ (nth 2 (or (window-line-height 'mode-line win)
-                  (and (redisplay t)
-                       (window-line-height 'mode-line win))))
+                  (and (redisplay t) (window-line-height 'mode-line win))))
        (or (and win (nth 1 (window-edges win t nil t))) 0))))
 
-(defun company-next~move-frame (frame)
+(defun company-next~set-frame-position (frame)
   (-let* (((left top right _bottom) (window-edges nil t nil t))
           (window (frame-root-window frame))
           ((width . height) (window-text-pixel-size window nil nil 10000 10000))
@@ -284,7 +282,7 @@ Examples:
   (company-next~render-buffer string)
   (unless (company-next~get-frame)
     (company-next~set-frame (company-next~make-frame)))
-  (company-next~move-frame (company-next~get-frame))
+  (company-next~set-frame-position (company-next~get-frame))
   (unless (frame-visible-p (company-next~get-frame))
     (make-frame-visible (company-next~get-frame))))
 
@@ -473,7 +471,7 @@ COMMAND: See `company-frontends'."
     (company-next~post-command))))
 
 (defun company-next~on-window-change nil
-  (company-next~move-frame (company-next~get-frame)))
+  (company-next~set-frame-position (company-next~get-frame)))
 
 (defvar company-next-mode-map nil
   "Keymap when `company-next' is active")
