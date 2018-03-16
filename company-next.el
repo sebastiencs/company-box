@@ -167,6 +167,7 @@ Examples:
 (defvar-local company-next~with-icons-p nil)
 (defvar-local company-next~x nil)
 (defvar-local company-next~space nil)
+(defvar-local company-next~start nil)
 
 (defmacro company-next~get-frame ()
   "Return the child frame."
@@ -272,6 +273,7 @@ Examples:
                  (- p-x (* char-width (if (= company-next~space 2) 2 3)))
                (- p-x (if (= company-next~space 0) 0 char-width)))))
     (setq company-next~x (+ x left))
+    (setq company-next~start (window-start))
     (set-frame-size frame (company-next~update-width t (/ height char-height))
                     height t)
     (set-frame-position frame (max (+ x left) 0) (+ y top))
@@ -444,6 +446,13 @@ Examples:
   (company-next~change-line)
   (company-next~update-width))
 
+(defun company-next~start-changed-p nil
+  (not (= company-next~start (window-start))))
+
+(defun company-next~post-command nil
+  (cond ((company-next~start-changed-p)
+         (company-next~on-window-change))))
+
 (defun company-next-frontend (command)
   "`company-mode' frontend using child-frame.
 COMMAND: See `company-frontends'."
@@ -459,7 +468,12 @@ COMMAND: See `company-frontends'."
    ((or (eq command 'hide) (equal company-candidates-length 1))
     (company-next-hide))
    ((eq command 'update)
-    (company-next-show))))
+    (company-next-show))
+   ((eq command 'post-command)
+    (company-next~post-command))))
+
+(defun company-next~on-window-change nil
+  (company-next~move-frame (company-next~get-frame)))
 
 (defvar company-next-mode-map nil
   "Keymap when `company-next' is active")
