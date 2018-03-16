@@ -96,6 +96,38 @@ If all functions returns nil, `company-next-icons-unknown' is used."
   :type 'list
   :group 'company-next)
 
+
+(defvar company-next-backends-color
+  '((company-yasnippet . (:all "lime green" :selected (:background "lime green" :foreground "black"))))
+  "List of colors to use for specific backends.
+
+Each element has the form (BACKEND . COLOR)
+
+BACKEND is the backend's symbol for which the color applies
+COLOR can be a LIST or a STRING:
+
+- LIST:    A property list with the following keys:
+                `:candidate'  : Color to use on the candidate
+                `:annotation' : Color to use on the annotation
+                `:icon'       : Color to use on the icon
+                `:all'        : Replace (:candidate X :annotation X :icon X)
+           For those 4 attributes, values can be a face, a plist
+           or a string (a color)
+                `:selected'   : Color to use when the candidate is selected.
+           It can be a plist or a face, not a string.
+           It needs to define the background and foreground colors
+
+- STRING:  A color string which is used everywhere
+           (similar to (:all \"red\"))
+
+Examples:
+
+'((company-yasnippet . (:candidate \"yellow\" :annotation some-face))
+  (company-elisp . (:icon \"yellow\" :selected (:background \"orange\"
+                                              :foreground \"black\")))
+  (company-dabbrev . \"purple\"))")
+
+
 (defvar company-next-frame-parameters
   '((left . -1)
     (no-accept-focus . t)
@@ -182,9 +214,7 @@ If all functions returns nil, `company-next-icons-unknown' is used."
                 (line-beginning-position)
                 (line-beginning-position 2))
   (-if-let* ((color (get-text-property (point) 'company-next~color)))
-      (overlay-put (company-next~get-ov)
-                   'face (list :background color
-                               :foreground (face-foreground 'company-next-selection nil t)))
+      (overlay-put (company-next~get-ov) 'face color)
     (overlay-put (company-next~get-ov) 'face 'company-next-selection)))
 
 (defun company-next~render-buffer (string)
@@ -270,40 +300,56 @@ If all functions returns nil, `company-next-icons-unknown' is used."
    (company-next~get-icon candidate)
    (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-next~space 2) 3 2))))))
 
-(defvar company-next-backends-color
-  '((yas-annotation . "lime green")))
+(defun company-next~get-color (backend)
+  (alist-get backend company-next-backends-color))
 
-(defun company-next~get-color (candidate)
-  (let ((list company-next-backends-color)
-        color)
-    (while (and (null color) list)
-      (when (get-text-property 0 (caar list) candidate)
-        (setq color (cdar list)))
-      (pop list))
-    color))
+(defun company-next~resolve-color (color key)
+  (or (and (stringp color) color)
+      (and (listp color) (or (plist-get color key) (plist-get color :all)))))
+
+(defun company-next~resolve-colors (color)
+  (when color
+    (list
+     (company-next~resolve-color color :candidate)
+     (company-next~resolve-color color :annotation)
+     (company-next~resolve-color color :icon)
+     (let ((color (company-next~resolve-color color :selected)))
+       (unless (stringp color)
+         color)))))
+
+(defun company-next~apply-color (string color)
+  (when color
+    (add-face-text-property 0 (length string)
+                            (if (stringp color) (list :foreground color) color)
+                            nil string))
+  string)
 
 (defun company-next~make-line (candidate)
-  (-let* (((candidate annotation len-c len-a) candidate)
-          (line (concat
-                 (unless (or (= company-next~space 2) (= company-next~space 0))
-                   (propertize " " 'display '(space :width 0.75)))
-                 (when company-next~with-icons-p
-                   (company-next~add-icon candidate))
-                 (propertize candidate 'face 'company-next-candidate)
-                 (when annotation
-                   (if company-next-align-annotations
-                       (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))
-                     " "))
-                 (when annotation
-                   (propertize annotation 'face 'company-next-annotation))))
-          (len (length line))
-          (color (company-next~get-color candidate)))
-    (when color
-      (add-face-text-property 0 len (list :foreground color) nil line))
+  (-let* (((candidate annotation len-c len-a backend) candidate)
+          (color (company-next~get-color backend))
+          ((c-color a-color i-color s-color) (company-next~resolve-colors color))
+          (icon-string (and company-next~with-icons-p (company-next~add-icon candidate)))
+          (candidate-string (propertize candidate 'face 'company-next-candidate))
+          (align-string (when annotation
+                          (if company-next-align-annotations
+                              (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))
+                            " ")))
+          (annotation-string (and annotation (propertize annotation 'face 'company-next-annotation)))
+          (line (concat (unless (or (= company-next~space 2) (= company-next~space 0))
+                          (propertize " " 'display '(space :width 0.75)))
+                        (company-next~apply-color icon-string i-color)
+                        (company-next~apply-color candidate-string c-color)
+                        align-string
+                        (company-next~apply-color annotation-string a-color)))
+          (len (length line)))
     (add-text-properties 0 len (list 'company-next~len (+ len-c len-a)
-                                     'company-next~color color)
+                                     'company-next~color s-color)
                          line)
     line))
+
+(defun company-next~backend (candidate)
+  (or (get-text-property 0 'company-backend candidate)
+      (--first (and it (not (keywordp it))) company-backend)))
 
 (defun company-next~make-candidate (candidate)
   (let* ((annotation (-some->> (company-call-backend 'annotation candidate)
@@ -311,13 +357,15 @@ If all functions returns nil, `company-next-icons-unknown' is used."
                                (company--clean-string)))
          (len-candidate (string-width candidate))
          (len-annotation (if annotation (string-width annotation) 0))
-         (len-total (+ len-candidate len-annotation)))
+         (len-total (+ len-candidate len-annotation))
+         (backend (company-next~backend candidate)))
     (when (> len-total company-next~max)
       (setq company-next~max len-total))
     (list candidate
           annotation
           len-candidate
-          len-annotation)))
+          len-annotation
+          backend)))
 
 (defun company-next-show nil
   (setq company-next~max 0)
