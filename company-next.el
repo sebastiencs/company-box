@@ -120,6 +120,8 @@ If all functions returns nil, `company-next-icons-unknown' is used."
     (no-other-frame . t)
     (cursor-type . nil)
     (drag-internal-border . t)
+    (left-fringe . 0)
+    (right-fringe . 0)
     (no-special-glyphs . t))
   "Frame parameters used to create the frame.")
 
@@ -235,7 +237,8 @@ If all functions returns nil, `company-next-icons-unknown' is used."
     (setq company-next~x (+ x left))
     (set-frame-size frame (company-next~update-width t (/ height char-height))
                     height t)
-    (set-frame-position frame (max (+ x left) 0) (+ y top))))
+    (set-frame-position frame (max (+ x left) 0) (+ y top))
+    (with-selected-frame frame (set-fringe-style 0))))
 
 (defun company-next~display (string)
   "Display the completions."
