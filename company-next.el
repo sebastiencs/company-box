@@ -271,6 +271,9 @@ Examples:
           (x (if company-next~with-icons-p
                  (- p-x (* char-width (if (= company-next~space 2) 2 3)))
                (- p-x (if (= company-next~space 0) 0 char-width)))))
+    ;; Debug
+    ;; (message "X+LEFT: %s P-X: %s X: %s LEFT: %s space: %s with-icon: %s LESS: %s"
+    ;;          (+ x left) p-x x left company-next~space company-next~with-icons-p (+ (* char-width 3) (/ char-width 2)))
     (setq company-next~x (+ x left))
     (setq company-next~start (window-start))
     (set-frame-size frame (company-next~update-width t (/ height char-height))
