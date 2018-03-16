@@ -232,7 +232,7 @@ If all functions returns nil, `company-next-icons-unknown' is used."
                            (- mode-line-y y))
                       height))
           (x (if company-next~with-icons-p
-                 (- p-x (+ (* char-width 3) (/ char-width 2)))
+                 (- p-x (* char-width 3))
                (- p-x (if (= company-next~space 0) 0 char-width)))))
     (setq company-next~x (+ x left))
     (set-frame-size frame (company-next~update-width t (/ height char-height))
@@ -268,7 +268,7 @@ If all functions returns nil, `company-next-icons-unknown' is used."
 (defun company-next~add-icon (candidate)
   (concat
    (company-next~get-icon candidate)
-   (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-next~space 2) 3.5 2.5))))))
+   (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-next~space 2) 3 2))))))
 
 (defvar company-next-backends-color
   '((yas-annotation . "lime green")))
@@ -285,9 +285,8 @@ If all functions returns nil, `company-next-icons-unknown' is used."
 (defun company-next~make-line (candidate)
   (-let* (((candidate annotation len-c len-a) candidate)
           (line (concat
-                 (unless (or (= company-next~space 2)
-                             (= company-next~space 0))
-                   " ")
+                 (unless (or (= company-next~space 2) (= company-next~space 0))
+                   (propertize " " 'display '(space :width 0.75)))
                  (when company-next~with-icons-p
                    (company-next~add-icon candidate))
                  (propertize candidate 'face 'company-next-candidate)
