@@ -185,6 +185,8 @@ Examples:
 
 (defun company-next~with-icons-p nil
   (let ((spaces (+ (- (current-column) (string-width company-prefix))
+                   (/ (or (car (nth 2 (posn-at-point (line-beginning-position)))) 0)
+                      (frame-char-width))
                    (car (window-edges nil t)))))
     (setq company-next~space spaces)
     (and company-next-enable-icon
@@ -267,7 +269,7 @@ Examples:
                            (- mode-line-y y))
                       height))
           (x (if company-next~with-icons-p
-                 (- p-x (* char-width 3))
+                 (- p-x (* char-width (if (= company-next~space 2) 2 3)))
                (- p-x (if (= company-next~space 0) 0 char-width)))))
     (setq company-next~x (+ x left))
     (set-frame-size frame (company-next~update-width t (/ height char-height))
@@ -341,7 +343,7 @@ Examples:
                             " ")))
           (annotation-string (and annotation (propertize annotation 'face 'company-next-annotation)))
           (line (concat (unless (or (= company-next~space 2) (= company-next~space 0))
-                          (propertize " " 'display '(space :width 0.75)))
+                          (propertize " " 'display `(space :width ,(if (= company-next~space 1) 1 0.75))))
                         (company-next~apply-color icon-string i-color)
                         (company-next~apply-color candidate-string c-color)
                         align-string
