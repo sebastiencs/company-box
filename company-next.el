@@ -74,6 +74,11 @@ Only the 'background' color is used in this face."
   :type 'boolean
   :group 'company-next)
 
+(defcustom company-next-limit company-tooltip-limit
+  "Maximum number of candidates in the frame."
+  :type 'integer
+  :group 'company-next)
+
 (defcustom company-next-minimum-width 40
   "Minimum width of the completion frame, in numbers of characters."
   :type 'integer
@@ -370,8 +375,8 @@ Examples:
 (defun company-next-show nil
   (setq company-next~max 0)
   (setq company-next~with-icons-p (company-next~with-icons-p))
-  (--> (mapcar 'company-next~make-candidate company-candidates)
-       (mapcar 'company-next~make-line it)
+  (--> (-take company-next-limit company-candidates)
+       (mapcar (-compose 'company-next~make-line 'company-next~make-candidate) it)
        (mapconcat 'identity it "\n")
        (company-next~display it)))
 
@@ -425,7 +430,8 @@ Examples:
 
 (defun company-next~next-line nil
   (interactive)
-  (when (< (1+ company-selection) company-candidates-length)
+  (when (< (1+ company-selection) (min company-candidates-length
+                                       company-next-limit))
     (setq company-selection (1+ company-selection))
     (company-next~change-line)
     (company-next~update-width)))
@@ -470,10 +476,10 @@ COMMAND: See `company-frontends'."
   (cond
    (company-next-mode
     (setq-local company-frontends
-                (delete 'company-pseudo-tooltip-unless-just-one-frontend company-frontends))
+                (delq 'company-pseudo-tooltip-unless-just-one-frontend company-frontends))
     (add-to-list 'company-frontends 'company-next-frontend))
    (t
-    (setq-local company-frontends (delete 'company-next-frontend  company-frontends))
+    (setq-local company-frontends (delq 'company-next-frontend  company-frontends))
     (add-to-list 'company-frontends 'company-pseudo-tooltip-unless-just-one-frontend))))
 
 (provide 'company-next)
