@@ -22,7 +22,7 @@ If you want icons, please install [icons-in-terminal](https://github.com/sebasti
   :hook (company-mode . company-next-mode))
 
 ;; Or:
-(require 'use-package)
+(require 'company-next)
 (add-hook 'company-mode-hook 'company-next-mode)
 ```
 
