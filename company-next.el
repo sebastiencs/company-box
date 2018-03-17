@@ -59,6 +59,12 @@
 Only the 'background' color is used in this face."
   :group 'company-next)
 
+(defface company-next-scrollbar
+  '((t :inherit company-next-selection))
+  "Face used for the scrollbar.
+Only the 'background' color is used in this face."
+  :group 'company-next)
+
 (defcustom company-next-align-annotations company-tooltip-align-annotations
   "When non-nil, align annotations to the right border."
   :type 'boolean
@@ -452,7 +458,7 @@ Examples:
                                ;; remainings pixels
                                (+ height-scrollbar 10)
                              height-scrollbar))
-    (insert (propertize " " 'face `(:background "#2196F3")
+    (insert (propertize " " 'face (list :background (face-background 'company-next-scrollbar nil t))
                         'display `(space :align-to right-fringe :height ,height-scrollbar)))
     (current-buffer)))
 
