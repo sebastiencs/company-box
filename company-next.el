@@ -5,6 +5,8 @@
 ;; Author: Sebastien Chapuis <sebastien@chapu.is>
 ;; URL: https://github.com/sebastiencs/company-next
 ;; Keywords: company, front-end
+;; Package-Requires: ((emacs "26.1") (dash "2.13") (dash-functional "1.2.0") (company "0.9.6"))
+;; Version: 0.0.1
 
 ;;; License
 ;;
@@ -261,9 +263,9 @@ Examples:
        (or (and win (nth 1 (window-edges win t nil t))) 0))))
 
 (defun company-next~set-frame-position (frame)
-  (-let* (((left top right _bottom) (window-edges nil t nil t))
+  (-let* (((left top _right _bottom) (window-edges nil t nil t))
           (window (frame-parameter nil 'company-next-window))
-          ((width . height) (window-text-pixel-size window nil nil 10000 10000))
+          ((_width . height) (window-text-pixel-size window nil nil 10000 10000))
           (frame-resize-pixelwise t)
           (point (- (point) (length company-prefix)))
           (mode-line-y (company-next~point-bottom))
@@ -566,11 +568,11 @@ COMMAND: See `company-frontends'."
 
 (defun company-next~set-mode (&optional frame)
   (cond
-   ((and company-next-mode (not (display-graphic-p frame)))
+   ((and (bound-and-true-p company-next-mode) (not (display-graphic-p frame)))
     (company-next-mode -1))
-   (company-next-mode
+   ((bound-and-true-p company-next-mode)
     (remove-hook 'after-make-frame-functions 'company-next~set-mode t)
-    (make-variable-buffer-local 'company-frontends)
+    (make-local-variable 'company-frontends)
     (setq company-frontends (delq 'company-pseudo-tooltip-unless-just-one-frontend company-frontends))
     (add-to-list 'company-frontends 'company-next-frontend))
    ((memq 'company-next-frontend company-frontends)

@@ -115,3 +115,4 @@ See `company-next-icons-functions'.")
     company-next-icons-yasnippet))
 
 (provide 'company-next-icons)
+;;; company-next-icons ends here
