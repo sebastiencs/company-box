@@ -461,7 +461,7 @@ Examples:
       (insert (propertize " " 'display `(space :align-to right-fringe :height ,height-blank))
               (propertize "\n" 'face '(:height 1))))
     (setq height-scrollbar (if (= percent 1)
-                               ;; Due to some casting in the emacs code, there might 1 or 2
+                               ;; Due to float/int casting in the emacs code, there might 1 or 2
                                ;; remainings pixels
                                (+ height-scrollbar 10)
                              height-scrollbar))
