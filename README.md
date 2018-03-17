@@ -5,10 +5,10 @@ A company front-end.
 
 ![company-next](company-next.png)
 
-Why is it better than the built-in front-end:  
+Differences with the built-in front-end:  
 - Differents colors for differents backends.
-- Icons associated to functions/variables/..
-- Not limited by the current window size, buffer's text properties, ..
+- Icons associated to functions/variables/.. and their backends
+- Not limited by the current window size, buffer's text properties, .. (it's better than you might think)
 
 This package requires emacs 26.  
 Also, not compatible with emacs in a tty.  
@@ -39,5 +39,5 @@ See the docstring of the variable `company-next-backends-color`:
 See the variable `company-next-icons-functions`  
 
 For now, there are customs icons for 3 backends only: `company-lsp`, `company-elisp` and `company-yasnippet`.  
-You can customize the icons with the variables:  
+You can customize their icons with the variables:  
 `company-next-icons-lsp`, `company-next-icons-elisp` and `company-next-icons-yasnippet`
