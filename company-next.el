@@ -39,7 +39,7 @@
   :group 'company)
 
 (defface company-next-candidate
-  '((t :inherit company-tooltip-common))
+  '((t :foreground "white"))
   "Face used to color candidates."
   :group 'company-next)
 
@@ -50,7 +50,7 @@
 
 (defface company-next-selection
   '((t :inherit company-tooltip-selection))
-  "Face used to color annotations."
+  "Face used to color the selected candidate."
   :group 'company-next)
 
 (defface company-next-background
@@ -436,6 +436,7 @@ Examples:
                         ;; More specifically, because of the spaces specifications
                         (company-next~calc-len (window-buffer window) start end char-width)
                       (car (window-text-pixel-size window start end 10000 10000)))
+                    (if (company-next~scrollbar-p frame) (* 2 char-width) 0)
                     char-width))
           (width (max (min width max-width)
                       (* company-next-minimum-width char-width))))
@@ -444,6 +445,12 @@ Examples:
 
 (defun company-next~percent (a b)
   (/ (float a) b))
+
+(defun company-next~scrollbar-p (frame)
+  (/= 1 (company-next~percent
+         company-next~height
+         (* (min company-candidates-length company-next-limit)
+            (frame-char-height frame)))))
 
 (defun company-next~update-scrollbar-buffer (height-blank height-scrollbar percent buffer)
   (with-current-buffer buffer
