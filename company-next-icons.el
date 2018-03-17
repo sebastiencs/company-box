@@ -36,7 +36,7 @@
   "Icon used when on unknown item.
 See `company-next-icons-functions'.")
 
-(defvar company-next-icons~elisp
+(defvar company-next-icons-elisp
   '((fa_tag :face font-lock-function-name-face)
     (fa_cog :face font-lock-variable-name-face)
     (fa_cube :face font-lock-constant-face)
@@ -46,12 +46,12 @@ It has the form:
 (FUNCTION VALUE FEATURE FACE).
 See `company-next-icons-functions'.")
 
-(defvar company-next-icons~yasnippet
+(defvar company-next-icons-yasnippet
   'fa_bookmark
   "Icon to use with yasnippet candidates.
 See `company-next-icons-functions'.")
 
-(defvar company-next-icons~lsp
+(defvar company-next-icons-lsp
   '((1 . fa_text_height) ;; Text
     (2 . (fa_tags :face font-lock-function-name-face)) ;; Method
     (3 . (fa_tag :face font-lock-function-name-face)) ;; Function
@@ -98,7 +98,7 @@ See `company-next-icons-functions'.")
 (defun company-next-icons~lsp (candidate)
   (-when-let* ((lsp-item (get-text-property 0 'lsp-completion-item candidate))
                (kind (gethash "kind" lsp-item)))
-    (alist-get kind company-next-icons~lsp)))
+    (alist-get kind company-next-icons-lsp)))
 
 (defun company-next-icons~elisp (candidate)
   (when (derived-mode-p 'emacs-lisp-mode)
@@ -108,47 +108,10 @@ See `company-next-icons-functions'.")
                        ((featurep sym) 2)
                        ((facep sym) 3))))
       (when item
-        (nth item company-next-icons~elisp)))))
+        (nth item company-next-icons-elisp)))))
 
 (defun company-next-icons~yasnippet (candidate)
   (when (get-text-property 0 'yas-annotation candidate)
-    company-next-icons~yasnippet))
-
-;; (defun company-next~get-icon (candidate)
-;;   (or (-when-let* ((_ (fboundp 'icons-in-terminal))
-;;                    (lsp-item (get-text-property 0 'lsp-completion-item candidate))
-;;                    (kind (gethash "kind" lsp-item)))
-;;         (icons-in-terminal
-;;          (pcase kind
-;;            (1 'fa_text_height) ;; Text
-;;            (2 'fa_tags) ;; Method
-;;            ((or 3 4) 'fa_tag) ;; Method, Function, Constructor
-;;            ((or 5 6 10 12) 'fa_cog) ;; Field, Variable, Property, Value
-;;            ((or 7 8 9 22) 'mfizz_aws) ;; Class, Interface, Module, Struct
-;;            (11 'md_settings_system_daydream) ;; Unit
-;;            (13 'md_storage) ;; Enum
-;;            ((or 14 15 20) 'md_closed_caption) ;; Enum, Keyword, EnumMember
-;;            (16 'md_color_lens) ;; Color
-;;            (17 'fa_file_text_o) ;; File
-;;            (18 'md_refresh) ;; Reference
-;;            (19 'fa_folder_open) ;; Folder
-;;            (21 'fa_square) ;; Constant
-;;            (23 'fa_calendar) ;; Event
-;;            (24 'fa_square_o) ;; Operator
-;;            (25 'fa_arrows) ;; TypeParameter
-;;            )))
-;;       (when (derived-mode-p 'emacs-lisp-mode)
-;;         (icons-in-terminal
-;;          (let ((sym (intern candidate)))
-;;            (cond ((fboundp sym) 'fa_tag)
-;;                  ((boundp sym) 'fa_cog)
-;;                  ((featurep sym) 'fa_folder_open)
-;;                  ((facep sym) 'md_color_lens)
-;;                  (t 'fa_question_circle)))))
-;;       (when (and (fboundp 'icons-in-terminal)
-;;                  (get-text-property 0 'yas-annotation candidate))
-;;         (icons-in-terminal 'fa_bookmark))
-;;       (when (fboundp 'icons-in-terminal)
-;;         (icons-in-terminal 'fa_question_circle))))
+    company-next-icons-yasnippet))
 
 (provide 'company-next-icons)
