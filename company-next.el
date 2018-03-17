@@ -4,7 +4,7 @@
 
 ;; Author: Sebastien Chapuis <sebastien@chapu.is>
 ;; URL: https://github.com/sebastiencs/company-next
-;; Keywords: company, front-end
+;; Keywords: company, completion, front-end
 ;; Package-Requires: ((emacs "26.1") (dash "2.13") (dash-functional "1.2.0") (company "0.9.6"))
 ;; Version: 0.0.1
 
