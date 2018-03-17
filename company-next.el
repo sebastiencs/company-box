@@ -29,7 +29,9 @@
 
 ;;; Code:
 
+(require 'icons-in-terminal nil t)
 (require 'dash)
+(require 'dash-functional)
 (require 'company)
 (require 'company-next-icons)
 
@@ -245,6 +247,7 @@ Examples:
       (setq-local scroll-conservatively 10000)
       (setq-local scroll-margin  0)
       (setq-local scroll-preserve-screen-position t)
+      (add-hook 'window-configuration-change-hook 'company-next~prevent-changes t t)
       (company-next~update-line selection))))
 
 (defun company-next~point-bottom nil
@@ -525,7 +528,10 @@ Examples:
 
 (defun company-next~post-command nil
   (cond ((company-next~start-changed-p)
-         (company-next~on-window-change))))
+         (company-next~on-start-change))))
+
+(defun company-next~prevent-changes (&rest _)
+  (set-window-margins nil 0 0))
 
 (defun company-next-frontend (command)
   "`company-mode' frontend using child-frame.
@@ -546,7 +552,7 @@ COMMAND: See `company-frontends'."
    ((eq command 'post-command)
     (company-next~post-command))))
 
-(defun company-next~on-window-change nil
+(defun company-next~on-start-change nil
   (company-next~set-frame-position (company-next~get-frame)))
 
 (defvar company-next-mode-map nil
@@ -586,4 +592,4 @@ COMMAND: See `company-frontends'."
     (company-next~set-mode)))
 
 (provide 'company-next)
-;; company-next ends here
+;;; company-next ends here
