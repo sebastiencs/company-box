@@ -149,7 +149,7 @@ Examples:
     (menu-bar-lines . 0)
     (tool-bar-lines . 0)
     (line-spacing . 0)
-    (unsplittable . t)
+    ;; (unsplittable . nil)
     (undecorated . t)
     (top . -1)
     (visibility . nil)
@@ -168,8 +168,10 @@ Examples:
 (defvar-local company-next~x nil)
 (defvar-local company-next~space nil)
 (defvar-local company-next~start nil)
+(defvar-local company-next~height nil)
+(defvar-local company-next~scrollbar-window nil)
 
-(defmacro company-next~get-frame ()
+(defmacro company-next~get-frame nil
   "Return the child frame."
   `(frame-parameter nil 'company-next-frame))
 
@@ -177,12 +179,14 @@ Examples:
   "Set the frame parameter ‘company-next-frame’ to FRAME."
   `(set-frame-parameter nil 'company-next-frame ,frame))
 
-(defun company-next~make-buffer-name nil
+(defun company-next~get-buffer (&optional suffix)
   "Construct the buffer name, it should be unique for each frame."
-  (concat " *company-next-"
-          (or (frame-parameter nil 'window-id)
-              (frame-parameter nil 'name))
-          "*"))
+  (get-buffer-create
+   (concat " *company-next-"
+           (or (frame-parameter nil 'window-id)
+               (frame-parameter nil 'name))
+           suffix
+           "*")))
 
 (defun company-next~with-icons-p nil
   (let ((spaces (+ (- (current-column) (string-width company-prefix))
@@ -194,11 +198,10 @@ Examples:
          (fboundp 'icons-in-terminal)
          (> spaces 1))))
 
-(defun company-next~make-frame ()
-  "Create the child frame and return it."
+(defun company-next~make-frame nil
   (let* ((after-make-frame-functions nil)
          (before-make-frame-hook nil)
-         (buffer (get-buffer (company-next~make-buffer-name)))
+         (buffer (company-next~get-buffer))
          (params (append company-next-frame-parameters
                          `((default-minibuffer-frame . ,(selected-frame))
                            (minibuffer . ,(minibuffer-window))
@@ -227,7 +230,7 @@ Examples:
 
 (defun company-next~render-buffer (string)
   (let ((selection company-selection))
-    (with-current-buffer (get-buffer-create (company-next~make-buffer-name))
+    (with-current-buffer (company-next~get-buffer)
       (erase-buffer)
       (insert string "\n")
       (setq mode-line-format nil
@@ -250,7 +253,7 @@ Examples:
 
 (defun company-next~set-frame-position (frame)
   (-let* (((left top right _bottom) (window-edges nil t nil t))
-          (window (frame-root-window frame))
+          (window (frame-parameter nil 'company-next-window))
           ((width . height) (window-text-pixel-size window nil nil 10000 10000))
           (frame-resize-pixelwise t)
           (point (- (point) (length company-prefix)))
@@ -268,6 +271,7 @@ Examples:
                            (> height (- mode-line-y y))
                            (- mode-line-y y))
                       height))
+          (height (- height (mod height char-height)))
           (x (if company-next~with-icons-p
                  (- p-x (* char-width (if (= company-next~space 2) 2 3)))
                (- p-x (if (= company-next~space 0) 0 char-width)))))
@@ -276,6 +280,7 @@ Examples:
     ;;          (+ x left) p-x x left company-next~space company-next~with-icons-p (+ (* char-width 3) (/ char-width 2)))
     (setq company-next~x (+ x left))
     (setq company-next~start (window-start))
+    (setq company-next~height height)
     (set-frame-size frame (company-next~update-width t (/ height char-height))
                     height t)
     (set-frame-position frame (max (+ x left) 0) (+ y top))
@@ -288,7 +293,8 @@ Examples:
     (company-next~set-frame (company-next~make-frame)))
   (company-next~set-frame-position (company-next~get-frame))
   (unless (frame-visible-p (company-next~get-frame))
-    (make-frame-visible (company-next~get-frame))))
+    (make-frame-visible (company-next~get-frame)))
+  (company-next~update-scrollbar t))
 
 (defun company-next~get-icon (candidate)
   (let ((list company-next-icons-functions)
@@ -380,8 +386,8 @@ Examples:
           backend)))
 
 (defun company-next-show nil
-  (setq company-next~max 0)
-  (setq company-next~with-icons-p (company-next~with-icons-p))
+  (setq company-next~max 0
+        company-next~with-icons-p (company-next~with-icons-p))
   (--> (-take company-next-limit company-candidates)
        (mapcar (-compose 'company-next~make-line 'company-next~make-candidate) it)
        (mapconcat 'identity it "\n")
@@ -430,10 +436,62 @@ Examples:
     (or (and no-update width)
         (set-frame-width (company-next~get-frame) width nil t))))
 
+(defun company-next~percent (a b)
+  (/ (float a) b))
+
+(defun company-next~update-scrollbar-buffer (height-blank height-scrollbar percent buffer)
+  (with-current-buffer buffer
+    (erase-buffer)
+    (setq header-line-format nil
+          mode-line-format nil)
+    (unless (zerop height-blank)
+      (insert (propertize " " 'display `(space :align-to right-fringe :height ,height-blank))
+              (propertize "\n" 'face '(:height 1))))
+    (setq height-scrollbar (if (= percent 1)
+                               ;; Due to some casting in the emacs code, there might 1 or 2
+                               ;; remainings pixels
+                               (+ height-scrollbar 10)
+                             height-scrollbar))
+    (insert (propertize " " 'face `(:background "#2196F3")
+                        'display `(space :align-to right-fringe :height ,height-scrollbar)))
+    (current-buffer)))
+
+(defun company-next~update-scrollbar (&optional first)
+  (let* ((selection company-selection)
+         (buffer (company-next~get-buffer "-scrollbar"))
+         (height company-next~height)
+         (n-elements (min company-candidates-length company-next-limit))
+         (percent (company-next~percent selection (1- n-elements)))
+         (percent-display (company-next~percent height (* n-elements (frame-char-height))))
+         (height-scrollbar-1 (* height percent-display))
+         (height-scrollbar (* height percent-display))
+         (height-scrollbar (/ height-scrollbar (frame-char-height)))
+         ;; (height-blank-1 (* (- height height-scrollbar-1) percent))
+         (height-blank (* (- height height-scrollbar-1) percent))
+         (height-blank (/ height-blank (frame-char-height))))
+    (cond
+     ((and first (= percent-display 1) (window-live-p company-next~scrollbar-window))
+      (delete-window company-next~scrollbar-window))
+     ((window-live-p company-next~scrollbar-window)
+      (company-next~update-scrollbar-buffer height-blank height-scrollbar percent buffer))
+     ((/= percent-display 1)
+      (setq
+       company-next~scrollbar-window
+       (with-selected-frame (company-next~get-frame)
+         (display-buffer-in-side-window
+          (company-next~update-scrollbar-buffer height-blank height-scrollbar percent buffer)
+          '((side . right) (window-width . 2)))))
+      (window-preserve-size company-next~scrollbar-window t t)))))
+
+;; ;; (message "selection: %s len: %s PERCENT: %s PERCENTS-DISPLAY: %s SIZE-FRAME: %s HEIGHT-S: %s HEIGHT-B: %s height: %s sum: %s"
+;; ;;          selection n-elements percent percent-display height height-scrollbar height-blank height (+ height-scrollbar height-blank))
+;; ;; (message "HEIGHT-S-1: %s HEIGHT-B-1: %s sum: %s" height-scrollbar-1 height-blank-1 (+ height-scrollbar-1 height-blank-1))
+
 (defun company-next~change-line nil
   (let ((selection company-selection))
-    (with-selected-window (get-buffer-window (company-next~make-buffer-name) t)
-      (company-next~update-line selection))))
+    (with-selected-window (get-buffer-window (company-next~get-buffer) t)
+      (company-next~update-line selection))
+    (company-next~update-scrollbar)))
 
 (defun company-next~next-line nil
   (interactive)
