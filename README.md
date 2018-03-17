@@ -3,6 +3,8 @@
 
 A company front-end.  
 
+![company-next](company-next.png)
+
 Why is it better than the built-in front-end:  
 - Differents colors for differents backends.
 - Icons associated to functions/variables/..
