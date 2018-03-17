@@ -551,19 +551,32 @@ COMMAND: See `company-frontends'."
     (define-key map [remap company-select-previous-or-abort] 'company-next~prev-line)
     (setq company-next-mode-map map)))
 
+(defun company-next~set-mode (&optional frame)
+  (cond
+   ((and company-next-mode (not (display-graphic-p frame)))
+    (company-next-mode -1))
+   (company-next-mode
+    (remove-hook 'after-make-frame-functions 'company-next~set-mode t)
+    (make-variable-buffer-local 'company-frontends)
+    (setq company-frontends (delq 'company-pseudo-tooltip-unless-just-one-frontend company-frontends))
+    (add-to-list 'company-frontends 'company-next-frontend))
+   ((memq 'company-next-frontend company-frontends)
+    (setq company-frontends (delq 'company-next-frontend  company-frontends))
+    (add-to-list 'company-frontends 'company-pseudo-tooltip-unless-just-one-frontend))))
+
 ;;;###autoload
 (define-minor-mode company-next-mode
   "Company-next minor mode."
   :group 'company-next
   :lighter " company-next"
-  (cond
-   (company-next-mode
-    (setq-local company-frontends
-                (delq 'company-pseudo-tooltip-unless-just-one-frontend company-frontends))
-    (add-to-list 'company-frontends 'company-next-frontend))
-   (t
-    (setq-local company-frontends (delq 'company-next-frontend  company-frontends))
-    (add-to-list 'company-frontends 'company-pseudo-tooltip-unless-just-one-frontend))))
+  ;; With emacs daemon and:
+  ;; `(add-hook 'company-mode-hook 'company-next-mode)'
+  ;; `company-next-mode' is called to early to know if we are in a GUI
+  (if (and (daemonp)
+           (not (frame-parameter nil 'client))
+           company-next-mode)
+      (add-hook 'after-make-frame-functions 'company-next~set-mode t t)
+    (company-next~set-mode)))
 
 (provide 'company-next)
 ;; company-next ends here
