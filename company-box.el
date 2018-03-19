@@ -555,7 +555,8 @@ COMMAND: See `company-frontends'."
     (company-box~post-command))))
 
 (defun company-box~on-start-change nil
-  (company-box~set-frame-position (company-box~get-frame)))
+  (company-box~set-frame-position (company-box~get-frame))
+  (company-box~update-scrollbar (company-box~get-frame) t))
 
 (defvar company-box-mode-map nil
   "Keymap when `company-box' is active")
