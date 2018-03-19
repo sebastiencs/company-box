@@ -43,7 +43,8 @@
   :group 'company)
 
 (defface company-box-candidate
-  '((t :foreground "white"))
+  '((((background light)) :foreground "black")
+    (t :foreground "white"))
   "Face used to color candidates."
   :group 'company-box)
 
@@ -58,7 +59,7 @@
   :group 'company-box)
 
 (defface company-box-background
-  '((t :background "#2B303B"))
+  '((t :inherit company-tooltip))
   "Face used for frame's background.
 Only the 'background' color is used in this face."
   :group 'company-box)
