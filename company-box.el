@@ -477,16 +477,14 @@ Examples:
 (defun company-box~update-scrollbar (frame &optional first)
   (let* ((selection company-selection)
          (buffer (company-box~get-buffer "-scrollbar"))
-         (height company-box~height)
+         (h-frame company-box~height)
          (n-elements (min company-candidates-length company-box-limit))
          (percent (company-box~percent selection (1- n-elements)))
-         (percent-display (company-box~percent height (* n-elements (frame-char-height frame))))
-         (height-scrollbar-1 (* height percent-display))
-         (height-scrollbar (* height percent-display))
-         (height-scrollbar (/ height-scrollbar (frame-char-height frame)))
-         ;; (height-blank-1 (* (- height height-scrollbar-1) percent))
-         (height-blank (* (- height height-scrollbar-1) percent))
-         (height-blank (/ height-blank (frame-char-height frame))))
+         (percent-display (company-box~percent h-frame (* n-elements (frame-char-height frame))))
+         (scrollbar-pixels (* h-frame percent-display))
+         (height-scrollbar (/ scrollbar-pixels (frame-char-height frame)))
+         (blank-pixels (* (- h-frame scrollbar-pixels) percent))
+         (height-blank (/ blank-pixels (frame-char-height frame))))
     (cond
      ((and first (= percent-display 1) (window-live-p company-box~scrollbar-window))
       (delete-window company-box~scrollbar-window))
@@ -501,9 +499,9 @@ Examples:
           '((side . right) (window-width . 2)))))
       (window-preserve-size company-box~scrollbar-window t t)))))
 
-;; ;; (message "selection: %s len: %s PERCENT: %s PERCENTS-DISPLAY: %s SIZE-FRAME: %s HEIGHT-S: %s HEIGHT-B: %s height: %s sum: %s"
+;; ;; (message "selection: %s len: %s PERCENT: %s PERCENTS-DISPLAY: %s SIZE-FRAME: %s HEIGHT-S: %s HEIGHT-B: %s h-frame: %s sum: %s"
 ;; ;;          selection n-elements percent percent-display height height-scrollbar height-blank height (+ height-scrollbar height-blank))
-;; ;; (message "HEIGHT-S-1: %s HEIGHT-B-1: %s sum: %s" height-scrollbar-1 height-blank-1 (+ height-scrollbar-1 height-blank-1))
+;; ;; (message "HEIGHT-S-1: %s HEIGHT-B-1: %s sum: %s" scrollbar-pixels blank-pixels (+ height-scrollbar-1 height-blank-1))
 
 (defun company-box~change-line nil
   (let ((selection company-selection))
