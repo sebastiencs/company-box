@@ -1,7 +1,7 @@
 
 # company-box
 
-A company front-end.  
+A company front-end with icons.  
 
 ![company-box](company-box.png)
 
