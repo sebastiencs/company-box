@@ -1,10 +1,9 @@
-;;; company-next-icons.el --- Company front-end  -*- lexical-binding: t -*-
+;;; company-box-icons.el --- Company front-end  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2017 Sebastien Chapuis
 
 ;; Author: Sebastien Chapuis <sebastien@chapu.is>
-;; URL: https://github.com/sebastiencs/company-next
-;; Keywords: company, front-end
+;; URL: https://github.com/sebastiencs/company-box
 
 ;;; License
 ;;
@@ -25,18 +24,18 @@
 
 ;;; Commentary:
 ;;
-;; A company front-end
+;; Icons for company-box
 
 ;;; Code:
 
 (require 'dash)
 
-(defvar company-next-icons-unknown
+(defvar company-box-icons-unknown
   'fa_question_circle
   "Icon used when on unknown item.
-See `company-next-icons-functions'.")
+See `company-box-icons-functions'.")
 
-(defvar company-next-icons-elisp
+(defvar company-box-icons-elisp
   '((fa_tag :face font-lock-function-name-face)
     (fa_cog :face font-lock-variable-name-face)
     (fa_cube :face font-lock-constant-face)
@@ -44,14 +43,14 @@ See `company-next-icons-functions'.")
   "List of icons to use with Emacs Lisp candidates.
 It has the form:
 (FUNCTION VALUE FEATURE FACE).
-See `company-next-icons-functions'.")
+See `company-box-icons-functions'.")
 
-(defvar company-next-icons-yasnippet
+(defvar company-box-icons-yasnippet
   'fa_bookmark
   "Icon to use with yasnippet candidates.
-See `company-next-icons-functions'.")
+See `company-box-icons-functions'.")
 
-(defvar company-next-icons-lsp
+(defvar company-box-icons-lsp
   '((1 . fa_text_height) ;; Text
     (2 . (fa_tags :face font-lock-function-name-face)) ;; Method
     (3 . (fa_tag :face font-lock-function-name-face)) ;; Function
@@ -93,14 +92,14 @@ ICON can be a symbol, a list or a string.
 
 [1] https://github.com/Microsoft/language-server-protocol/blob/gh-pages/specification.md#completion-request-leftwards_arrow_with_hook
 
-See `company-next-icons-functions'.")
+See `company-box-icons-functions'.")
 
-(defun company-next-icons~lsp (candidate)
+(defun company-box-icons~lsp (candidate)
   (-when-let* ((lsp-item (get-text-property 0 'lsp-completion-item candidate))
                (kind (gethash "kind" lsp-item)))
-    (alist-get kind company-next-icons-lsp)))
+    (alist-get kind company-box-icons-lsp)))
 
-(defun company-next-icons~elisp (candidate)
+(defun company-box-icons~elisp (candidate)
   (when (derived-mode-p 'emacs-lisp-mode)
     (let* ((sym (intern candidate))
            (item (cond ((fboundp sym) 0)
@@ -108,11 +107,11 @@ See `company-next-icons-functions'.")
                        ((featurep sym) 2)
                        ((facep sym) 3))))
       (when item
-        (nth item company-next-icons-elisp)))))
+        (nth item company-box-icons-elisp)))))
 
-(defun company-next-icons~yasnippet (candidate)
+(defun company-box-icons~yasnippet (candidate)
   (when (get-text-property 0 'yas-annotation candidate)
-    company-next-icons-yasnippet))
+    company-box-icons-yasnippet))
 
-(provide 'company-next-icons)
-;;; company-next-icons ends here
+(provide 'company-box-icons)
+;;; company-box-icons.el ends here

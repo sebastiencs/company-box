@@ -1,9 +1,9 @@
 
-# company-next
+# company-box
 
 A company front-end.  
 
-![company-next](company-next.png)
+![company-box](company-box.png)
 
 Differences with the built-in front-end:  
 - Differents colors for differents backends.
@@ -18,25 +18,25 @@ If you want icons, please install [icons-in-terminal](https://github.com/sebasti
 ### Installation
 ``` el
 ;; With use-package:
-(use-package company-next
-  :hook (company-mode . company-next-mode))
+(use-package company-box
+  :hook (company-mode . company-box-mode))
 
 ;; Or:
-(require 'company-next)
-(add-hook 'company-mode-hook 'company-next-mode)
+(require 'company-box)
+(add-hook 'company-mode-hook 'company-box-mode)
 ```
 
 To customize:  
-`M-x customize-group [RET] company-next [RET]`   
+`M-x customize-group [RET] company-box [RET]`   
 
 ### Backends colors
 
-See the docstring of the variable `company-next-backends-color`:  
-`C-h v company-next-backends-color`
+See the docstring of the variable `company-box-backends-colors`:  
+`C-h v company-box-backends-colors`
 
 ### Icons
 
-See the variable `company-next-icons-functions`  
+See the variable `company-box-icons-functions`  
 
 For now, there are customs icons for 3 backends only: `company-lsp`, `company-elisp` and `company-yasnippet`.  
 You can customize their icons with the variables:  

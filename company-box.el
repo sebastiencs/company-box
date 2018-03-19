@@ -1,9 +1,9 @@
-;;; company-next.el --- Company front-end  -*- lexical-binding: t -*-
+;;; company-box.el --- Company front-end  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2017 Sebastien Chapuis
 
 ;; Author: Sebastien Chapuis <sebastien@chapu.is>
-;; URL: https://github.com/sebastiencs/company-next
+;; URL: https://github.com/sebastiencs/company-box
 ;; Keywords: company, completion, front-end
 ;; Package-Requires: ((emacs "26.1") (dash "2.13") (dash-functional "1.2.0") (company "0.9.6"))
 ;; Version: 0.0.1
@@ -35,67 +35,67 @@
 (require 'dash)
 (require 'dash-functional)
 (require 'company)
-(require 'company-next-icons)
+(require 'company-box-icons)
 
-(defgroup company-next nil
+(defgroup company-box nil
   "Front-end for Company."
-  :prefix "company-next-"
+  :prefix "company-box-"
   :group 'company)
 
-(defface company-next-candidate
+(defface company-box-candidate
   '((t :foreground "white"))
   "Face used to color candidates."
-  :group 'company-next)
+  :group 'company-box)
 
-(defface company-next-annotation
+(defface company-box-annotation
   '((t :inherit company-tooltip-annotation))
   "Face used to color annotations."
-  :group 'company-next)
+  :group 'company-box)
 
-(defface company-next-selection
+(defface company-box-selection
   '((t :inherit company-tooltip-selection))
   "Face used to color the selected candidate."
-  :group 'company-next)
+  :group 'company-box)
 
-(defface company-next-background
+(defface company-box-background
   '((t :background "#2B303B"))
   "Face used for frame's background.
 Only the 'background' color is used in this face."
-  :group 'company-next)
+  :group 'company-box)
 
-(defface company-next-scrollbar
-  '((t :inherit company-next-selection))
+(defface company-box-scrollbar
+  '((t :inherit company-box-selection))
   "Face used for the scrollbar.
 Only the 'background' color is used in this face."
-  :group 'company-next)
+  :group 'company-box)
 
-(defcustom company-next-align-annotations company-tooltip-align-annotations
+(defcustom company-box-align-annotations company-tooltip-align-annotations
   "When non-nil, align annotations to the right border."
   :type 'boolean
-  :group 'company-next)
+  :group 'company-box)
 
-(defcustom company-next-color-icon t
+(defcustom company-box-color-icon t
   "Whether or not to color icons."
   :type 'boolean
-  :group 'company-next)
+  :group 'company-box)
 
-(defcustom company-next-enable-icon t
+(defcustom company-box-enable-icon t
   "Whether or not to display icons."
   :type 'boolean
-  :group 'company-next)
+  :group 'company-box)
 
-(defcustom company-next-limit company-tooltip-limit
+(defcustom company-box-limit company-tooltip-limit
   "Maximum number of candidates in the frame."
   :type 'integer
-  :group 'company-next)
+  :group 'company-box)
 
-(defcustom company-next-minimum-width 40
+(defcustom company-box-minimum-width 40
   "Minimum width of the completion frame, in numbers of characters."
   :type 'integer
-  :group 'company-next)
+  :group 'company-box)
 
-(defcustom company-next-icons-functions
-  '(company-next-icons~lsp company-next-icons~elisp company-next-icons~yasnippet)
+(defcustom company-box-icons-functions
+  '(company-box-icons~lsp company-box-icons~elisp company-box-icons~yasnippet)
   "Functions to call on each candidate that should return an icon.
 The functions takes 1 parameter, the completion candidate.
 
@@ -107,12 +107,12 @@ It should return either a SYMBOL, a LIST, a STRING, or nil:
 - STRING:  A simple string which is inserted, should be of length 1
 
 If a function returns nil, it call the next function in the list.
-If all functions returns nil, `company-next-icons-unknown' is used."
+If all functions returns nil, `company-box-icons-unknown' is used."
   :type 'list
-  :group 'company-next)
+  :group 'company-box)
 
 
-(defvar company-next-backends-color
+(defvar company-box-backends-colors
   '((company-yasnippet . (:all "lime green" :selected (:background "lime green" :foreground "black"))))
   "List of colors to use for specific backends.
 
@@ -143,7 +143,7 @@ Examples:
   (company-dabbrev . \"purple\"))")
 
 
-(defvar company-next-frame-parameters
+(defvar company-box-frame-parameters
   '((left . -1)
     (no-accept-focus . t)
     (no-focus-on-map . t)
@@ -172,75 +172,75 @@ Examples:
     (no-special-glyphs . t))
   "Frame parameters used to create the frame.")
 
-(defvar-local company-next~ov nil)
-(defvar-local company-next~max 0)
-(defvar-local company-next~with-icons-p nil)
-(defvar-local company-next~x nil)
-(defvar-local company-next~space nil)
-(defvar-local company-next~start nil)
-(defvar-local company-next~height nil)
-(defvar-local company-next~scrollbar-window nil)
+(defvar-local company-box~ov nil)
+(defvar-local company-box~max 0)
+(defvar-local company-box~with-icons-p nil)
+(defvar-local company-box~x nil)
+(defvar-local company-box~space nil)
+(defvar-local company-box~start nil)
+(defvar-local company-box~height nil)
+(defvar-local company-box~scrollbar-window nil)
 
-(defmacro company-next~get-frame nil
+(defmacro company-box~get-frame nil
   "Return the child frame."
-  `(frame-parameter nil 'company-next-frame))
+  `(frame-parameter nil 'company-box-frame))
 
-(defmacro company-next~set-frame (frame)
-  "Set the frame parameter ‘company-next-frame’ to FRAME."
-  `(set-frame-parameter nil 'company-next-frame ,frame))
+(defmacro company-box~set-frame (frame)
+  "Set the frame parameter ‘company-box-frame’ to FRAME."
+  `(set-frame-parameter nil 'company-box-frame ,frame))
 
-(defun company-next~get-buffer (&optional suffix)
+(defun company-box~get-buffer (&optional suffix)
   "Construct the buffer name, it should be unique for each frame."
   (get-buffer-create
-   (concat " *company-next-"
+   (concat " *company-box-"
            (or (frame-parameter nil 'window-id)
                (frame-parameter nil 'name))
            suffix
            "*")))
 
-(defun company-next~with-icons-p nil
+(defun company-box~with-icons-p nil
   (let ((spaces (+ (- (current-column) (string-width company-prefix))
                    (/ (or (car (nth 2 (posn-at-point (line-beginning-position)))) 0)
                       (frame-char-width))
                    (car (window-edges nil t)))))
-    (setq company-next~space spaces)
-    (and company-next-enable-icon
+    (setq company-box~space spaces)
+    (and company-box-enable-icon
          (fboundp 'icons-in-terminal)
          (> spaces 1))))
 
-(defun company-next~make-frame nil
+(defun company-box~make-frame nil
   (let* ((after-make-frame-functions nil)
          (before-make-frame-hook nil)
-         (buffer (company-next~get-buffer))
-         (params (append company-next-frame-parameters
+         (buffer (company-box~get-buffer))
+         (params (append company-box-frame-parameters
                          `((default-minibuffer-frame . ,(selected-frame))
                            (minibuffer . ,(minibuffer-window))
-                           (background-color . ,(face-background 'company-next-background nil t)))))
+                           (background-color . ,(face-background 'company-box-background nil t)))))
          (window (display-buffer-in-child-frame buffer `((child-frame-parameters . ,params))))
          (frame (window-frame window)))
-    (set-frame-parameter nil 'company-next-buffer buffer)
-    (set-frame-parameter nil 'company-next-window window)
+    (set-frame-parameter nil 'company-box-buffer buffer)
+    (set-frame-parameter nil 'company-box-window window)
     (set-window-dedicated-p window t)
     (redirect-frame-focus frame (frame-parent frame))
     frame))
 
-(defun company-next~get-ov nil
-  (or company-next~ov
-      (setq company-next~ov (make-overlay 1 1))))
+(defun company-box~get-ov nil
+  (or company-box~ov
+      (setq company-box~ov (make-overlay 1 1))))
 
-(defun company-next~update-line (selection)
+(defun company-box~update-line (selection)
   (goto-char 1)
   (forward-line selection)
-  (move-overlay (company-next~get-ov)
+  (move-overlay (company-box~get-ov)
                 (line-beginning-position)
                 (line-beginning-position 2))
-  (-if-let* ((color (get-text-property (point) 'company-next~color)))
-      (overlay-put (company-next~get-ov) 'face color)
-    (overlay-put (company-next~get-ov) 'face 'company-next-selection)))
+  (-if-let* ((color (get-text-property (point) 'company-box~color)))
+      (overlay-put (company-box~get-ov) 'face color)
+    (overlay-put (company-box~get-ov) 'face 'company-box-selection)))
 
-(defun company-next~render-buffer (string)
+(defun company-box~render-buffer (string)
   (let ((selection company-selection))
-    (with-current-buffer (company-next~get-buffer)
+    (with-current-buffer (company-box~get-buffer)
       (erase-buffer)
       (insert string "\n")
       (setq mode-line-format nil
@@ -249,10 +249,10 @@ Examples:
       (setq-local scroll-conservatively 10000)
       (setq-local scroll-margin  0)
       (setq-local scroll-preserve-screen-position t)
-      (add-hook 'window-configuration-change-hook 'company-next~prevent-changes t t)
-      (company-next~update-line selection))))
+      (add-hook 'window-configuration-change-hook 'company-box~prevent-changes t t)
+      (company-box~update-line selection))))
 
-(defun company-next~point-bottom nil
+(defun company-box~point-bottom nil
   (let* ((win (let ((tmp nil))
                 (while (window-in-direction 'below tmp)
                   (setq tmp (window-in-direction 'below tmp)))
@@ -262,13 +262,13 @@ Examples:
            0)
        (or (and win (nth 1 (window-edges win t nil t))) 0))))
 
-(defun company-next~set-frame-position (frame)
+(defun company-box~set-frame-position (frame)
   (-let* (((left top _right _bottom) (window-edges nil t nil t))
-          (window (frame-parameter nil 'company-next-window))
+          (window (frame-parameter nil 'company-box-window))
           ((_width . height) (window-text-pixel-size window nil nil 10000 10000))
           (frame-resize-pixelwise t)
           (point (- (point) (length company-prefix)))
-          (mode-line-y (company-next~point-bottom))
+          (mode-line-y (company-box~point-bottom))
           ((p-x . p-y) (nth 2 (posn-at-point point)))
           (char-height (frame-char-height frame))
           (char-width (frame-char-width frame))
@@ -283,149 +283,149 @@ Examples:
                            (- mode-line-y y))
                       height))
           (height (- height (mod height char-height)))
-          (x (if company-next~with-icons-p
-                 (- p-x (* char-width (if (= company-next~space 2) 2 3)))
-               (- p-x (if (= company-next~space 0) 0 char-width)))))
+          (x (if company-box~with-icons-p
+                 (- p-x (* char-width (if (= company-box~space 2) 2 3)))
+               (- p-x (if (= company-box~space 0) 0 char-width)))))
     ;; Debug
     ;; (message "X+LEFT: %s P-X: %s X: %s LEFT: %s space: %s with-icon: %s LESS: %s"
-    ;;          (+ x left) p-x x left company-next~space company-next~with-icons-p (+ (* char-width 3) (/ char-width 2)))
-    (setq company-next~x (+ x left))
-    (setq company-next~start (window-start))
-    (setq company-next~height height)
-    (set-frame-size frame (company-next~update-width t (/ height char-height))
+    ;;          (+ x left) p-x x left company-box~space company-box~with-icons-p (+ (* char-width 3) (/ char-width 2)))
+    (setq company-box~x (+ x left))
+    (setq company-box~start (window-start))
+    (setq company-box~height height)
+    (set-frame-size frame (company-box~update-width t (/ height char-height))
                     height t)
     (set-frame-position frame (max (+ x left) 0) (+ y top))
     (with-selected-frame frame (set-fringe-style 0))))
 
-(defun company-next~display (string)
+(defun company-box~display (string)
   "Display the completions."
-  (company-next~render-buffer string)
-  (unless (company-next~get-frame)
-    (company-next~set-frame (company-next~make-frame)))
-  (company-next~set-frame-position (company-next~get-frame))
-  (unless (frame-visible-p (company-next~get-frame))
-    (make-frame-visible (company-next~get-frame)))
-  (company-next~update-scrollbar (company-next~get-frame) t))
+  (company-box~render-buffer string)
+  (unless (company-box~get-frame)
+    (company-box~set-frame (company-box~make-frame)))
+  (company-box~set-frame-position (company-box~get-frame))
+  (unless (frame-visible-p (company-box~get-frame))
+    (make-frame-visible (company-box~get-frame)))
+  (company-box~update-scrollbar (company-box~get-frame) t))
 
-(defun company-next~get-icon (candidate)
-  (let ((list company-next-icons-functions)
+(defun company-box~get-icon (candidate)
+  (let ((list company-box-icons-functions)
         icon)
     (while (and (null icon) list)
       (setq icon (funcall (car list) candidate))
       (pop list))
-    (setq icon (or icon company-next-icons-unknown))
+    (setq icon (or icon company-box-icons-unknown))
     (cond
      ((listp icon)
-      (if company-next-color-icon
+      (if company-box-color-icon
           (apply 'icons-in-terminal icon)
         (icons-in-terminal (car icon))))
      ((symbolp icon)
       (icons-in-terminal icon))
      (t icon))))
 
-(defun company-next~add-icon (candidate)
+(defun company-box~add-icon (candidate)
   (concat
-   (company-next~get-icon candidate)
-   (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-next~space 2) 3 2))))))
+   (company-box~get-icon candidate)
+   (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-box~space 2) 3 2))))))
 
-(defun company-next~get-color (backend)
-  (alist-get backend company-next-backends-color))
+(defun company-box~get-color (backend)
+  (alist-get backend company-box-backends-colors))
 
-(defun company-next~resolve-color (color key)
+(defun company-box~resolve-color (color key)
   (or (and (stringp color) color)
       (and (listp color) (or (plist-get color key) (plist-get color :all)))))
 
-(defun company-next~resolve-colors (color)
+(defun company-box~resolve-colors (color)
   (when color
     (list
-     (company-next~resolve-color color :candidate)
-     (company-next~resolve-color color :annotation)
-     (company-next~resolve-color color :icon)
-     (let ((color (company-next~resolve-color color :selected)))
+     (company-box~resolve-color color :candidate)
+     (company-box~resolve-color color :annotation)
+     (company-box~resolve-color color :icon)
+     (let ((color (company-box~resolve-color color :selected)))
        (unless (stringp color)
          color)))))
 
-(defun company-next~apply-color (string color)
+(defun company-box~apply-color (string color)
   (when color
     (add-face-text-property 0 (length string)
                             (if (stringp color) (list :foreground color) color)
                             nil string))
   string)
 
-(defun company-next~make-line (candidate)
+(defun company-box~make-line (candidate)
   (-let* (((candidate annotation len-c len-a backend) candidate)
-          (color (company-next~get-color backend))
-          ((c-color a-color i-color s-color) (company-next~resolve-colors color))
-          (icon-string (and company-next~with-icons-p (company-next~add-icon candidate)))
-          (candidate-string (propertize candidate 'face 'company-next-candidate))
+          (color (company-box~get-color backend))
+          ((c-color a-color i-color s-color) (company-box~resolve-colors color))
+          (icon-string (and company-box~with-icons-p (company-box~add-icon candidate)))
+          (candidate-string (propertize candidate 'face 'company-box-candidate))
           (align-string (when annotation
-                          (if company-next-align-annotations
+                          (if company-box-align-annotations
                               (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))
                             " ")))
-          (space company-next~space)
-          (icon-p company-next-enable-icon)
-          (annotation-string (and annotation (propertize annotation 'face 'company-next-annotation)))
+          (space company-box~space)
+          (icon-p company-box-enable-icon)
+          (annotation-string (and annotation (propertize annotation 'face 'company-box-annotation)))
           (line (concat (unless (or (and (= space 2) icon-p) (= space 0))
                           (propertize " " 'display `(space :width ,(if (or (= space 1) (not icon-p)) 1 0.75))))
-                        (company-next~apply-color icon-string i-color)
-                        (company-next~apply-color candidate-string c-color)
+                        (company-box~apply-color icon-string i-color)
+                        (company-box~apply-color candidate-string c-color)
                         align-string
-                        (company-next~apply-color annotation-string a-color)))
+                        (company-box~apply-color annotation-string a-color)))
           (len (length line)))
-    (add-text-properties 0 len (list 'company-next~len (+ len-c len-a)
-                                     'company-next~color s-color)
+    (add-text-properties 0 len (list 'company-box~len (+ len-c len-a)
+                                     'company-box~color s-color)
                          line)
     line))
 
-(defun company-next~backend (candidate)
+(defun company-box~backend (candidate)
   (or (get-text-property 0 'company-backend candidate)
       (--first (and it (not (keywordp it))) company-backend)))
 
-(defun company-next~make-candidate (candidate)
+(defun company-box~make-candidate (candidate)
   (let* ((annotation (-some->> (company-call-backend 'annotation candidate)
                                (replace-regexp-in-string "[ \t\n\r]+" " ")))
          (len-candidate (string-width candidate))
          (len-annotation (if annotation (string-width annotation) 0))
          (len-total (+ len-candidate len-annotation))
-         (backend (company-next~backend candidate)))
-    (when (> len-total company-next~max)
-      (setq company-next~max len-total))
+         (backend (company-box~backend candidate)))
+    (when (> len-total company-box~max)
+      (setq company-box~max len-total))
     (list candidate
           annotation
           len-candidate
           len-annotation
           backend)))
 
-(defun company-next-show nil
-  (setq company-next~max 0
-        company-next~with-icons-p (company-next~with-icons-p))
-  (--> (-take company-next-limit company-candidates)
-       (mapcar (-compose 'company-next~make-line 'company-next~make-candidate) it)
+(defun company-box-show nil
+  (setq company-box~max 0
+        company-box~with-icons-p (company-box~with-icons-p))
+  (--> (-take company-box-limit company-candidates)
+       (mapcar (-compose 'company-box~make-line 'company-box~make-candidate) it)
        (mapconcat 'identity it "\n")
-       (company-next~display it)))
+       (company-box~display it)))
 
-(defun company-next-hide nil
-  (-some-> (company-next~get-frame)
+(defun company-box-hide nil
+  (-some-> (company-box~get-frame)
            (make-frame-invisible)))
 
-(defun company-next~calc-len (buffer start end char-width)
+(defun company-box~calc-len (buffer start end char-width)
   (let ((max 0))
     (with-current-buffer buffer
       (save-excursion
         (goto-char start)
         (while (< (point) end)
-          (let ((len (or (get-text-property (point) 'company-next~len) 0)))
+          (let ((len (or (get-text-property (point) 'company-box~len) 0)))
             (when (> len max)
               (setq max len)))
           (forward-line))))
-    (* (+ max (if company-next~with-icons-p 6 2))
+    (* (+ max (if company-box~with-icons-p 6 2))
        char-width)))
 
-(defun company-next~update-width (&optional no-update height)
+(defun company-box~update-width (&optional no-update height)
   (unless no-update
     (redisplay))
-  (-let* ((frame (company-next~get-frame))
-          (window (frame-parameter nil 'company-next-window))
+  (-let* ((frame (company-box~get-frame))
+          (window (frame-parameter nil 'company-box-window))
           (start (window-start window))
           (char-width (frame-char-width frame))
           (end (or (and height (with-current-buffer (window-buffer window)
@@ -434,30 +434,30 @@ Examples:
                                    (forward-line height)
                                    (point))))
                    (window-end window)))
-          (max-width (- (frame-pixel-width) company-next~x) char-width)
-          (width (+ (if company-next-align-annotations
+          (max-width (- (frame-pixel-width) company-box~x) char-width)
+          (width (+ (if company-box-align-annotations
                         ;; With align-annotations, `window-text-pixel-size' doesn't return
                         ;; good values because of the display properties in the buffer
                         ;; More specifically, because of the spaces specifications
-                        (company-next~calc-len (window-buffer window) start end char-width)
+                        (company-box~calc-len (window-buffer window) start end char-width)
                       (car (window-text-pixel-size window start end 10000 10000)))
-                    (if (company-next~scrollbar-p frame) (* 2 char-width) 0)
+                    (if (company-box~scrollbar-p frame) (* 2 char-width) 0)
                     char-width))
           (width (max (min width max-width)
-                      (* company-next-minimum-width char-width))))
+                      (* company-box-minimum-width char-width))))
     (or (and no-update width)
-        (set-frame-width (company-next~get-frame) width nil t))))
+        (set-frame-width (company-box~get-frame) width nil t))))
 
-(defun company-next~percent (a b)
+(defun company-box~percent (a b)
   (/ (float a) b))
 
-(defun company-next~scrollbar-p (frame)
-  (/= 1 (company-next~percent
-         company-next~height
-         (* (min company-candidates-length company-next-limit)
+(defun company-box~scrollbar-p (frame)
+  (/= 1 (company-box~percent
+         company-box~height
+         (* (min company-candidates-length company-box-limit)
             (frame-char-height frame)))))
 
-(defun company-next~update-scrollbar-buffer (height-blank height-scrollbar percent buffer)
+(defun company-box~update-scrollbar-buffer (height-blank height-scrollbar percent buffer)
   (with-current-buffer buffer
     (erase-buffer)
     (setq header-line-format nil
@@ -470,17 +470,17 @@ Examples:
                                ;; remainings pixels
                                (+ height-scrollbar 10)
                              height-scrollbar))
-    (insert (propertize " " 'face (list :background (face-background 'company-next-scrollbar nil t))
+    (insert (propertize " " 'face (list :background (face-background 'company-box-scrollbar nil t))
                         'display `(space :align-to right-fringe :height ,height-scrollbar)))
     (current-buffer)))
 
-(defun company-next~update-scrollbar (frame &optional first)
+(defun company-box~update-scrollbar (frame &optional first)
   (let* ((selection company-selection)
-         (buffer (company-next~get-buffer "-scrollbar"))
-         (height company-next~height)
-         (n-elements (min company-candidates-length company-next-limit))
-         (percent (company-next~percent selection (1- n-elements)))
-         (percent-display (company-next~percent height (* n-elements (frame-char-height frame))))
+         (buffer (company-box~get-buffer "-scrollbar"))
+         (height company-box~height)
+         (n-elements (min company-candidates-length company-box-limit))
+         (percent (company-box~percent selection (1- n-elements)))
+         (percent-display (company-box~percent height (* n-elements (frame-char-height frame))))
          (height-scrollbar-1 (* height percent-display))
          (height-scrollbar (* height percent-display))
          (height-scrollbar (/ height-scrollbar (frame-char-height frame)))
@@ -488,54 +488,54 @@ Examples:
          (height-blank (* (- height height-scrollbar-1) percent))
          (height-blank (/ height-blank (frame-char-height frame))))
     (cond
-     ((and first (= percent-display 1) (window-live-p company-next~scrollbar-window))
-      (delete-window company-next~scrollbar-window))
-     ((window-live-p company-next~scrollbar-window)
-      (company-next~update-scrollbar-buffer height-blank height-scrollbar percent buffer))
+     ((and first (= percent-display 1) (window-live-p company-box~scrollbar-window))
+      (delete-window company-box~scrollbar-window))
+     ((window-live-p company-box~scrollbar-window)
+      (company-box~update-scrollbar-buffer height-blank height-scrollbar percent buffer))
      ((/= percent-display 1)
       (setq
-       company-next~scrollbar-window
-       (with-selected-frame (company-next~get-frame)
+       company-box~scrollbar-window
+       (with-selected-frame (company-box~get-frame)
          (display-buffer-in-side-window
-          (company-next~update-scrollbar-buffer height-blank height-scrollbar percent buffer)
+          (company-box~update-scrollbar-buffer height-blank height-scrollbar percent buffer)
           '((side . right) (window-width . 2)))))
-      (window-preserve-size company-next~scrollbar-window t t)))))
+      (window-preserve-size company-box~scrollbar-window t t)))))
 
 ;; ;; (message "selection: %s len: %s PERCENT: %s PERCENTS-DISPLAY: %s SIZE-FRAME: %s HEIGHT-S: %s HEIGHT-B: %s height: %s sum: %s"
 ;; ;;          selection n-elements percent percent-display height height-scrollbar height-blank height (+ height-scrollbar height-blank))
 ;; ;; (message "HEIGHT-S-1: %s HEIGHT-B-1: %s sum: %s" height-scrollbar-1 height-blank-1 (+ height-scrollbar-1 height-blank-1))
 
-(defun company-next~change-line nil
+(defun company-box~change-line nil
   (let ((selection company-selection))
-    (with-selected-window (get-buffer-window (company-next~get-buffer) t)
-      (company-next~update-line selection))
-    (company-next~update-scrollbar (company-next~get-frame))))
+    (with-selected-window (get-buffer-window (company-box~get-buffer) t)
+      (company-box~update-line selection))
+    (company-box~update-scrollbar (company-box~get-frame))))
 
-(defun company-next~next-line nil
+(defun company-box~next-line nil
   (interactive)
   (when (< (1+ company-selection) (min company-candidates-length
-                                       company-next-limit))
+                                       company-box-limit))
     (setq company-selection (1+ company-selection))
-    (company-next~change-line)
-    (company-next~update-width)))
+    (company-box~change-line)
+    (company-box~update-width)))
 
-(defun company-next~prev-line nil
+(defun company-box~prev-line nil
   (interactive)
   (setq company-selection (max (1- company-selection) 0))
-  (company-next~change-line)
-  (company-next~update-width))
+  (company-box~change-line)
+  (company-box~update-width))
 
-(defun company-next~start-changed-p nil
-  (not (= company-next~start (window-start))))
+(defun company-box~start-changed-p nil
+  (not (= company-box~start (window-start))))
 
-(defun company-next~post-command nil
-  (cond ((company-next~start-changed-p)
-         (company-next~on-start-change))))
+(defun company-box~post-command nil
+  (cond ((company-box~start-changed-p)
+         (company-box~on-start-change))))
 
-(defun company-next~prevent-changes (&rest _)
+(defun company-box~prevent-changes (&rest _)
   (set-window-margins nil 0 0))
 
-(defun company-next-frontend (command)
+(defun company-box-frontend (command)
   "`company-mode' frontend using child-frame.
 COMMAND: See `company-frontends'."
   ;; (message "\nCOMMMAND: %s" command)
@@ -548,50 +548,50 @@ COMMAND: See `company-frontends'."
   ;;(message "last-command: %s" last-command)
   (cond
    ((or (eq command 'hide) (equal company-candidates-length 1))
-    (company-next-hide))
+    (company-box-hide))
    ((eq command 'update)
-    (company-next-show))
+    (company-box-show))
    ((eq command 'post-command)
-    (company-next~post-command))))
+    (company-box~post-command))))
 
-(defun company-next~on-start-change nil
-  (company-next~set-frame-position (company-next~get-frame)))
+(defun company-box~on-start-change nil
+  (company-box~set-frame-position (company-box~get-frame)))
 
-(defvar company-next-mode-map nil
-  "Keymap when `company-next' is active")
+(defvar company-box-mode-map nil
+  "Keymap when `company-box' is active")
 
-(unless company-next-mode-map
+(unless company-box-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map [remap company-select-next-or-abort] 'company-next~next-line)
-    (define-key map [remap company-select-previous-or-abort] 'company-next~prev-line)
-    (setq company-next-mode-map map)))
+    (define-key map [remap company-select-next-or-abort] 'company-box~next-line)
+    (define-key map [remap company-select-previous-or-abort] 'company-box~prev-line)
+    (setq company-box-mode-map map)))
 
-(defun company-next~set-mode (&optional frame)
+(defun company-box~set-mode (&optional frame)
   (cond
-   ((and (bound-and-true-p company-next-mode) (not (display-graphic-p frame)))
-    (company-next-mode -1))
-   ((bound-and-true-p company-next-mode)
-    (remove-hook 'after-make-frame-functions 'company-next~set-mode t)
+   ((and (bound-and-true-p company-box-mode) (not (display-graphic-p frame)))
+    (company-box-mode -1))
+   ((bound-and-true-p company-box-mode)
+    (remove-hook 'after-make-frame-functions 'company-box~set-mode t)
     (make-local-variable 'company-frontends)
     (setq company-frontends (delq 'company-pseudo-tooltip-unless-just-one-frontend company-frontends))
-    (add-to-list 'company-frontends 'company-next-frontend))
-   ((memq 'company-next-frontend company-frontends)
-    (setq company-frontends (delq 'company-next-frontend  company-frontends))
+    (add-to-list 'company-frontends 'company-box-frontend))
+   ((memq 'company-box-frontend company-frontends)
+    (setq company-frontends (delq 'company-box-frontend  company-frontends))
     (add-to-list 'company-frontends 'company-pseudo-tooltip-unless-just-one-frontend))))
 
 ;;;###autoload
-(define-minor-mode company-next-mode
-  "Company-next minor mode."
-  :group 'company-next
-  :lighter " company-next"
+(define-minor-mode company-box-mode
+  "Company-box minor mode."
+  :group 'company-box
+  :lighter " company-box"
   ;; With emacs daemon and:
-  ;; `(add-hook 'company-mode-hook 'company-next-mode)'
-  ;; `company-next-mode' is called to early to know if we are in a GUI
+  ;; `(add-hook 'company-mode-hook 'company-box-mode)'
+  ;; `company-box-mode' is called to early to know if we are in a GUI
   (if (and (daemonp)
            (not (frame-parameter nil 'client))
-           company-next-mode)
-      (add-hook 'after-make-frame-functions 'company-next~set-mode t t)
-    (company-next~set-mode)))
+           company-box-mode)
+      (add-hook 'after-make-frame-functions 'company-box~set-mode t t)
+    (company-box~set-mode)))
 
-(provide 'company-next)
-;;; company-next ends here
+(provide 'company-box)
+;;; company-box.el ends here
