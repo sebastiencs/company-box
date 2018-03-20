@@ -593,8 +593,10 @@ COMMAND: See `company-frontends'."
 
 (unless company-box-mode-map
   (let ((map (make-sparse-keymap)))
+    (define-key map [remap company-select-next] 'company-box~next-line)
     (define-key map [remap company-select-next-or-abort] 'company-box~next-line)
     (define-key map [remap company-select-previous-or-abort] 'company-box~prev-line)
+    (define-key map [remap company-select-previous] 'company-box~prev-line)
     (setq company-box-mode-map map)))
 
 (defun company-box~set-mode (&optional frame)
