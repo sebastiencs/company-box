@@ -67,6 +67,7 @@
 (require 'dash-functional)
 (require 'company)
 (require 'company-box-icons)
+(require 'company-box-doc)
 
 (defgroup company-box nil
   "Front-end for Company."
@@ -213,6 +214,9 @@ Examples:
 (defvar-local company-box~height nil)
 (defvar-local company-box~scrollbar-window nil)
 
+(defvar company-box-selection-hook nil
+  "Hook run when the selection changed.")
+
 (defmacro company-box~get-frame nil
   "Return the child frame."
   `(frame-parameter nil 'company-box-frame))
@@ -240,18 +244,19 @@ Examples:
          (fboundp 'icons-in-terminal)
          (> spaces 1))))
 
-(defun company-box~make-frame nil
+(defun company-box~make-frame (&optional buf)
   (let* ((after-make-frame-functions nil)
          (before-make-frame-hook nil)
-         (buffer (company-box~get-buffer))
+         (buffer (or buf (company-box~get-buffer)))
          (params (append company-box-frame-parameters
                          `((default-minibuffer-frame . ,(selected-frame))
                            (minibuffer . ,(minibuffer-window))
                            (background-color . ,(face-background 'company-box-background nil t)))))
          (window (display-buffer-in-child-frame buffer `((child-frame-parameters . ,params))))
          (frame (window-frame window)))
-    (set-frame-parameter nil 'company-box-buffer buffer)
-    (set-frame-parameter nil 'company-box-window window)
+    (unless buf
+      (set-frame-parameter nil 'company-box-buffer buffer)
+      (set-frame-parameter nil 'company-box-window window))
     (set-window-dedicated-p window t)
     (redirect-frame-focus frame (frame-parent frame))
     frame))
@@ -268,7 +273,9 @@ Examples:
                 (line-beginning-position 2))
   (-if-let* ((color (get-text-property (point) 'company-box~color)))
       (overlay-put (company-box~get-ov) 'face color)
-    (overlay-put (company-box~get-ov) 'face 'company-box-selection)))
+    (overlay-put (company-box~get-ov) 'face 'company-box-selection))
+  (run-hook-with-args 'company-box-selection-hook selection
+                      (or (frame-parent) (selected-frame))))
 
 (defun company-box~render-buffer (string)
   (let ((selection company-selection))
@@ -284,15 +291,19 @@ Examples:
       (add-hook 'window-configuration-change-hook 'company-box~prevent-changes t t)
       (company-box~update-line selection))))
 
+(defvar company-box~bottom nil)
+
 (defun company-box~point-bottom nil
-  (let* ((win (let ((tmp nil))
-                (while (window-in-direction 'below tmp)
-                  (setq tmp (window-in-direction 'below tmp)))
-                tmp)))
-    (+ (or (nth 2 (or (window-line-height 'mode-line win)
-                      (and (redisplay t) (window-line-height 'mode-line win))))
-           0)
-       (or (and win (nth 1 (window-edges win t nil t))) 0))))
+  (setq
+   company-box~bottom
+   (let* ((win (let ((tmp nil))
+                 (while (window-in-direction 'below tmp)
+                   (setq tmp (window-in-direction 'below tmp)))
+                 tmp)))
+     (+ (or (nth 2 (or (window-line-height 'mode-line win)
+                       (and (redisplay t) (window-line-height 'mode-line win))))
+            0)
+        (or (and win (nth 1 (window-edges win t nil t))) 0)))))
 
 (defun company-box~set-frame-position (frame)
   (-let* (((left top _right _bottom) (window-edges nil t nil t))
@@ -436,9 +447,12 @@ Examples:
        (mapconcat 'identity it "\n")
        (company-box~display it)))
 
+(defvar company-box-hide-hook nil)
+
 (defun company-box-hide nil
   (-some-> (company-box~get-frame)
-           (make-frame-invisible)))
+           (make-frame-invisible))
+  (run-hook-with-args 'company-box-hide-hook (or (frame-parent) (selected-frame))))
 
 (defun company-box~calc-len (buffer start end char-width)
   (let ((max 0))
@@ -611,6 +625,9 @@ COMMAND: See `company-frontends'."
    ((memq 'company-box-frontend company-frontends)
     (setq company-frontends (delq 'company-box-frontend  company-frontends))
     (add-to-list 'company-frontends 'company-pseudo-tooltip-unless-just-one-frontend))))
+
+(add-hook 'company-box-selection-hook 'company-box-doc)
+(add-hook 'company-box-hide-hook 'company-box-doc~hide)
 
 ;;;###autoload
 (define-minor-mode company-box-mode

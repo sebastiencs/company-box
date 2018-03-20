@@ -8,6 +8,7 @@ A company front-end with icons.
 Differences with the built-in front-end:  
 - Differents colors for differents backends.
 - Icons associated to functions/variables/.. and their backends
+- Display candidate's documentation (support with `quickhelp-string`)
 - Not limited by the current window size, buffer's text properties, .. (it's better than you might think)
 
 This package requires emacs 26.  
