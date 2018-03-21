@@ -64,12 +64,13 @@
 (defun company-box-doc~make-buffer (object)
   (let ((string (cond ((stringp object) object)
                       ((bufferp object) (with-current-buffer object (buffer-string))))))
-    (with-current-buffer (company-box~get-buffer "doc")
-      (erase-buffer)
-      (insert string)
-      (setq mode-line-format nil
-            header-line-format nil)
-      (current-buffer))))
+    (when (> (length (string-trim string)) 0)
+      (with-current-buffer (company-box~get-buffer "doc")
+        (erase-buffer)
+        (insert string)
+        (setq mode-line-format nil
+              header-line-format nil)
+        (current-buffer)))))
 
 (defun company-box-doc~make-frame (buffer)
   (let* ((company-box-frame-parameters
