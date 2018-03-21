@@ -254,8 +254,8 @@ Examples:
                            (background-color . ,(face-background 'company-box-background nil t)))))
          (window (display-buffer-in-child-frame buffer `((child-frame-parameters . ,params))))
          (frame (window-frame window)))
+    (set-frame-parameter frame 'company-box-buffer buffer)
     (unless buf
-      (set-frame-parameter nil 'company-box-buffer buffer)
       (set-frame-parameter nil 'company-box-window window))
     (set-window-dedicated-p window t)
     (redirect-frame-focus frame (frame-parent frame))
@@ -467,6 +467,7 @@ Examples:
     (* (+ max (if company-box~with-icons-p 6 2))
        char-width)))
 
+;; TODO Use window-lines-pixel-dimensions ?
 (defun company-box~update-width (&optional no-update height)
   (unless no-update
     (redisplay))
@@ -543,6 +544,7 @@ Examples:
          (display-buffer-in-side-window
           (company-box~update-scrollbar-buffer height-blank height-scrollbar percent buffer)
           '((side . right) (window-width . 2)))))
+      (set-frame-parameter frame 'company-box-scrollbar (window-buffer company-box~scrollbar-window))
       (window-preserve-size company-box~scrollbar-window t t)))))
 
 ;; ;; (message "selection: %s len: %s PERCENT: %s PERCENTS-DISPLAY: %s SIZE-FRAME: %s HEIGHT-S: %s HEIGHT-B: %s h-frame: %s sum: %s"
@@ -602,6 +604,14 @@ COMMAND: See `company-frontends'."
   (company-box~set-frame-position (company-box~get-frame))
   (company-box~update-scrollbar (company-box~get-frame) t))
 
+(defun company-box~kill-buffer (frame)
+  (-some--> (frame-parameter frame 'company-box-buffer)
+            (and (buffer-live-p it) it)
+            (kill-buffer it))
+  (-some--> (frame-parameter frame 'company-box-scrollbar)
+            (and (buffer-live-p it) it)
+            (kill-buffer it)))
+
 (defvar company-box-mode-map nil
   "Keymap when `company-box' is active")
 
@@ -619,6 +629,7 @@ COMMAND: See `company-frontends'."
     (company-box-mode -1))
    ((bound-and-true-p company-box-mode)
     (remove-hook 'after-make-frame-functions 'company-box~set-mode t)
+    (add-hook 'delete-frame-functions 'company-box~kill-buffer)
     (make-local-variable 'company-frontends)
     (setq company-frontends (delq 'company-pseudo-tooltip-unless-just-one-frontend company-frontends))
     (add-to-list 'company-frontends 'company-box-frontend))
