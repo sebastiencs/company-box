@@ -31,6 +31,11 @@
 (require 'dash)
 (require 'company)
 
+(defvar company-box-doc-frame-parameters
+  '((internal-border-width . 10))
+  "Frame parameters to use on the doc frame.
+`company-box-frame-parameters' is then append to this variable.")
+
 (declare-function company-box~get-frame 'company-box)
 (declare-function company-box~set-frame 'company-box)
 (declare-function company-box~get-buffer 'company-box)
@@ -74,7 +79,7 @@
 
 (defun company-box-doc~make-frame (buffer)
   (let* ((company-box-frame-parameters
-          (append '((internal-border-width . 10))
+          (append company-box-doc-frame-parameters
                   company-box-frame-parameters))
          (frame (company-box~make-frame buffer)))
     ;; (set-face-background 'internal-border "white" frame)
