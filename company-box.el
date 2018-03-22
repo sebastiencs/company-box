@@ -62,7 +62,9 @@
 
 ;;; Code:
 
-(require 'icons-in-terminal nil t)
+(unless (require 'icons-in-terminal nil t)
+  (defun icons-in-terminal (&rest _) " "))
+
 (require 'dash)
 (require 'dash-functional)
 (require 'company)
@@ -248,7 +250,6 @@ Examples:
                    (car (window-edges nil t)))))
     (setq company-box~space spaces)
     (and company-box-enable-icon
-         (fboundp 'icons-in-terminal)
          (> spaces 1))))
 
 (defun company-box~make-frame (&optional buf)
