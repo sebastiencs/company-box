@@ -35,13 +35,13 @@ See the docstring of the variable `company-box-backends-colors`:
 
 ### Icons
 
-By default, images are used to display icons.  
-You can also use [font icons](https://github.com/sebastiencs/company-box/wiki/icons)  
-
 See the variable `company-box-icons-functions`  
 
 For now, there are customs icons for 3 backends only: `company-lsp`, `company-elisp` and `company-yasnippet`.  
 You can customize their icons with the variables:  
 `company-next-icons-lsp`, `company-next-icons-elisp` and `company-next-icons-yasnippet`
 
-Note: With images, you can't change icons colors
+Notes:  
+By default, images are used to display icons.  
+You can also use [font icons](https://github.com/sebastiencs/company-box/wiki/icons)  
+With images, you can't change icons colors
