@@ -8,13 +8,11 @@ A company front-end with icons.
 Differences with the built-in front-end:  
 - Differents colors for differents backends.
 - Icons associated to functions/variables/.. and their backends
-- Display candidate's documentation (support with `quickhelp-string`)
+- Display candidate's documentation (support `quickhelp-string`)
 - Not limited by the current window size, buffer's text properties, .. (it's better than you might think)
 
 This package requires emacs 26.  
 Also, not compatible with emacs in a tty.  
-
-If you want icons, please install [icons-in-terminal](https://github.com/sebastiencs/icons-in-terminal)  
 
 ### Installation
 ``` el
@@ -37,8 +35,13 @@ See the docstring of the variable `company-box-backends-colors`:
 
 ### Icons
 
+By default, images are used to display icons.  
+You can also use [font icons](https://github.com/sebastiencs/company-box/wiki/icons)  
+
 See the variable `company-box-icons-functions`  
 
 For now, there are customs icons for 3 backends only: `company-lsp`, `company-elisp` and `company-yasnippet`.  
 You can customize their icons with the variables:  
 `company-next-icons-lsp`, `company-next-icons-elisp` and `company-next-icons-yasnippet`
+
+Note: With images, you can't change icons colors
