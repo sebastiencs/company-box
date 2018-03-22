@@ -128,7 +128,7 @@ Only the 'background' color is used in this face."
   :group 'company-box)
 
 (defcustom company-box-icons-functions
-  '(company-box-icons~lsp company-box-icons~elisp company-box-icons~yasnippet)
+  '(company-box-icons~yasnippet company-box-icons~lsp company-box-icons~elisp)
   "Functions to call on each candidate that should return an icon.
 The functions takes 1 parameter, the completion candidate.
 
@@ -265,15 +265,35 @@ Examples:
   (or company-box~ov
       (setq company-box~ov (make-overlay 1 1))))
 
+(defun company-box~extract-background (color)
+  "COLOR can be a string, face or plist."
+  `(:background
+    ,(or (and (stringp color) color)
+         (and (facep color) (face-background color nil t))
+         (let ((back (plist-get color :background)))
+           (if (facep back) (face-background back nil t) back)))))
+
+(defun company-box~update-image (&optional color)
+  "Change the image background color, because the overlay doesn't apply on it.
+The function either restore the original image or apply the COLOR.
+It doesn't nothing if a font icon is used."
+  (-when-let* ((bol (line-beginning-position))
+               (point (text-property-any bol (min (+ bol 2) (point-max)) 'company-box-image t))
+               (image (get-text-property point 'display-origin))
+               (new-image (append image (and color (company-box~extract-background color)))))
+    (put-text-property point (1+ point) 'display new-image)))
+
 (defun company-box~update-line (selection)
+  (company-box~update-image)
   (goto-char 1)
   (forward-line selection)
   (move-overlay (company-box~get-ov)
                 (line-beginning-position)
                 (line-beginning-position 2))
-  (-if-let* ((color (get-text-property (point) 'company-box~color)))
-      (overlay-put (company-box~get-ov) 'face color)
-    (overlay-put (company-box~get-ov) 'face 'company-box-selection))
+  (let ((color (or (get-text-property (point) 'company-box~color)
+                   'company-box-selection)))
+    (overlay-put (company-box~get-ov) 'face color)
+    (company-box~update-image color))
   (run-hook-with-args 'company-box-selection-hook selection
                       (or (frame-parent) (selected-frame))))
 
@@ -357,14 +377,16 @@ Examples:
       (setq icon (funcall (car list) candidate))
       (pop list))
     (setq icon (or icon company-box-icons-unknown))
-    (cond
-     ((listp icon)
-      (if company-box-color-icon
-          (apply 'icons-in-terminal icon)
-        (icons-in-terminal (car icon))))
-     ((symbolp icon)
-      (icons-in-terminal icon))
-     (t icon))))
+    (cond ((listp icon)
+           (cond ((eq 'image (car icon))
+                  (propertize " " 'display icon 'company-box-image t
+                              'display-origin icon))
+                 (company-box-color-icon
+                  (apply 'icons-in-terminal icon))
+                 (t (icons-in-terminal (car icon)))))
+          ((symbolp icon)
+           (icons-in-terminal icon))
+          (t icon))))
 
 (defun company-box~add-icon (candidate)
   (concat
