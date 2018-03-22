@@ -634,12 +634,13 @@ COMMAND: See `company-frontends'."
   (company-box~update-scrollbar (company-box~get-frame) t))
 
 (defun company-box~kill-buffer (frame)
-  (-some--> (frame-parameter frame 'company-box-buffer)
-            (and (buffer-live-p it) it)
-            (kill-buffer it))
-  (-some--> (frame-parameter frame 'company-box-scrollbar)
-            (and (buffer-live-p it) it)
-            (kill-buffer it)))
+  (when (frame-live-p frame)
+    (let ((buffer (frame-parameter frame 'company-box-buffer)))
+      (when (buffer-live-p buffer)
+        (kill-buffer buffer)))
+    (let ((buffer (frame-parameter frame 'company-box-scrollbar)))
+      (when (buffer-live-p buffer)
+        (kill-buffer buffer)))))
 
 (defvar company-box-mode-map nil
   "Keymap when `company-box' is active")
