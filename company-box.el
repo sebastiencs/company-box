@@ -108,7 +108,8 @@ Only the 'background' color is used in this face."
   :group 'company-box)
 
 (defcustom company-box-color-icon t
-  "Whether or not to color icons."
+  "Whether or not to color icons.
+Note that icons from images cannot be colored."
   :type 'boolean
   :group 'company-box)
 
@@ -132,15 +133,20 @@ Only the 'background' color is used in this face."
   "Functions to call on each candidate that should return an icon.
 The functions takes 1 parameter, the completion candidate.
 
-It should return either a SYMBOL, a LIST, a STRING, or nil:
+It should return an ICON or nil.
+An ICON can be either a SYMBOL, an IMAGE, a LIST, a STRING:
 
-- SYMBOL:  It is the name of the icon.
+- SYMBOL:  It is the name of the icon (from `icons-in-terminal').
+- IMAGE:   An image descriptor [1]
+           Example: '(image :type png :file \"/path/to/image.png\")
 - LIST:    The list is then `apply' to `icons-in-terminal' function.
            Example: '(fa_icon :face some-face :foreground \"red\")
 - STRING:  A simple string which is inserted, should be of length 1
 
 If a function returns nil, it call the next function in the list.
-If all functions returns nil, `company-box-icons-unknown' is used."
+If all functions returns nil, `company-box-icons-unknown' is used.
+
+[1] https://www.gnu.org/software/emacs/manual/html_node/elisp/Image-Descriptors.html"
   :type 'list
   :group 'company-box)
 
@@ -157,7 +163,8 @@ COLOR can be a LIST or a STRING:
 - LIST:    A property list with the following keys:
                 `:candidate'  : Color to use on the candidate
                 `:annotation' : Color to use on the annotation
-                `:icon'       : Color to use on the icon
+                `:icon'       : Color to use on the icon. Does nothing if the
+                                icon is an image.
                 `:all'        : Replace (:candidate X :annotation X :icon X)
            For those 4 attributes, values can be a face, a plist
            or a string (a color)

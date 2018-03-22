@@ -46,8 +46,8 @@
 (defvar company-box-icons-unknown
   (company-box-icons-image "Namespace.png")
   ;;'fa_question_circle
-  "Icon used when on unknown item.
-See `company-box-icons-functions'.")
+  "Icon used on an unknown item.
+See `company-box-icons-functions' for the ICON format.")
 
 (defvar company-box-icons-elisp
   `(,(company-box-icons-image "Method.png")
@@ -60,9 +60,9 @@ See `company-box-icons-functions'.")
     ;;(md_color_lens :face font-lock-doc-face)
     )
   "List of icons to use with Emacs Lisp candidates.
-It has the form:
+The list has the form:
 (FUNCTION VALUE FEATURE FACE).
-See `company-box-icons-functions'.")
+See `company-box-icons-functions' for each ICON format.")
 
 ;; (defvar company-box-icons-elisp
 ;;   '((fa_tag :face font-lock-function-name-face)
@@ -76,10 +76,9 @@ See `company-box-icons-functions'.")
 
 (defvar company-box-icons-yasnippet
   (company-box-icons-image "Template.png")
-  ;; `(image :type png :file ,(concat company-box-icons-dir "Template.png") :ascent center)
 ;;;  'fa_bookmark
   "Icon to use with yasnippet candidates.
-See `company-box-icons-functions'.")
+See `company-box-icons-functions' for the ICON format.")
 
 (defvar company-box-icons-lsp
   `((1 . ,(company-box-icons-image "String.png")) ;; Text
@@ -134,21 +133,15 @@ See `company-box-icons-functions'.")
   ;;   (25 . fa_arrows)) ;; TypeParameter
   "List of Icons to use with LSP candidates.
 
-Elements are of the form:
+Each element have the form:
 (KIND . ICON)
 
 Where KIND correspond to a number, the CompletionItemKind from the LSP [1]
 
-ICON can be a symbol, a list or a string.
-- SYMBOL:  It is the name of the icon.
-- LIST:    The list is then `apply' to `icons-in-terminal' function.
-           Example: '(fa_icon :face some-face :foreground \"red\")
-- STRING:  A simple string which is inserted, should be of length 1
+See `company-box-icons-functions' for the ICON format.
 
-
-[1] https://github.com/Microsoft/language-server-protocol/blob/gh-pages/specification.md#completion-request-leftwards_arrow_with_hook
-
-See `company-box-icons-functions'.")
+[1] https://github.com/Microsoft/language-server-protocol/blob/gh-pages/\
+specification.md#completion-request-leftwards_arrow_with_hook.")
 
 (defun company-box-icons~lsp (candidate)
   (-when-let* ((lsp-item (get-text-property 0 'lsp-completion-item candidate))
