@@ -452,6 +452,7 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box~backend (candidate)
   (or (get-text-property 0 'company-backend candidate)
+      (and (symbolp company-backend) company-backend)
       (--first (and it (not (keywordp it))) company-backend)))
 
 (defun company-box~make-candidate (candidate)
