@@ -30,65 +30,68 @@
 
 (require 'dash)
 
-(defconst company-box-icons-dir
-  (eval-when-compile
-    (require 'find-func)
+(eval-when-compile
+  (require 'find-func)
+  (defconst company-box-icons-dir
     (->> (find-library-name "company-box")
          (file-name-directory)
          (expand-file-name "images")
-         (file-name-as-directory))))
-
-(defun company-box-icons-image (file)
-  `(image :type png
-          :file ,(concat company-box-icons-dir file)
-          :ascent center))
+         (file-name-as-directory)))
+  (defun company-box-icons-image (file)
+    `(image :type png
+            :file ,(concat company-box-icons-dir file)
+            :ascent center)))
 
 (defvar company-box-icons-unknown
-  (company-box-icons-image "Namespace.png")
+  (eval-when-compile
+    (company-box-icons-image "Namespace.png"))
   "Icon used on an unknown item.
 See `company-box-icons-functions' for the ICON format.")
 
 (defvar company-box-icons-elisp
-  `(,(company-box-icons-image "Method.png")
-    ,(company-box-icons-image "Field.png")
-    ,(company-box-icons-image "Class.png")
-    ,(company-box-icons-image "ColorPalette.png"))
+  (eval-when-compile
+    `(,(company-box-icons-image "Method.png")
+      ,(company-box-icons-image "Field.png")
+      ,(company-box-icons-image "Class.png")
+      ,(company-box-icons-image "ColorPalette.png")))
   "List of icons to use with Emacs Lisp candidates.
 The list has the form:
 (FUNCTION VALUE FEATURE FACE).
 See `company-box-icons-functions' for each ICON format.")
 
 (defvar company-box-icons-yasnippet
-  (company-box-icons-image "Template.png")
+  (eval-when-compile
+    (company-box-icons-image "Template.png"))
   "Icon to use with yasnippet candidates.
 See `company-box-icons-functions' for the ICON format.")
 
 (defvar company-box-icons-lsp
-  `((1 . ,(company-box-icons-image "String.png")) ;; Text
-    (2 . ,(company-box-icons-image "Method.png")) ;; Method
-    (3 . ,(company-box-icons-image "Method.png")) ;; Function
-    (4 . ,(company-box-icons-image "Method.png")) ;; Constructor
-    (5 . ,(company-box-icons-image "Field.png")) ;; Field
-    (6 . ,(company-box-icons-image "Field.png")) ;; Variable
-    (7 . ,(company-box-icons-image "Class.png")) ;; Class
-    (8 . ,(company-box-icons-image "Interface.png")) ;; Interface
-    (9 . ,(company-box-icons-image "Namespace.png")) ;; Module
-    (10 . ,(company-box-icons-image "Property.png")) ;; Property
-    (11 . ,(company-box-icons-image "Misc.png")) ;; Unit
-    (12 . ,(company-box-icons-image "EnumItem.png")) ;; Value
-    (13 . ,(company-box-icons-image "Enumerator.png")) ;; Enum
-    (14 . ,(company-box-icons-image "Keyword.png")) ;; Keyword
-    (15 . ,(company-box-icons-image "String.png")) ;; Snippet
-    (16 . ,(company-box-icons-image "ColorPalette.png")) ;; Color
-    (17 . ,(company-box-icons-image "Document.png")) ;; File
-    (18 . ,(company-box-icons-image "Misc.png")) ;; Reference
-    (19 . ,(company-box-icons-image "Folder.png")) ;; Folder
-    (20 . ,(company-box-icons-image "EnumItem.png")) ;; EnumMember
-    (21 . ,(company-box-icons-image "Constant.png")) ;; Constant
-    (22 . ,(company-box-icons-image "Class.png")) ;; Struct
-    (23 . ,(company-box-icons-image "Event.png")) ;; Event
-    (24 . ,(company-box-icons-image "Misc.png")) ;; Operator
-    (25 . ,(company-box-icons-image "Class.png"))) ;; TypeParameter
+  (eval-when-compile
+    `((1 . ,(company-box-icons-image "String.png")) ;; Text
+      (2 . ,(company-box-icons-image "Method.png")) ;; Method
+      (3 . ,(company-box-icons-image "Method.png")) ;; Function
+      (4 . ,(company-box-icons-image "Method.png")) ;; Constructor
+      (5 . ,(company-box-icons-image "Field.png")) ;; Field
+      (6 . ,(company-box-icons-image "Field.png")) ;; Variable
+      (7 . ,(company-box-icons-image "Class.png")) ;; Class
+      (8 . ,(company-box-icons-image "Interface.png")) ;; Interface
+      (9 . ,(company-box-icons-image "Namespace.png")) ;; Module
+      (10 . ,(company-box-icons-image "Property.png")) ;; Property
+      (11 . ,(company-box-icons-image "Misc.png")) ;; Unit
+      (12 . ,(company-box-icons-image "EnumItem.png")) ;; Value
+      (13 . ,(company-box-icons-image "Enumerator.png")) ;; Enum
+      (14 . ,(company-box-icons-image "Keyword.png")) ;; Keyword
+      (15 . ,(company-box-icons-image "String.png")) ;; Snippet
+      (16 . ,(company-box-icons-image "ColorPalette.png")) ;; Color
+      (17 . ,(company-box-icons-image "Document.png")) ;; File
+      (18 . ,(company-box-icons-image "Misc.png")) ;; Reference
+      (19 . ,(company-box-icons-image "Folder.png")) ;; Folder
+      (20 . ,(company-box-icons-image "EnumItem.png")) ;; EnumMember
+      (21 . ,(company-box-icons-image "Constant.png")) ;; Constant
+      (22 . ,(company-box-icons-image "Class.png")) ;; Struct
+      (23 . ,(company-box-icons-image "Event.png")) ;; Event
+      (24 . ,(company-box-icons-image "Misc.png")) ;; Operator
+      (25 . ,(company-box-icons-image "Class.png")))) ;; TypeParameter
   "List of Icons to use with LSP candidates.
 
 Each element have the form:
