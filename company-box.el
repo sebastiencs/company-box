@@ -319,30 +319,40 @@ It doesn't nothing if a font icon is used."
       (add-hook 'window-configuration-change-hook 'company-box~prevent-changes t t)
       (company-box~update-line selection))))
 
-(defvar company-box~bottom nil)
+(defvar-local company-box~bottom nil)
 
 (defun company-box~point-bottom nil
-  (setq
-   company-box~bottom
-   (let* ((win (let ((tmp nil))
-                 (while (window-in-direction 'below tmp)
-                   (setq tmp (window-in-direction 'below tmp)))
-                 tmp)))
-     (+ (or (nth 2 (or (window-line-height 'mode-line win)
-                       (and (redisplay t) (window-line-height 'mode-line win))))
-            0)
-        (or (and win (nth 1 (window-edges win t nil t))) 0)))))
+  (or company-box~bottom
+      (setq company-box~bottom
+            (let* ((win (let ((tmp nil))
+                          (while (window-in-direction 'below tmp)
+                            (setq tmp (window-in-direction 'below tmp)))
+                          tmp)))
+              (+ (or (nth 2 (or (window-line-height 'mode-line win)
+                                (and (redisplay t) (window-line-height 'mode-line win))))
+                     0)
+                 (or (and win (nth 1 (window-edges win t nil t))) 0))))))
+
+(defvar-local company-box~prefix-pos nil)
+(defvar-local company-box~edges nil)
+
+(defun company-box~prefix-pos nil
+  (or company-box~prefix-pos
+      (setq company-box~prefix-pos
+            (nth 2 (posn-at-point (- (point) (length company-prefix)))))))
+
+(defun company-box~edges nil
+  (or company-box~edges
+      (setq company-box~edges (window-edges nil t nil t))))
 
 (defun company-box~set-frame-position (frame)
-  (-let* (((left top _right _bottom) (window-edges nil t nil t))
-          (window (frame-parameter nil 'company-box-window))
-          ((_width . height) (window-text-pixel-size window nil nil 10000 10000))
-          (frame-resize-pixelwise t)
-          (point (- (point) (length company-prefix)))
-          (mode-line-y (company-box~point-bottom))
-          ((p-x . p-y) (nth 2 (posn-at-point point)))
+  (-let* (((left top _right _bottom) (company-box~edges))
           (char-height (frame-char-height frame))
           (char-width (frame-char-width frame))
+          (height (* (min company-candidates-length company-box-limit) char-height))
+          (frame-resize-pixelwise t)
+          (mode-line-y (company-box~point-bottom))
+          ((p-x . p-y) (company-box~prefix-pos))
           (p-y-abs (+ top p-y))
           (y (or (and (> p-y-abs (/ mode-line-y 2))
                       (<= (- mode-line-y p-y) (+ char-height height))
@@ -360,9 +370,9 @@ It doesn't nothing if a font icon is used."
     ;; Debug
     ;; (message "X+LEFT: %s P-X: %s X: %s LEFT: %s space: %s with-icon: %s LESS: %s"
     ;;          (+ x left) p-x x left company-box~space company-box~with-icons-p (+ (* char-width 3) (/ char-width 2)))
-    (setq company-box~x (+ x left))
-    (setq company-box~start (window-start))
-    (setq company-box~height height)
+    (setq company-box~x (+ x left)
+          company-box~start (or company-box~start (window-start))
+          company-box~height height)
     (set-frame-size frame (company-box~update-width t (/ height char-height))
                     height t)
     (set-frame-position frame (max (+ x left) 0) (+ y top))
@@ -457,7 +467,8 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box~make-candidate (candidate)
   (let* ((annotation (-some->> (company-call-backend 'annotation candidate)
-                               (replace-regexp-in-string "[ \t\n\r]+" " ")))
+                               (replace-regexp-in-string "[ \t\n\r]+" " ")
+                               (string-trim)))
          (len-candidate (string-width candidate))
          (len-annotation (if annotation (string-width annotation) 0))
          (len-total (+ len-candidate len-annotation))
@@ -481,6 +492,10 @@ It doesn't nothing if a font icon is used."
 (defvar company-box-hide-hook nil)
 
 (defun company-box-hide nil
+  (setq company-box~bottom nil
+        company-box~start nil
+        company-box~prefix-pos nil
+        company-box~edges nil)
   (-some-> (company-box~get-frame)
            (make-frame-invisible))
   (run-hook-with-args 'company-box-hide-hook (or (frame-parent) (selected-frame))))
@@ -498,7 +513,6 @@ It doesn't nothing if a font icon is used."
     (* (+ max (if company-box~with-icons-p 6 2))
        char-width)))
 
-;; TODO Use window-lines-pixel-dimensions ?
 (defun company-box~update-width (&optional no-update height)
   (unless no-update
     (redisplay))
@@ -512,19 +526,14 @@ It doesn't nothing if a font icon is used."
                                    (forward-line height)
                                    (point))))
                    (window-end window)))
-          (max-width (- (frame-pixel-width) company-box~x) char-width)
-          (width (+ (if company-box-align-annotations
-                        ;; With align-annotations, `window-text-pixel-size' doesn't return
-                        ;; good values because of the display properties in the buffer
-                        ;; More specifically, because of the spaces specifications
-                        (company-box~calc-len (window-buffer window) start end char-width)
-                      (car (window-text-pixel-size window start end 10000 10000)))
+          (max-width (- (frame-pixel-width) company-box~x char-width))
+          (width (+ (company-box~calc-len (window-buffer window) start end char-width)
                     (if (company-box~scrollbar-p frame) (* 2 char-width) 0)
                     char-width))
           (width (max (min width max-width)
                       (* company-box-minimum-width char-width))))
     (or (and no-update width)
-        (set-frame-width (company-box~get-frame) width nil t))))
+        (set-frame-width frame width nil t))))
 
 (defun company-box~percent (a b)
   (/ (float a) b))
@@ -632,6 +641,9 @@ COMMAND: See `company-frontends'."
     (company-box~post-command))))
 
 (defun company-box~on-start-change nil
+  (setq company-box~prefix-pos nil
+        company-box~start nil
+        company-box~edges nil)
   (company-box~set-frame-position (company-box~get-frame))
   (company-box~update-scrollbar (company-box~get-frame) t))
 
