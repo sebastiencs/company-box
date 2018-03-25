@@ -104,12 +104,12 @@ See `company-box-icons-functions' for the ICON format.
 [1] https://github.com/Microsoft/language-server-protocol/blob/gh-pages/\
 specification.md#completion-request-leftwards_arrow_with_hook.")
 
-(defun company-box-icons~lsp (candidate)
+(defun company-box-icons--lsp (candidate)
   (-when-let* ((lsp-item (get-text-property 0 'lsp-completion-item candidate))
                (kind (gethash "kind" lsp-item)))
     (alist-get kind company-box-icons-lsp)))
 
-(defun company-box-icons~elisp (candidate)
+(defun company-box-icons--elisp (candidate)
   (when (derived-mode-p 'emacs-lisp-mode)
     (let* ((sym (intern candidate))
            (item (cond ((fboundp sym) 0)
@@ -119,7 +119,7 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
       (when item
         (nth item company-box-icons-elisp)))))
 
-(defun company-box-icons~yasnippet (candidate)
+(defun company-box-icons--yasnippet (candidate)
   (when (get-text-property 0 'yas-annotation candidate)
     company-box-icons-yasnippet))
 
