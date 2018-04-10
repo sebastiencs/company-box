@@ -1,11 +1,11 @@
 ;;; company-box.el --- Company front-end with icons  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2017 Sebastien Chapuis
+;; Copyright (C) 2018 Sebastien Chapuis
 
 ;; Author: Sebastien Chapuis <sebastien@chapu.is>
 ;; URL: https://github.com/sebastiencs/company-box
 ;; Keywords: company, completion, front-end, convenience
-;; Package-Requires: ((emacs "26.1") (dash "2.13") (dash-functional "1.2.0") (company "0.9.6"))
+;; Package-Requires: ((emacs "26.0") (dash "2.13") (dash-functional "1.2.0") (company "0.9.6"))
 ;; Version: 0.0.1
 
 ;;; License
@@ -34,14 +34,12 @@
 ;;
 ;; - Differents colors for differents backends.
 ;; - Icons associated to functions/variables/.. and their backends
+;; - Display candidate's documentation (support quickhelp-string)
 ;; - Not limited by the current window size, buffer's text properties, ..
 ;;   (it's better than you might think)
 ;;
-;; This package requires emacs 26.
-;; Also, not compatible with emacs in a tty.
-;;
-;; If you want icons, please install icons-in-terminal:
-;; https://github.com/sebastiencs/icons-in-terminal
+;; This package requires Emacs 26.
+;; Also, not compatible with Emacs in a tty.
 ;;
 ;;
 ;; Installation:
