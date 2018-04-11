@@ -224,9 +224,9 @@ Examples:
 (defvar company-box-selection-hook nil
   "Hook run when the selection changed.")
 
-(defmacro company-box--get-frame nil
+(defun company-box--get-frame ()
   "Return the child frame."
-  `(frame-parameter nil 'company-box-frame))
+  (frame-parameter nil 'company-box-frame))
 
 (defmacro company-box--set-frame (frame)
   "Set the frame parameter ‘company-box-frame’ to FRAME."
