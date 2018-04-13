@@ -43,6 +43,7 @@
 
 (defvar company-box-frame-parameters)
 (defvar company-box--bottom)
+(defvar company-box-doc-delay 0.5)
 
 (defvar-local company-box-doc--timer nil)
 
@@ -106,7 +107,7 @@
     (cancel-timer company-box-doc--timer))
   (setq company-box-doc--timer
         (run-with-idle-timer
-         0.5 nil
+         company-box-doc-delay nil
          (lambda nil (company-box-doc--show selection frame)))))
 
 (defun company-box-doc--hide (frame)
