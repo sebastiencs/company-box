@@ -31,6 +31,14 @@
 (require 'dash)
 (require 'company)
 
+(defgroup company-box-doc nil
+  "Display documentation popups alongside company-box"
+  :group 'company)
+
+(defcustom company-box-doc-delay 0.5
+  "The number of seconds to wait before displaying the popup."
+  :group 'company-box-doc)
+
 (defvar company-box-doc-frame-parameters
   '((internal-border-width . 10))
   "Frame parameters to use on the doc frame.
@@ -43,7 +51,6 @@
 
 (defvar company-box-frame-parameters)
 (defvar company-box--bottom)
-(defvar company-box-doc-delay 0.5)
 
 (defvar-local company-box-doc--timer nil)
 
