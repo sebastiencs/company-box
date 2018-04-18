@@ -440,9 +440,8 @@ It doesn't nothing if a font icon is used."
           (icon-string (and company-box--with-icons-p (company-box--add-icon candidate)))
           (candidate-string (propertize candidate 'face 'company-box-candidate))
           (align-string (when annotation
-                          (if company-box-align-annotations
-                              (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))
-                            " ")))
+                          (concat " " (and company-box-align-annotations
+                                           (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))))))
           (space company-box--space)
           (icon-p company-box-enable-icon)
           (annotation-string (and annotation (propertize annotation 'face 'company-box-annotation)))
