@@ -309,6 +309,7 @@ It doesn't nothing if a font icon is used."
       (erase-buffer)
       (insert string "\n")
       (setq mode-line-format nil
+            display-line-numbers nil
             truncate-lines t)
       (setq-local scroll-step 1)
       (setq-local scroll-conservatively 10000)
