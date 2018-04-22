@@ -1,5 +1,6 @@
 
 # company-box
+[![MELPA](http://melpa.org/packages/company-box-badge.svg)](http://melpa.org/#/company-box)
 
 A company front-end with icons.  
 
