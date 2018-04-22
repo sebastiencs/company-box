@@ -375,6 +375,8 @@ It doesn't nothing if a font icon is used."
     (set-frame-size frame (company-box--update-width t (/ height char-height))
                     height t)
     (set-frame-position frame (max (+ x left) 0) (+ y top))
+    (set-frame-parameter frame 'company-box-window-origin (selected-window))
+    (set-frame-parameter frame 'company-box-buffer-origin (current-buffer))
     (with-selected-frame frame (set-fringe-style 0))))
 
 (defun company-box--display (string)
@@ -610,7 +612,7 @@ It doesn't nothing if a font icon is used."
   (company-box--update-width))
 
 (defun company-box--start-changed-p nil
-  (not (= company-box--start (window-start))))
+  (not (equal company-box--start (window-start))))
 
 (defun company-box--post-command nil
   (cond ((company-box--start-changed-p)
@@ -618,6 +620,19 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--prevent-changes (&rest _)
   (set-window-margins nil 0 0))
+
+(defun company-box--handle-window-changes (&optional on-idle)
+  (-when-let* ((frame (company-box--get-frame)))
+    (and (frame-live-p frame)
+         (frame-visible-p frame)
+         (or (not (eq (selected-window) (frame-parameter frame 'company-box-window-origin)))
+             (not (eq (current-buffer) (frame-parameter frame 'company-box-buffer-origin))))
+         (if on-idle (company-box-hide)
+           ;; Handle when this function (in `buffer-list-update-hook') has been
+           ;; triggered by a function that select only temporary another window/buffer.
+           ;; So we are sure to not be in a false positive case.
+           ;; See the docstring of `select-window'
+           (run-with-idle-timer 0 nil (lambda nil (company-box--handle-window-changes t)))))))
 
 (defun company-box-frontend (command)
   "`company-mode' frontend using child-frame.
@@ -673,6 +688,7 @@ COMMAND: See `company-frontends'."
    ((bound-and-true-p company-box-mode)
     (remove-hook 'after-make-frame-functions 'company-box--set-mode t)
     (add-hook 'delete-frame-functions 'company-box--kill-buffer)
+    (add-hook 'buffer-list-update-hook 'company-box--handle-window-changes t)
     (make-local-variable 'company-frontends)
     (setq company-frontends (delq 'company-pseudo-tooltip-unless-just-one-frontend company-frontends))
     (add-to-list 'company-frontends 'company-box-frontend))
