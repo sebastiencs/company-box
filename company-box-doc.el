@@ -65,7 +65,7 @@
           (window (frame-root-window frame))
           (frame-resize-pixelwise t)
           ((width . height) (window-text-pixel-size window nil nil 10000 10000))
-          (bottom company-box--bottom)
+          (bottom (+ company-box--bottom (window-pixel-top) (frame-border-width)))
           (x (+ (car box-position) box-width (/ (frame-char-width) 2)))
           (y (cdr box-position))
           (y (if (> (+ y height 20) bottom)
