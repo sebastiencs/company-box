@@ -32,7 +32,7 @@
 ;;
 ;; Differences with the built-in front-end:
 ;;
-;; - Differents colors for differents backends.
+;; - Different colors for differents backends.
 ;; - Icons associated to functions/variables/.. and their backends
 ;; - Display candidate's documentation (support quickhelp-string)
 ;; - Not limited by the current window size, buffer's text properties, ..
@@ -230,9 +230,9 @@ Examples:
   "Return the child frame."
   (frame-parameter nil 'company-box-frame))
 
-(defmacro company-box--set-frame (frame)
+(defsubst company-box--set-frame (frame)
   "Set the frame parameter ‘company-box-frame’ to FRAME."
-  `(set-frame-parameter nil 'company-box-frame ,frame))
+  (set-frame-parameter nil 'company-box-frame frame))
 
 (defun company-box--get-buffer (&optional suffix)
   "Construct the buffer name, it should be unique for each frame."
