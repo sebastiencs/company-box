@@ -118,8 +118,10 @@ Note that icons from images cannot be colored."
   :type 'boolean
   :group 'company-box)
 
-(defcustom company-box-limit company-tooltip-limit
-  "Maximum number of candidates in the frame."
+(defcustom company-box-max-candidates 100
+  "Maximum number of candidates.
+A big number might slowndown the rendering.
+To change the number of _visible_ chandidates, see `company-tooltip-limit'"
   :type 'integer
   :group 'company-box)
 
@@ -348,7 +350,7 @@ It doesn't nothing if a font icon is used."
   (-let* (((left top _right _bottom) (company-box--edges))
           (char-height (frame-char-height frame))
           (char-width (frame-char-width frame))
-          (height (* (min company-candidates-length company-box-limit) char-height))
+          (height (* (min company-candidates-length company-tooltip-limit) char-height))
           (frame-resize-pixelwise t)
           (mode-line-y (company-box--point-bottom))
           ((p-x . p-y) (company-box--prefix-pos))
@@ -484,7 +486,7 @@ It doesn't nothing if a font icon is used."
 (defun company-box-show nil
   (setq company-box--max 0
         company-box--with-icons-p (company-box--with-icons-p))
-  (--> (-take company-box-limit company-candidates)
+  (--> (-take company-box-max-candidates company-candidates)
        (mapcar (-compose 'company-box--make-line 'company-box--make-candidate) it)
        (mapconcat 'identity it "\n")
        (company-box--display it)))
@@ -541,7 +543,7 @@ It doesn't nothing if a font icon is used."
 (defun company-box--scrollbar-p (frame)
   (/= 1 (company-box--percent
          company-box--height
-         (* (min company-candidates-length company-box-limit)
+         (* (min company-candidates-length company-box-max-candidates)
             (frame-char-height frame)))))
 
 (defun company-box--update-scrollbar-buffer (height-blank height-scrollbar percent buffer)
@@ -565,7 +567,7 @@ It doesn't nothing if a font icon is used."
   (let* ((selection company-selection)
          (buffer (company-box--get-buffer "-scrollbar"))
          (h-frame company-box--height)
-         (n-elements (min company-candidates-length company-box-limit))
+         (n-elements (min company-candidates-length company-box-max-candidates))
          (percent (company-box--percent selection (1- n-elements)))
          (percent-display (company-box--percent h-frame (* n-elements (frame-char-height frame))))
          (scrollbar-pixels (* h-frame percent-display))
@@ -600,7 +602,7 @@ It doesn't nothing if a font icon is used."
 (defun company-box--next-line nil
   (interactive)
   (when (< (1+ company-selection) (min company-candidates-length
-                                       company-box-limit))
+                                       company-box-max-candidates))
     (setq company-selection (1+ company-selection))
     (company-box--change-line)
     (company-box--update-width)))
