@@ -695,6 +695,7 @@ COMMAND: See `company-frontends'."
     (setq company-frontends (delq 'company-pseudo-tooltip-unless-just-one-frontend company-frontends))
     (add-to-list 'company-frontends 'company-box-frontend)
     (unless (assq 'company-box-frame frameset-filter-alist)
+      (push '(company-box-doc-frame . :never) frameset-filter-alist)
       (push '(company-box-frame . :never) frameset-filter-alist)))
    ((memq 'company-box-frontend company-frontends)
     (setq company-frontends (delq 'company-box-frontend  company-frontends))
