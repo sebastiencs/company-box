@@ -91,7 +91,8 @@
         (insert string)
         (setq mode-line-format nil
               display-line-numbers nil
-              header-line-format nil)
+              header-line-format nil
+              cursor-in-non-selected-windows nil)
         (current-buffer)))))
 
 (defun company-box-doc--make-frame (buffer)
