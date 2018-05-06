@@ -711,7 +711,7 @@ COMMAND: See `company-frontends'."
   :lighter " company-box"
   ;; With emacs daemon and:
   ;; `(add-hook 'company-mode-hook 'company-box-mode)'
-  ;; `company-box-mode' is called to early to know if we are in a GUI
+  ;; `company-box-mode' is called too early to know if we are in a GUI
   (if (and (daemonp)
            (not (frame-parameter nil 'client))
            company-box-mode)
