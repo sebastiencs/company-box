@@ -312,7 +312,8 @@ It doesn't nothing if a font icon is used."
       (insert string "\n")
       (setq mode-line-format nil
             display-line-numbers nil
-            truncate-lines t)
+            truncate-lines t
+            cursor-in-non-selected-windows nil)
       (setq-local scroll-step 1)
       (setq-local scroll-conservatively 10000)
       (setq-local scroll-margin  0)
