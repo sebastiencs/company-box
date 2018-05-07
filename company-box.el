@@ -102,11 +102,6 @@ Only the 'background' color is used in this face."
 Only the 'background' color is used in this face."
   :group 'company-box)
 
-(defcustom company-box-align-annotations company-tooltip-align-annotations
-  "When non-nil, align annotations to the right border."
-  :type 'boolean
-  :group 'company-box)
-
 (defcustom company-box-color-icon t
   "Whether or not to color icons.
 Note that icons from images cannot be colored."
@@ -122,11 +117,6 @@ Note that icons from images cannot be colored."
   "Maximum number of candidates.
 A big number might slowndown the rendering.
 To change the number of _visible_ chandidates, see `company-tooltip-limit'"
-  :type 'integer
-  :group 'company-box)
-
-(defcustom company-box-minimum-width 40
-  "Minimum width of the completion frame, in numbers of characters."
   :type 'integer
   :group 'company-box)
 
@@ -446,7 +436,7 @@ It doesn't nothing if a font icon is used."
           (icon-string (and company-box--with-icons-p (company-box--add-icon candidate)))
           (candidate-string (propertize candidate 'face 'company-box-candidate))
           (align-string (when annotation
-                          (concat " " (and company-box-align-annotations
+                          (concat " " (and company-tooltip-align-annotations
                                            (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))))))
           (space company-box--space)
           (icon-p company-box-enable-icon)
@@ -534,7 +524,7 @@ It doesn't nothing if a font icon is used."
                     (if (company-box--scrollbar-p frame) (* 2 char-width) 0)
                     char-width))
           (width (max (min width max-width)
-                      (* company-box-minimum-width char-width))))
+                      (* company-tooltip-minimum-width char-width))))
     (or (and no-update width)
         (set-frame-width frame width nil t))))
 
