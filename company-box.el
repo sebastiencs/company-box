@@ -541,7 +541,8 @@ It doesn't nothing if a font icon is used."
   (with-current-buffer buffer
     (erase-buffer)
     (setq header-line-format nil
-          mode-line-format nil)
+          mode-line-format nil
+          cursor-in-non-selected-windows nil)
     (unless (zerop height-blank)
       (insert (propertize " " 'display `(space :align-to right-fringe :height ,height-blank))
               (propertize "\n" 'face '(:height 1))))
