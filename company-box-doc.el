@@ -125,7 +125,9 @@
   (setq company-box-doc--timer
         (run-with-idle-timer
          company-box-doc-delay nil
-         (lambda nil (company-box-doc--show selection frame)))))
+         (lambda nil 
+            (company-box-doc--show selection frame)
+            (company-ensure-emulation-alist)))))
 
 (defun company-box-doc--hide (frame)
   (-some-> (frame-parameter frame 'company-box-doc-frame)
