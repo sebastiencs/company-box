@@ -35,6 +35,12 @@
   "Display documentation popups alongside company-box"
   :group 'company)
 
+(defcustom company-box-doc-enable t
+  "Enable company-box-doc by default."
+  :type 'boolean
+  :safe #'booleanp
+  :group 'company-box-doc)
+
 (defcustom company-box-doc-delay 0.5
   "The number of seconds to wait before displaying the popup."
   :group 'company-box-doc)
@@ -118,14 +124,17 @@
       (make-frame-visible (frame-parameter nil 'company-box-doc-frame)))))
 
 (defun company-box-doc (selection frame)
-  (-some-> (frame-parameter frame 'company-box-doc-frame)
-           (make-frame-invisible))
-  (when (timerp company-box-doc--timer)
-    (cancel-timer company-box-doc--timer))
-  (setq company-box-doc--timer
-        (run-with-idle-timer
-         company-box-doc-delay nil
-         (lambda nil (company-box-doc--show selection frame)))))
+  (when company-box-doc-enable
+    (-some-> (frame-parameter frame 'company-box-doc-frame)
+             (make-frame-invisible))
+    (when (timerp company-box-doc--timer)
+      (cancel-timer company-box-doc--timer))
+    (setq company-box-doc--timer
+          (run-with-idle-timer
+           company-box-doc-delay nil
+           (lambda nil
+             (company-box-doc--show selection frame)
+             (company-ensure-emulation-alist))))))
 
 (defun company-box-doc--hide (frame)
   (-some-> (frame-parameter frame 'company-box-doc-frame)
