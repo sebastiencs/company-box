@@ -140,7 +140,11 @@
   (-some-> (frame-parameter frame 'company-box-doc-frame)
            (make-frame-invisible)))
 
-;; (def)
+(defun company-box-doc-manually ()
+  (interactive)
+  (company-box-doc--show company-selection (or (frame-parent) (selected-frame))))
+
+(define-key company-active-map [remap company-show-doc-buffer] 'company-box-doc-manually)
 
 (provide 'company-box-doc)
 ;;; company-box-doc.el ends here
