@@ -46,3 +46,13 @@ Notes:
 By default, images are used to display icons.  
 You can also use [font icons](https://github.com/sebastiencs/company-box/wiki/icons)  
 With images, you can't change icons colors
+
+#### Icon backendcs not activated per default
+
+##### ac-php
+
+If you use the `ac-php` company backend, you can activate company-box support by adding
+
+    (add-to-list 'company-box-icons-functions 'company-box-icons--acphp)
+
+to your emacs setup.
