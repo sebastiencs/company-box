@@ -98,7 +98,7 @@ Each element have the form:
 (KIND . ICON)
 
 Where KIND correspond to a number, the CompletionItemKind from the LSP [1]
-
+a
 See `company-box-icons-functions' for the ICON format.
 
 [1] https://github.com/Microsoft/language-server-protocol/blob/gh-pages/\
@@ -106,12 +106,18 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
 
 (defvar company-box-icons-acphp
   (eval-when-compile
-    `(,(company-box-icons-image "Method.png")
-      ,(company-box-icons-image "Method.png")
-      ,(company-box-icons-image "Field.png")
+    `(,(company-box-icons-image "Interface.png")
       ,(company-box-icons-image "Class.png")
-      ,(company-box-icons-image "Property.png")))
-  "List of icons to use with AC-PHP candidates.
+      ,(company-box-icons-image "Method.png")
+      ,(company-box-icons-image "Method.png")
+      ,(company-box-icons-image "Property.png")
+      ,(company-box-icons-image "Constant.png")
+      ,(company-box-icons-image "Field.png")
+      ,(company-box-icons-image "Interface.png")
+      ,(company-box-icons-image "Namespace.png")
+      ,(company-box-icons-image "Template.png")
+      ,(company-box-icons-image "Misc.png")))
+  "List of icons to use with PHP candidates.
 The list has the form:
 (FUNCTION VALUE FEATURE FACE).
 See `company-box-icons-functions' for each ICON format.")
@@ -138,12 +144,17 @@ See `company-box-icons-functions' for each ICON format.")
 (defun company-box-icons--acphp (candidate)
   (when (derived-mode-p 'php-mode)
     (let* ((type-tag (get-text-property 0 'ac-php-tag-type candidate))
-           (item (cond ((equal "m" type-tag) 1)
-                       ((equal "f" type-tag) 0)
-                       ((equal "d" type-tag) 2)
+           (item (cond ((equal "t" type-tag) 0)
+                       ((equal "c" type-tag) 1)
+                       ((equal "m" type-tag) 2)
+                       ((equal "f" type-tag) 3)
                        ((equal "p" type-tag) 4)
-                       (t 3))))
+                       ((equal "d" type-tag) 5)
+                       ((equal "v" type-tag) 6)
+                       ((equal "i" type-tag) 7)
+                       ((equal "n" type-tag) 8)
+                       ((equal "T" type-tag) 9)
+                       (t 10))))
       (nth item company-box-icons-php))))
-
 (provide 'company-box-icons)
 ;;; company-box-icons.el ends here
