@@ -121,7 +121,7 @@ To change the number of _visible_ chandidates, see `company-tooltip-limit'"
   :group 'company-box)
 
 (defcustom company-box-icons-functions
-  '(company-box-icons--yasnippet company-box-icons--lsp company-box-icons--elisp)
+  '(company-box-icons--yasnippet company-box-icons--lsp company-box-icons--elisp company-box-icons--acphp)
   "Functions to call on each candidate that should return an icon.
 The functions takes 1 parameter, the completion candidate.
 
