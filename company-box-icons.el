@@ -106,20 +106,22 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
 
 (defvar company-box-icons-acphp
   (eval-when-compile
-    `(,(company-box-icons-image "Interface.png")
-      ,(company-box-icons-image "Class.png")
-      ,(company-box-icons-image "Method.png")
-      ,(company-box-icons-image "Method.png")
-      ,(company-box-icons-image "Property.png")
-      ,(company-box-icons-image "Constant.png")
-      ,(company-box-icons-image "Field.png")
-      ,(company-box-icons-image "Interface.png")
-      ,(company-box-icons-image "Namespace.png")
-      ,(company-box-icons-image "Template.png")
-      ,(company-box-icons-image "Misc.png")))
+    `(,(company-box-icons-image "Interface.png") ;; Trait
+      ,(company-box-icons-image "Class.png")     ;; Class
+      ,(company-box-icons-image "Method.png")    ;; Method
+      ,(company-box-icons-image "Method.png")    ;; Function
+      ,(company-box-icons-image "Property.png")  ;; Property
+      ,(company-box-icons-image "Constant.png")  ;; Constant
+      ,(company-box-icons-image "Field.png")     ;; Member/Variable
+      ,(company-box-icons-image "Interface.png") ;; Interface
+      ,(company-box-icons-image "Namespace.png") ;; Namespace
+      ,(company-box-icons-image "Template.png")  ;; Usetrait
+      ,(company-box-icons-image "Misc.png")))    ;; Fallback
   "List of icons to use with PHP candidates.
-The list has the form:
-(FUNCTION VALUE FEATURE FACE).
+
+  The meaning corresponds to the position in this list:
+  (TRAIT CLASS METHOD FUNCTION PROPERTY CONSTANT VARIABLE INTERFACE NAMESPACE USETRAIT FALLBACK)
+  
 See `company-box-icons-functions' for each ICON format.")
 
 (defun company-box-icons--lsp (candidate)
