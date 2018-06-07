@@ -157,6 +157,7 @@ See `company-box-icons-functions' for each ICON format.")
                        ((equal "n" type-tag) 8)
                        ((equal "T" type-tag) 9)
                        (t 10))))
-      (nth item company-box-icons-php))))
+      (nth item company-box-icons-acphp))))
+
 (provide 'company-box-icons)
 ;;; company-box-icons.el ends here
