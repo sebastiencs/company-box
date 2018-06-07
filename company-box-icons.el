@@ -98,7 +98,7 @@ Each element have the form:
 (KIND . ICON)
 
 Where KIND correspond to a number, the CompletionItemKind from the LSP [1]
-a
+
 See `company-box-icons-functions' for the ICON format.
 
 [1] https://github.com/Microsoft/language-server-protocol/blob/gh-pages/\
