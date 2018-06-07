@@ -40,7 +40,7 @@ See the variable `company-box-icons-functions`
 
 For now, there are customs icons for 4 backends only: `company-lsp`, `company-elisp`, `company-yasnippet` and `company-php`.  
 You can customize their icons with the variables:  
-`company-next-icons-lsp`, `company-next-icons-elisp`, `company-next-icons-yasnippet` and `company-next-icons-acphp`.
+`company-box-icons-lsp`, `company-box-icons-elisp`, `company-box-icons-yasnippet` and `company-box-icons-acphp`.
 
 Notes:  
 By default, images are used to display icons.  
