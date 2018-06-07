@@ -38,21 +38,11 @@ See the docstring of the variable `company-box-backends-colors`:
 
 See the variable `company-box-icons-functions`  
 
-For now, there are customs icons for 3 backends only: `company-lsp`, `company-elisp` and `company-yasnippet`.  
+For now, there are customs icons for 4 backends only: `company-lsp`, `company-elisp`, `company-yasnippet` and `company-php`.  
 You can customize their icons with the variables:  
-`company-next-icons-lsp`, `company-next-icons-elisp` and `company-next-icons-yasnippet`
+`company-next-icons-lsp`, `company-next-icons-elisp`, `company-next-icons-yasnippet` and `company-next-icons-acphp`.
 
 Notes:  
 By default, images are used to display icons.  
 You can also use [font icons](https://github.com/sebastiencs/company-box/wiki/icons)  
 With images, you can't change icons colors
-
-#### Icon backendcs not activated per default
-
-##### ac-php
-
-If you use the `ac-php` company backend, you can activate company-box support by adding
-
-    (add-to-list 'company-box-icons-functions 'company-box-icons--acphp)
-
-to your emacs setup.
