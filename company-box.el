@@ -201,7 +201,8 @@ Examples:
     (drag-internal-border . t)
     (left-fringe . 0)
     (right-fringe . 0)
-    (no-special-glyphs . t))
+    (no-special-glyphs . t)
+    (desktop-dont-save . t))
   "Frame parameters used to create the frame.")
 
 (defvar-local company-box--ov nil)
