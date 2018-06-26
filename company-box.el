@@ -388,6 +388,7 @@ It doesn't nothing if a font icon is used."
     (while (and (null kind) list)
       (setq kind (funcall (car list) candidate))
       (pop list))
+    (message "kind %s" kind)
     (or kind 'Unknown)))
 
 (defun company-box--get-icon (candidate)
