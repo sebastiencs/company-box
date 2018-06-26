@@ -382,13 +382,16 @@ It doesn't nothing if a font icon is used."
     (make-frame-visible (company-box--get-frame)))
   (company-box--update-scrollbar (company-box--get-frame) t))
 
-(defun company-box--get-icon (candidate)
+(defun company-box--get-kind (candidate)
   (let ((list company-box-icons-functions)
-        icon)
-    (while (and (null icon) list)
-      (setq icon (funcall (car list) candidate))
+        kind)
+    (while (and (null kind) list)
+      (setq kind (funcall (car list) candidate))
       (pop list))
-    (setq icon (or icon company-box-icons-unknown))
+    (or kind 'Unknown)))
+
+(defun company-box--get-icon (candidate)
+  (let ((icon (alist-get (company-box--get-kind candidate) company-box-icons-alist)))
     (cond ((listp icon)
            (cond ((eq 'image (car icon))
                   (propertize " " 'display icon 'company-box-image t
