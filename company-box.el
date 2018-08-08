@@ -263,6 +263,7 @@ Examples:
       (set-frame-parameter nil 'company-box-window window))
     (set-window-dedicated-p window t)
     (redirect-frame-focus frame (frame-parent frame))
+    (set-frame-parameter frame 'name "")
     frame))
 
 (defun company-box--get-ov nil

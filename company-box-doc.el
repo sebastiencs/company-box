@@ -107,6 +107,7 @@
                   company-box-frame-parameters))
          (frame (company-box--make-frame buffer)))
     ;; (set-face-background 'internal-border "white" frame)
+    (set-frame-parameter frame 'name "")
     frame))
 
 (defun company-box-doc--show (selection frame)
