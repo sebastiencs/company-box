@@ -577,7 +577,7 @@ It doesn't nothing if a font icon is used."
        (with-selected-frame (company-box--get-frame)
          (display-buffer-in-side-window
           (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer)
-          '((side . right) (window-width . 2)))))
+          '((side . right) (window-width . 0.1)))))
       (set-frame-parameter frame 'company-box-scrollbar (window-buffer company-box--scrollbar-window))
       (window-preserve-size company-box--scrollbar-window t t)))))
 
