@@ -253,6 +253,7 @@ Examples:
          (window (display-buffer-in-child-frame buffer `((child-frame-parameters . ,params))))
          (frame (window-frame window)))
     (set-frame-parameter frame 'company-box-buffer buffer)
+    (set-frame-parameter frame 'desktop-dont-save t)
     (unless buf
       (set-frame-parameter nil 'company-box-window window))
     (set-window-dedicated-p window t)
