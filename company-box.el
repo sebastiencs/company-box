@@ -445,7 +445,8 @@ It doesn't nothing if a font icon is used."
           (color (company-box--get-color backend))
           ((c-color a-color i-color s-color) (company-box--resolve-colors color))
           (icon-string (and company-box--with-icons-p (company-box--add-icon candidate)))
-          (candidate-string (propertize candidate 'face 'company-box-candidate))
+          (candidate-string (concat (propertize company-common 'face 'company-tooltip-common)
+                                    (substring (propertize candidate 'face 'company-box-candidate) (length company-common) nil)))
           (align-string (when annotation
                           (concat " " (and company-tooltip-align-annotations
                                            (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))))))
