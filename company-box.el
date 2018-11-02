@@ -210,8 +210,10 @@ Examples:
   "Frame parameters used to create the frame.")
 
 (defvar-local company-box--ov nil)
+(defvar-local company-box--ov-common nil)
 (defvar-local company-box--max 0)
 (defvar-local company-box--with-icons-p nil)
+(defvar-local company-box--icon-offset 3)
 (defvar-local company-box--x nil)
 (defvar-local company-box--space nil)
 (defvar-local company-box--start nil)
@@ -270,6 +272,10 @@ Examples:
   (or company-box--ov
       (setq company-box--ov (make-overlay 1 1))))
 
+(defun company-box--get-ov-common nil
+  (or company-box--ov-common
+      (setq company-box--ov-common (make-overlay 1 1))))
+
 (defun company-box--extract-background (color)
   "COLOR can be a string, face or plist."
   `(:background
@@ -288,22 +294,27 @@ It doesn't nothing if a font icon is used."
                (new-image (append image (and color (company-box--extract-background color)))))
     (put-text-property point (1+ point) 'display new-image)))
 
-(defun company-box--update-line (selection)
+(defun company-box--update-line (selection common)
   (company-box--update-image)
   (goto-char 1)
   (forward-line selection)
   (move-overlay (company-box--get-ov)
                 (line-beginning-position)
                 (line-beginning-position 2))
+  (move-overlay (company-box--get-ov-common)
+                (+ company-box--icon-offset (line-beginning-position))
+                (+ 1 (length common) (+ company-box--icon-offset (line-beginning-position))))
   (let ((color (or (get-text-property (point) 'company-box--color)
                    'company-box-selection)))
     (overlay-put (company-box--get-ov) 'face color)
+    (overlay-put (company-box--get-ov-common) 'face 'company-tooltip-common-selection)
     (company-box--update-image color))
   (run-hook-with-args 'company-box-selection-hook selection
                       (or (frame-parent) (selected-frame))))
 
 (defun company-box--render-buffer (string)
-  (let ((selection company-selection))
+  (let ((selection company-selection)
+        (common company-common))
     (with-current-buffer (company-box--get-buffer)
       (erase-buffer)
       (insert string "\n")
@@ -316,7 +327,7 @@ It doesn't nothing if a font icon is used."
       (setq-local scroll-margin  0)
       (setq-local scroll-preserve-screen-position t)
       (add-hook 'window-configuration-change-hook 'company-box--prevent-changes t t)
-      (company-box--update-line selection))))
+      (company-box--update-line selection common))))
 
 (defvar-local company-box--bottom nil)
 
@@ -599,9 +610,10 @@ It doesn't nothing if a font icon is used."
 ;; ;; (message "HEIGHT-S-1: %s HEIGHT-B-1: %s sum: %s" scrollbar-pixels blank-pixels (+ height-scrollbar-1 height-blank-1))
 
 (defun company-box--change-line nil
-  (let ((selection company-selection))
+  (let ((selection company-selection)
+        (common company-common))
     (with-selected-window (get-buffer-window (company-box--get-buffer) t)
-      (company-box--update-line selection))
+      (company-box--update-line selection common))
     (company-box--update-scrollbar (company-box--get-frame))))
 
 (defun company-box--next-line nil
