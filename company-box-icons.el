@@ -42,6 +42,36 @@
             :file ,(concat company-box-icons-dir file)
             :ascent center)))
 
+(defvar company-box-icons-icons-in-terminal
+  '((Unknown fa_question_circle)
+    (Text . fa_text_height) ;; Text
+    (Method . (fa_tags :face font-lock-function-name-face)) ;; Method
+    (Function . (fa_tag :face font-lock-function-name-face)) ;; Function
+    (Constructor . (fa_tag :face font-lock-function-name-face)) ;; Constructor
+    (Field . (fa_cog :foreground "#FF9800")) ;; Field
+    (Variable . (fa_cog :foreground "#FF9800")) ;; Variable
+    (Class . (fa_cube :foreground "#7C4DFF")) ;; Class
+    (Interface . (fa_cube :foreground "#7C4DFF")) ;; Interface
+    (Module . (fa_cube :foreground "#7C4DFF")) ;; Module
+    (Property . (fa_cog :foreground "#FF9800")) ;; Property
+    (Unit . md_settings_system_daydream) ;; Unit
+    (Value . (fa_cog :foreground "#FF9800")) ;; Value
+    (Enum . (md_storage :face font-lock-type-face)) ;; Enum
+    (Keyword . (md_closed_caption :foreground "#009688")) ;; Keyword
+    (Snippet . md_closed_caption) ;; Snippet
+    (Color . (md_color_lens :face font-lock-doc-face)) ;; Color
+    (File . fa_file_text_o) ;; File
+    (Reference . md_refresh) ;; Reference
+    (Folder . fa_folder_open) ;; Folder
+    (EnumMember . (md_closed_caption :foreground "#009688")) ;; EnumMember
+    (Constant . (fa_square :face font-lock-constant-face)) ;; Constant
+    (Struct . (fa_cube :face font-lock-type-face)) ;; Struct
+    (Event . fa_calendar) ;; Event
+    (Operator . fa_square_o) ;; Operator
+    (TypeParameter . fa_arrows)
+    (Template . fa_bookmark)) ;; TypeParameter
+  )
+
 (defvar company-box-icons-images
   (eval-when-compile
     `((Unknown . ,(company-box-icons-image "Namespace.png"))
