@@ -29,6 +29,7 @@
 ;;; Code:
 
 (require 'dash)
+(require 'markdown-mode)
 (require 'company)
 
 (defgroup company-box-doc nil
@@ -65,6 +66,20 @@
     (-some-> (company-call-backend 'doc-buffer candidate)
              (get-buffer))))
 
+(defun company-box-doc--get-markdown (candidate)
+  (-when-let (string (company-call-backend 'markdown-doc candidate))
+    (when (> (length (string-trim string)) 0)
+      (with-temp-buffer
+        (insert string)
+        (delay-mode-hooks
+          (let ((inhibit-message t))
+            (markdown-view-mode))
+          (setq-local markdown-fontify-code-blocks-natively t)
+          (setq-local markdown-hide-markup-in-view-modes t)
+          (ignore-errors
+            (font-lock-ensure)))
+        (buffer-string)))))
+
 (defun company-box-doc--set-frame-position (frame)
   (-let* ((box-position (frame-position (company-box--get-frame)))
           (box-width (frame-pixel-width (company-box--get-frame)))
@@ -86,7 +101,7 @@
                         (- (car box-position) width border (/ (frame-char-width) 2))))
                  x)))
     (set-frame-position frame (max x 0) (max y 0))
-    (set-frame-size frame width height t)))
+    (set-frame-size frame (+ width 1) height t)))
 
 (defun company-box-doc--make-buffer (object)
   (let ((string (cond ((stringp object) object)
@@ -115,7 +130,8 @@
                                  (company-box--get-frame)
                                  (frame-visible-p (company-box--get-frame))))
                (candidate (nth selection company-candidates))
-               (doc (or (company-call-backend 'quickhelp-string candidate)
+               (doc (or (company-box-doc--get-markdown candidate)
+                        (company-call-backend 'quickhelp-string candidate)
                         (company-box-doc--fetch-doc-buffer candidate)))
                (doc (company-box-doc--make-buffer doc)))
     (unless (frame-live-p (frame-parameter nil 'company-box-doc-frame))
