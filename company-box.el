@@ -395,20 +395,20 @@ It doesn't nothing if a font icon is used."
     (while (and (null kind) list)
       (setq kind (funcall (car list) candidate))
       (pop list))
-    (message "kind %s" kind)
     (or kind 'Unknown)))
 
 (defun company-box--get-icon (candidate)
-  (let ((icon (alist-get (company-box--get-kind candidate) company-box-icons-alist)))
+  (let ((icon (alist-get (company-box--get-kind candidate)
+                         (symbol-value company-box-icons-alist))))
     (cond ((listp icon)
            (cond ((eq 'image (car icon))
                   (propertize " " 'display icon 'company-box-image t
                               'display-origin icon))
-                 (company-box-color-icon
+                 ((and company-box-color-icon icon)
                   (apply 'icons-in-terminal icon))
-                 (t (icons-in-terminal (car icon)))))
+                 (t (icons-in-terminal (or (car icon) 'fa_question_circle)))))
           ((symbolp icon)
-           (icons-in-terminal icon))
+           (icons-in-terminal (or icon 'fa_question_circle)))
           (t icon))))
 
 (defun company-box--add-icon (candidate)

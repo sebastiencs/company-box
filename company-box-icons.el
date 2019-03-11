@@ -135,9 +135,21 @@
         ;; (Template . ,(company-box-icons-image "Template.png"))
         ))))
 
-;; TODO: defcustom
-(defvar company-box-icons-alist company-box-icons-images
-  "Alist with (Type . icon) pairs, see `company-box-icons-functions' for the ICON format.")
+(defcustom company-box-icons-alist 'company-box-icons-images
+  "Rendering method for icons.
+With images, you can't change colors of icons.
+
+- Images
+- all-the-icons [1]
+- icons-in-terminal [2]
+
+[1] https://github.com/domtronn/all-the-icons.el
+[2] https://github.com/sebastiencs/icons-in-terminal
+."
+  :type '(choice (const :tag "images" company-box-icons-images)
+                 (const :tag "all-the-icons" company-box-icons-all-the-icons)
+                 (const :tag "icons-in-terminal" company-box-icons-icons-in-terminal))
+  :group 'company-box)
 
 (defconst company-box-icons--lsp-alist
   '((1 . Text)
