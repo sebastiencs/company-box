@@ -531,9 +531,10 @@ It doesn't nothing if a font icon is used."
                     (if (company-box--scrollbar-p frame) (* 2 char-width) 0)
                     char-width))
           (width (max (min width max-width)
-                      (* company-tooltip-minimum-width char-width))))
+                      (* company-tooltip-minimum-width char-width)))
+          (diff (abs (- (frame-pixel-width frame) width))))
     (or (and no-update width)
-        (set-frame-width frame width nil t))))
+        (and (> diff 2) (set-frame-width frame width nil t)))))
 
 (defun company-box--percent (a b)
   (/ (float a) b))
