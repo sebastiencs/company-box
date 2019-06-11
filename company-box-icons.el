@@ -226,5 +226,12 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
   (when (get-text-property 0 'yas-annotation candidate)
     'Template))
 
+(defun company-box-icons--tern (candidate)
+  "Return the icon type that corresponds to CANDIDATE type."
+  (when (derived-mode-p 'js2-mode)
+      (cond ((company-tern-function-p candidate) 'Function)
+	    ((company-tern-property-p candidate) 'Property)
+	     (t 'Variable))))
+
 (provide 'company-box-icons)
 ;;; company-box-icons.el ends here
