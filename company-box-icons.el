@@ -228,7 +228,7 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
 
 (defun company-box-icons--tern (candidate)
   "Return the icon type that corresponds to CANDIDATE type."
-  (when (derived-mode-p 'js2-mode)
+  (when (and (derived-mode-p 'js-mode) (require 'company-tern nil t))
       (cond ((company-tern-function-p candidate) 'Function)
 	    ((company-tern-property-p candidate) 'Property)
 	     (t 'Variable))))
