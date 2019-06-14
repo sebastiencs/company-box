@@ -227,11 +227,39 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
     'Template))
 
 (defun company-box-icons--tern (candidate)
-  "Return the icon type that corresponds to CANDIDATE type."
-  (when (and (derived-mode-p 'js-mode) (require 'company-tern nil t))
+  "Return the icon type that corresponds to CANDIDATE with company-tern."
+  (when (and (derived-mode-p 'js-mode)
+	     (require 'company-tern nil t))
       (cond ((company-tern-function-p candidate) 'Function)
 	    ((company-tern-property-p candidate) 'Property)
-	     (t 'Variable))))
+	    (t 'Variable))))
+
+(defun company-box-icons--irony (candidate)
+  "Return the icon type that corresponds to CANDIDATE with company-irony."
+  (when (and (or (derived-mode-p 'c-mode)
+		 (derived-mode-p 'c++-mode))
+	     (require 'company-irony nil t))
+    (let* ((irony-candidate (get-text-property 0 'company-irony candidate))
+	   (type (irony-completion-type irony-candidate))
+	   (annotation (irony-completion-annotation irony-candidate)))
+      (cond ((eq type "") 'Property)
+	    ((and (> (string-width type) 6)
+		  (string= (substring type 0 6) "struct")) 'Class)
+	    ((eq annotation "") 'Variable)
+	    (t 'Function)))))
+
+(defun company-box-icons--anaconda (candidate)
+  "Return the icon type that corresponds to CANDIDATE with company-anaconda."
+  (when (and (derived-mode-p 'python-mode)
+	     (require 'company-anaconda nil t))
+    (--when-let (aref (get-text-property 0 'struct candidate) 1)
+      (message it)
+      (cond ((string= it "function") 'Function)
+	    ((string= it "statement") 'Variable)
+	    ((string= it "module") 'Module)
+	    ((string= it "keyword") 'Keyword)
+	    ((string= it "class") 'Class)
+	    ((string= it "instance") 'Property)))))
 
 (provide 'company-box-icons)
 ;;; company-box-icons.el ends here
