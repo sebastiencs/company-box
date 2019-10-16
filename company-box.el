@@ -346,7 +346,13 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--set-frame-position (frame)
   (-let* (((left top _right _bottom) (company-box--edges))
-          (char-height (frame-char-height frame))
+          (base-char-height (frame-char-height frame))
+          (buffer (with-selected-frame frame (company-box--get-buffer)))
+          (spacing (buffer-local-value 'line-spacing buffer))
+          (char-height (pcase spacing
+                         ((pred integerp) (+ spacing base-char-height))
+                         ((pred floatp) (round (* (1+ spacing) base-char-height)))
+                         (_ base-char-height)))
           (char-width (frame-char-width frame))
           (height (* (min company-candidates-length company-tooltip-limit) char-height))
           (frame-resize-pixelwise t)
