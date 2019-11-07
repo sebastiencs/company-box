@@ -238,7 +238,7 @@ Examples:
            suffix
            "*")))
 
-(defun company-box--with-icons-p nil
+(defun company-box--with-icons-p ()
   (let ((spaces (+ (- (current-column) (string-width company-prefix))
                    (/ (or (car (nth 2 (posn-at-point (line-beginning-position)))) 0)
                       (frame-char-width))
@@ -266,7 +266,7 @@ Examples:
     (set-frame-parameter frame 'name "")
     frame))
 
-(defun company-box--get-ov nil
+(defun company-box--get-ov ()
   (or company-box--ov
       (setq company-box--ov (make-overlay 1 1))))
 
@@ -320,7 +320,7 @@ It doesn't nothing if a font icon is used."
 
 (defvar-local company-box--bottom nil)
 
-(defun company-box--point-bottom nil
+(defun company-box--point-bottom ()
   (or company-box--bottom
       (setq company-box--bottom
             (let* ((win (let ((tmp nil))
@@ -335,12 +335,12 @@ It doesn't nothing if a font icon is used."
 (defvar-local company-box--prefix-pos nil)
 (defvar-local company-box--edges nil)
 
-(defun company-box--prefix-pos nil
+(defun company-box--prefix-pos ()
   (or company-box--prefix-pos
       (setq company-box--prefix-pos
             (nth 2 (posn-at-point (- (point) (length company-prefix)))))))
 
-(defun company-box--edges nil
+(defun company-box--edges ()
   (or company-box--edges
       (setq company-box--edges (window-edges nil t nil t))))
 
@@ -485,7 +485,7 @@ It doesn't nothing if a font icon is used."
           len-annotation
           backend)))
 
-(defun company-box-show nil
+(defun company-box-show ()
   (setq company-box--max 0
         company-box--with-icons-p (company-box--with-icons-p))
   (--> (-take company-box-max-candidates company-candidates)
@@ -495,7 +495,7 @@ It doesn't nothing if a font icon is used."
 
 (defvar company-box-hide-hook nil)
 
-(defun company-box-hide nil
+(defun company-box-hide ()
   (setq company-box--bottom nil
         company-box--start nil
         company-box--prefix-pos nil
@@ -597,13 +597,13 @@ It doesn't nothing if a font icon is used."
 ;; ;;          selection n-elements percent percent-display height height-scrollbar height-blank height (+ height-scrollbar height-blank))
 ;; ;; (message "HEIGHT-S-1: %s HEIGHT-B-1: %s sum: %s" scrollbar-pixels blank-pixels (+ height-scrollbar-1 height-blank-1))
 
-(defun company-box--change-line nil
+(defun company-box--change-line ()
   (let ((selection company-selection))
     (with-selected-window (get-buffer-window (company-box--get-buffer) t)
       (company-box--update-line selection))
     (company-box--update-scrollbar (company-box--get-frame))))
 
-(defun company-box--next-line nil
+(defun company-box--next-line ()
   (interactive)
   (when (< (1+ company-selection) (min company-candidates-length
                                        company-box-max-candidates))
@@ -611,16 +611,16 @@ It doesn't nothing if a font icon is used."
     (company-box--change-line)
     (company-box--update-width)))
 
-(defun company-box--prev-line nil
+(defun company-box--prev-line ()
   (interactive)
   (setq company-selection (max (1- company-selection) 0))
   (company-box--change-line)
   (company-box--update-width))
 
-(defun company-box--start-changed-p nil
+(defun company-box--start-changed-p ()
   (not (equal company-box--start (window-start))))
 
-(defun company-box--post-command nil
+(defun company-box--post-command ()
   (cond ((company-box--start-changed-p)
          (company-box--on-start-change))))
 
@@ -661,7 +661,7 @@ COMMAND: See `company-frontends'."
    ((eq command 'post-command)
     (company-box--post-command))))
 
-(defun company-box--on-start-change nil
+(defun company-box--on-start-change ()
   (setq company-box--prefix-pos nil
         company-box--start nil
         company-box--edges nil)
