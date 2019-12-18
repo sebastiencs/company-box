@@ -125,6 +125,11 @@ To change the number of _visible_ chandidates, see `company-tooltip-limit'"
   :type 'boolean
   :group 'company-box)
 
+(defcustom company-box-icon-left-margin 0
+  "Set the space between the icon and the candidate text."
+  :type '(number)
+  :group 'company-box)
+
 (defcustom company-box-icons-functions
   '(company-box-icons--yasnippet company-box-icons--lsp company-box-icons--elisp company-box-icons--acphp)
   "Functions to call on each candidate that should return an icon.
@@ -414,7 +419,7 @@ It doesn't nothing if a font icon is used."
 (defun company-box--add-icon (candidate)
   (concat
    (company-box--get-icon candidate)
-   (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-box--space 2) 3 2))))))
+   (propertize " " 'display `(space :align-to (+ company-box-icon-left-margin left-fringe ,(if (> company-box--space 2) 3 2))))))
 
 (defun company-box--get-color (backend)
   (alist-get backend company-box-backends-colors))
