@@ -152,6 +152,18 @@ If all functions returns nil, `company-box-icons-unknown' is used.
   :type 'list
   :group 'company-box)
 
+(defcustom company-box-scrollbar t
+  "Whether to draw the custom scrollbar or use default scrollbar.
+
+t means use the custom scrollbar, 'default uses default
+scrollbar, 'left or 'right puts default scrollbars to the right
+or left, and nil means draw no scrollbar."
+  :type '(choice (const :tag "Custom scrollbar" t)
+                 (const :tag "Default scrollbar" 'default)
+                 (const :tag "Default scrollbar on left" 'left)
+                 (const :tag "Default scrollbar on right" 'right)
+                 (const :tag "No scrollbar" nil))
+  :group 'company-box)
 
 (defvar company-box-backends-colors
   '((company-yasnippet . (:all "lime green" :selected (:background "lime green" :foreground "black"))))
@@ -194,7 +206,6 @@ Examples:
     (min-height  . 0)
     (height  . 0)
     (internal-border-width . 1)
-    (vertical-scroll-bars . nil)
     (horizontal-scroll-bars . nil)
     (left-fringe . 0)
     (right-fringe . 0)
@@ -257,7 +268,13 @@ Examples:
          (before-make-frame-hook nil)
          (buffer (or buf (company-box--get-buffer)))
          (params (append company-box-frame-parameters
-                         `((default-minibuffer-frame . ,(selected-frame))
+                         `((vertical-scroll-bars
+                            . ,(cond
+                                ((eq  company-box-scrollbar 'default) (frame-parameter nil 'vertical-scroll-bars))
+                                ((eq  company-box-scrollbar 'left) 'left)
+                                ((eq  company-box-scrollbar 'right) 'right)
+                                (t nil)))
+                           (default-minibuffer-frame . ,(selected-frame))
                            (minibuffer . ,(minibuffer-window))
                            (background-color . ,(face-background 'company-box-background nil t)))))
          (window (display-buffer-in-child-frame buffer `((child-frame-parameters . ,params))))
@@ -537,7 +554,7 @@ It doesn't nothing if a font icon is used."
                    (window-end window)))
           (max-width (- (frame-pixel-width) company-box--x char-width))
           (width (+ (company-box--calc-len (window-buffer window) start end char-width)
-                    (if (company-box--scrollbar-p frame) (* 2 char-width) 0)
+                    (if (and (eq company-box-scrollbar t) (company-box--scrollbar-p frame)) (* 2 char-width) 0)
                     char-width))
           (width (max (min width max-width)
                       (* company-tooltip-minimum-width char-width)))
@@ -573,30 +590,31 @@ It doesn't nothing if a font icon is used."
     (current-buffer)))
 
 (defun company-box--update-scrollbar (frame &optional first)
-  (let* ((selection company-selection)
-         (buffer (company-box--get-buffer "-scrollbar"))
-         (h-frame company-box--height)
-         (n-elements (min company-candidates-length company-box-max-candidates))
-         (percent (company-box--percent selection (1- n-elements)))
-         (percent-display (company-box--percent h-frame (* n-elements (frame-char-height frame))))
-         (scrollbar-pixels (* h-frame percent-display))
-         (height-scrollbar (/ scrollbar-pixels (frame-char-height frame)))
-         (blank-pixels (* (- h-frame scrollbar-pixels) percent))
-         (height-blank (/ blank-pixels (frame-char-height frame))))
-    (cond
-     ((and first (= percent-display 1) (window-live-p company-box--scrollbar-window))
-      (delete-window company-box--scrollbar-window))
-     ((window-live-p company-box--scrollbar-window)
-      (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer))
-     ((/= percent-display 1)
-      (setq
-       company-box--scrollbar-window
-       (with-selected-frame (company-box--get-frame)
-         (display-buffer-in-side-window
-          (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer)
-          '((side . right) (window-width . 2)))))
-      (set-frame-parameter frame 'company-box-scrollbar (window-buffer company-box--scrollbar-window))
-      (window-preserve-size company-box--scrollbar-window t t)))))
+  (when (eq t company-box-scrollbar)
+    (let* ((selection company-selection)
+           (buffer (company-box--get-buffer "-scrollbar"))
+           (h-frame company-box--height)
+           (n-elements (min company-candidates-length company-box-max-candidates))
+           (percent (company-box--percent selection (1- n-elements)))
+           (percent-display (company-box--percent h-frame (* n-elements (frame-char-height frame))))
+           (scrollbar-pixels (* h-frame percent-display))
+           (height-scrollbar (/ scrollbar-pixels (frame-char-height frame)))
+           (blank-pixels (* (- h-frame scrollbar-pixels) percent))
+           (height-blank (/ blank-pixels (frame-char-height frame))))
+      (cond
+       ((and first (= percent-display 1) (window-live-p company-box--scrollbar-window))
+        (delete-window company-box--scrollbar-window))
+       ((window-live-p company-box--scrollbar-window)
+        (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer))
+       ((/= percent-display 1)
+        (setq
+         company-box--scrollbar-window
+         (with-selected-frame (company-box--get-frame)
+           (display-buffer-in-side-window
+            (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer)
+            '((side . right) (window-width . 2)))))
+        (set-frame-parameter frame 'company-box-scrollbar (window-buffer company-box--scrollbar-window))
+        (window-preserve-size company-box--scrollbar-window t t))))))
 
 ;; ;; (message "selection: %s len: %s PERCENT: %s PERCENTS-DISPLAY: %s SIZE-FRAME: %s HEIGHT-S: %s HEIGHT-B: %s h-frame: %s sum: %s"
 ;; ;;          selection n-elements percent percent-display height height-scrollbar height-blank height (+ height-scrollbar height-blank))
