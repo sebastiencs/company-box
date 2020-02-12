@@ -40,7 +40,9 @@
   (defun company-box-icons-image (file)
     `(image :type png
             :file ,(concat company-box-icons-dir file)
-            :ascent center)))
+            :ascent center
+            :width 14
+            :height 14)))
 
 (defvar company-box-icons-icons-in-terminal
   '((Unknown fa_question_circle)
@@ -225,6 +227,15 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
 (defun company-box-icons--yasnippet (candidate)
   (when (get-text-property 0 'yas-annotation candidate)
     'Template))
+
+(defun company-box-icons-resize (size)
+  "Set icons size in pixels."
+  (interactive "nIcon size in pixels: ")
+  (mapc (lambda (icon)
+          (-> icon
+              (plist-put :height size)
+              (plist-put :width size)))
+        company-box-icons-images))
 
 (provide 'company-box-icons)
 ;;; company-box-icons.el ends here
