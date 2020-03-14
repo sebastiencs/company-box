@@ -129,20 +129,16 @@ To change the number of _visible_ chandidates, see `company-tooltip-limit'"
   '(company-box-icons--yasnippet company-box-icons--lsp company-box-icons--elisp company-box-icons--acphp)
   "Functions to call on each candidate that should return an icon.
 The functions takes 1 parameter, the completion candidate.
-
 It should return an ICON or nil.
 An ICON can be either a SYMBOL, an IMAGE, a LIST, a STRING:
-
 - SYMBOL:  It is the name of the icon (from `icons-in-terminal').
 - IMAGE:   An image descriptor [1]
            Example: '(image :type png :file \"/path/to/image.png\")
 - LIST:    The list is then `apply' to `icons-in-terminal' function.
            Example: '(fa_icon :face some-face :foreground \"red\")
 - STRING:  A simple string which is inserted, should be of length 1
-
 If a function returns nil, it call the next function in the list.
 If all functions returns nil, `company-box-icons-unknown' is used.
-
 [1] https://www.gnu.org/software/emacs/manual/html_node/elisp/Image-Descriptors.html"
   :type 'list
   :group 'company-box)
@@ -151,12 +147,9 @@ If all functions returns nil, `company-box-icons-unknown' is used.
 (defvar company-box-backends-colors
   '((company-yasnippet . (:all "lime green" :selected (:background "lime green" :foreground "black"))))
   "List of colors to use for specific backends.
-
 Each element has the form (BACKEND . COLOR)
-
 BACKEND is the backend's symbol for which the color applies
 COLOR can be a LIST or a STRING:
-
 - LIST:    A property list with the following keys:
                 `:candidate'  : Color to use on the candidate
                 `:annotation' : Color to use on the annotation
@@ -168,12 +161,9 @@ COLOR can be a LIST or a STRING:
                 `:selected'   : Color to use when the candidate is selected.
            It can be a plist or a face, not a string.
            It needs to define the background and foreground colors
-
 - STRING:  A color string which is used everywhere
            (similar to (:all \"red\"))
-
 Examples:
-
 '((company-yasnippet . (:candidate \"yellow\" :annotation some-face))
   (company-elisp . (:icon \"yellow\" :selected (:background \"orange\"
                                               :foreground \"black\")))
@@ -387,7 +377,7 @@ It doesn't nothing if a font icon is used."
   (company-box--set-frame-position (company-box--get-frame))
   (unless (frame-visible-p (company-box--get-frame))
     (make-frame-visible (company-box--get-frame)))
-  (company-box--update-scrollbar (company-box--get-frame) t))
+  )
 
 (defun company-box--get-kind (candidate)
   (let ((list company-box-icons-functions)
@@ -532,7 +522,7 @@ It doesn't nothing if a font icon is used."
                    (window-end window)))
           (max-width (- (frame-pixel-width) company-box--x char-width))
           (width (+ (company-box--calc-len (window-buffer window) start end char-width)
-                    (if (company-box--scrollbar-p frame) (* 2 char-width) 0)
+                    0; (if (company-box--scrollbar-p frame) (* 2 char-width) 0)
                     char-width))
           (width (max (min width max-width)
                       (* company-tooltip-minimum-width char-width)))
@@ -589,7 +579,7 @@ It doesn't nothing if a font icon is used."
        (with-selected-frame (company-box--get-frame)
          (display-buffer-in-side-window
           (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer)
-          '((side . right) (window-width . 2)))))
+          '((side . right) (window-width . 0.1)))))
       (set-frame-parameter frame 'company-box-scrollbar (window-buffer company-box--scrollbar-window))
       (window-preserve-size company-box--scrollbar-window t t)))))
 
@@ -601,7 +591,7 @@ It doesn't nothing if a font icon is used."
   (let ((selection company-selection))
     (with-selected-window (get-buffer-window (company-box--get-buffer) t)
       (company-box--update-line selection))
-    (company-box--update-scrollbar (company-box--get-frame))))
+    ))
 
 (defun company-box--next-line nil
   (interactive)
@@ -666,7 +656,7 @@ COMMAND: See `company-frontends'."
         company-box--start nil
         company-box--edges nil)
   (company-box--set-frame-position (company-box--get-frame))
-  (company-box--update-scrollbar (company-box--get-frame) t))
+  )
 
 (defun company-box--kill-delay (buffer)
   (run-with-idle-timer
