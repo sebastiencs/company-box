@@ -189,7 +189,7 @@ See `company-box-icons-images' or `company-box-icons-all-the-icons' for the ICON
 [1] https://github.com/Microsoft/language-server-protocol/blob/gh-pages/\
 specification.md#completion-request-leftwards_arrow_with_hook.")
 
-(defun company-box-icons--lsp (candidate)
+(defun company-box-icons--lsp (candidate annotation)
   (-when-let* ((lsp-item (get-text-property 0 'lsp-completion-item candidate))
                (kind-num (gethash "kind" lsp-item)))
     (alist-get kind-num company-box-icons--lsp-alist)))
@@ -207,12 +207,13 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
     ("T" . Template))
   "List of icon types to use with PHP candidates.")
 
-(defun company-box-icons--acphp (candidate)
+
+(defun company-box-icons--acphp (candidate annotation)
   (when (derived-mode-p 'php-mode)
     (-> (get-text-property 0 'ac-php-tag-type candidate)
         (alist-get company-box-icons--php-alist))))
 
-(defun company-box-icons--elisp (candidate)
+(defun company-box-icons--elisp (candidate annotation)
   (when (derived-mode-p 'emacs-lisp-mode)
     (let ((sym (intern candidate)))
       ;; we even can move it to (predicate .  kind) alist
@@ -222,9 +223,23 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
             ((boundp sym) 'Variable)
             (t . nil)))))
 
-(defun company-box-icons--yasnippet (candidate)
+(defun company-box-icons--yasnippet (candidate annotation)
   (when (get-text-property 0 'yas-annotation candidate)
     'Template))
 
+(defconst company-box-icons--elpy-alist
+  '(("class" . Class)
+    ("function" . Function)
+    ("keyword" . Keyword)
+    ("instance" . Reference)
+    ("module" . Module)
+    ("statement" . Variable))
+  "List of icon types to use with Elpy Python candidates.")
+
+(defun company-box-icons--elpy (candidate annotation)
+  (when (and (derived-mode-p 'python-mode)
+	         (bound-and-true-p elpy-mode))
+    (alist-get annotation company-box-icons--elpy-alist 'Unknown nil 'string-equal)))
+    
 (provide 'company-box-icons)
 ;;; company-box-icons.el ends here

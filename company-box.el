@@ -126,7 +126,7 @@ To change the number of _visible_ chandidates, see `company-tooltip-limit'"
   :group 'company-box)
 
 (defcustom company-box-icons-functions
-  '(company-box-icons--yasnippet company-box-icons--lsp company-box-icons--elisp company-box-icons--acphp)
+  '(company-box-icons--yasnippet company-box-icons--lsp company-box-icons--elisp company-box-icons--acphp company-box-icons--elpy)
   "Functions to call on each candidate that should return an icon.
 The functions takes 1 parameter, the completion candidate.
 
@@ -389,16 +389,16 @@ It doesn't nothing if a font icon is used."
     (make-frame-visible (company-box--get-frame)))
   (company-box--update-scrollbar (company-box--get-frame) t))
 
-(defun company-box--get-kind (candidate)
+(defun company-box--get-kind (candidate annotation)
   (let ((list company-box-icons-functions)
         kind)
     (while (and (null kind) list)
-      (setq kind (funcall (car list) candidate))
+      (setq kind (funcall (car list) candidate annotation))
       (pop list))
     (or kind 'Unknown)))
 
-(defun company-box--get-icon (candidate)
-  (let ((icon (alist-get (company-box--get-kind candidate)
+(defun company-box--get-icon (candidate annotation)
+  (let ((icon (alist-get (company-box--get-kind candidate annotation)
                          (symbol-value company-box-icons-alist))))
     (cond ((listp icon)
            (cond ((eq 'image (car icon))
@@ -411,9 +411,9 @@ It doesn't nothing if a font icon is used."
            (icons-in-terminal (or icon 'fa_question_circle)))
           (t icon))))
 
-(defun company-box--add-icon (candidate)
+(defun company-box--add-icon (candidate annotation)
   (concat
-   (company-box--get-icon candidate)
+   (company-box--get-icon candidate annotation)
    (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-box--space 2) 3 2))))))
 
 (defun company-box--get-color (backend)
@@ -444,7 +444,7 @@ It doesn't nothing if a font icon is used."
   (-let* (((candidate annotation len-c len-a backend) candidate)
           (color (company-box--get-color backend))
           ((c-color a-color i-color s-color) (company-box--resolve-colors color))
-          (icon-string (and company-box--with-icons-p (company-box--add-icon candidate)))
+          (icon-string (and company-box--with-icons-p (company-box--add-icon candidate annotation)))
           (candidate-string (propertize candidate 'face 'company-box-candidate))
           (align-string (when annotation
                           (concat " " (and company-tooltip-align-annotations
