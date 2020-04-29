@@ -32,19 +32,24 @@
 
 (eval-when-compile
   (require 'find-func)
+  (require 'subr-x)
   (defconst company-box-icons-dir
     (->> (find-library-name "company-box")
          (file-name-directory)
          (expand-file-name "images")
          (file-name-as-directory)))
-  (defconst company-box--have-imagemagick (functionp 'imagemagick-types)
+  (defconst company-box--have-imagemagick (image-type-available-p 'imagemagick)
     "Emacs might not be compiled with imagemagick.")
   (defun company-box-icons-image (file)
-    `(image :type ,(if company-box--have-imagemagick 'imagemagick 'png)
-            :file ,(concat company-box-icons-dir file)
-            :ascent center
-            :width 14
-            :height 14)))
+    (let* ((extension (intern (upcase (or (file-name-extension file) ""))))
+           (use-magick (and company-box--have-imagemagick
+                            (not (member extension imagemagick-types-inhibit))
+                            (member extension imagemagick-enabled-types))))
+      `(image :type ,(if use-magick 'imagemagick 'png)
+              :file ,(concat company-box-icons-dir file)
+              :ascent center
+              :width 14
+              :height 14))))
 
 (defvar company-box-icons-icons-in-terminal
   '((Unknown fa_question_circle)
