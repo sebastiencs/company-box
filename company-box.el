@@ -63,6 +63,7 @@
 (unless (require 'icons-in-terminal nil t)
   (defun icons-in-terminal (&rest _) " "))
 
+(require 'subr-x)
 (require 'dash)
 (require 'dash-functional)
 (require 'company)
