@@ -37,8 +37,10 @@
          (file-name-directory)
          (expand-file-name "images")
          (file-name-as-directory)))
+  (defconst company-box--have-imagemagick (functionp 'imagemagick-types)
+    "Emacs might not be compiled with imagemagick.")
   (defun company-box-icons-image (file)
-    `(image :type png
+    `(image :type ,(if company-box--have-imagemagick 'imagemagick 'png)
             :file ,(concat company-box-icons-dir file)
             :ascent center
             :width 14
