@@ -198,8 +198,10 @@ See `company-box-icons-images' or `company-box-icons-all-the-icons' for the ICON
 specification.md#completion-request-leftwards_arrow_with_hook.")
 
 (defun company-box-icons--lsp (candidate)
-  (-when-let* ((lsp-item (get-text-property 0 'lsp-completion-item candidate))
-               (kind-num (gethash "kind" lsp-item)))
+  (-when-let* ((lsp-item (or (get-text-property 0 'lsp-completion-item candidate)
+                             (get-text-property 0 'eglot--lsp-item candidate)))
+               (kind-num (if (hash-table-p lsp-item) (gethash "kind" lsp-item)
+                           (plist-get lsp-item :kind))))
     (alist-get kind-num company-box-icons--lsp-alist)))
 
 (defconst company-box-icons--php-alist
