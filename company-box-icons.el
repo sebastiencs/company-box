@@ -197,12 +197,18 @@ See `company-box-icons-images' or `company-box-icons-all-the-icons' for the ICON
 [1] https://github.com/Microsoft/language-server-protocol/blob/gh-pages/\
 specification.md#completion-request-leftwards_arrow_with_hook.")
 
+(defun get-lsp-icon (kind-num)
+  (alist-get kind-num company-box-icons--lsp-alist))
+
 (defun company-box-icons--lsp (candidate)
-  (-when-let* ((lsp-item (or (get-text-property 0 'lsp-completion-item candidate)
-                             (get-text-property 0 'eglot--lsp-item candidate)))
-               (kind-num (if (hash-table-p lsp-item) (gethash "kind" lsp-item)
-                           (plist-get lsp-item :kind))))
-    (alist-get kind-num company-box-icons--lsp-alist)))
+  (-when-let* ((lsp-item (get-text-property 0 'lsp-completion-item candidate))
+               (kind-num (gethash "kind" lsp-item)))
+    (get-lsp-icon kind-num)))
+
+(defun company-box-icons--eglot (candidate)
+  (-when-let* ((eglot-item (get-text-property 0 'eglot--lsp-item candidate))
+               (kind-num (plist-get eglot-item :kind)))
+    (get-lsp-icon kind-num)))
 
 (defconst company-box-icons--php-alist
   '(("t" . Interface)
