@@ -357,6 +357,7 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--set-frame-position (frame)
   (-let* (((left top _right _bottom) (company-box--edges))
+          (top (+ top (window-tab-line-height)))
           (char-height (frame-char-height frame))
           (char-width (frame-char-width frame))
           (height (* (min company-candidates-length company-tooltip-limit) char-height))
