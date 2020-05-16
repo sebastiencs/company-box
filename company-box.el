@@ -333,6 +333,7 @@ It doesn't nothing if a font icon is used."
       (erase-buffer)
       (insert string "\n")
       (setq mode-line-format nil
+            header-line-format nil
             display-line-numbers nil
             truncate-lines t
             cursor-in-non-selected-windows nil)
