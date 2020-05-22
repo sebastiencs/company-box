@@ -32,15 +32,24 @@
 
 (eval-when-compile
   (require 'find-func)
+  (require 'subr-x)
   (defconst company-box-icons-dir
     (->> (find-library-name "company-box")
          (file-name-directory)
          (expand-file-name "images")
          (file-name-as-directory)))
+  (defconst company-box--have-imagemagick (image-type-available-p 'imagemagick)
+    "Emacs might not be compiled with imagemagick.")
   (defun company-box-icons-image (file)
-    `(image :type png
-            :file ,(concat company-box-icons-dir file)
-            :ascent center)))
+    (let* ((extension (intern (upcase (or (file-name-extension file) ""))))
+           (use-magick (and company-box--have-imagemagick
+                            (not (member extension imagemagick-types-inhibit))
+                            (member extension imagemagick-enabled-types))))
+      `(image :type ,(if use-magick 'imagemagick 'png)
+              :file ,(concat company-box-icons-dir file)
+              :ascent center
+              :width 14
+              :height 14))))
 
 (defvar company-box-icons-icons-in-terminal
   '((Unknown fa_question_circle)
@@ -102,38 +111,37 @@
       (TypeParameter . ,(company-box-icons-image "Class.png"))
       (Template . ,(company-box-icons-image "Template.png")))))
 
-(when (require 'all-the-icons nil t)
+(with-eval-after-load 'all-the-icons
   ;; TODO: fix the rest
   (defvar company-box-icons-all-the-icons
-    (eval-when-compile
-      `((Unknown . ,(all-the-icons-faicon "cog"))
-        (Text . ,(all-the-icons-octicon "file-text"))
-        (Method . ,(all-the-icons-faicon "cube"))
-        (Function . ,(all-the-icons-faicon "cube"))
-        (Constructor . ,(all-the-icons-faicon "cube"))
-        (Field . ,(all-the-icons-faicon "cog"))
-        (Variable . ,(all-the-icons-faicon "cog"))
-        (Class . ,(all-the-icons-faicon "cogs"))
-        ;; (Interface . ,(company-box-icons-image "Interface.png"))
-        (Module . ,(all-the-icons-alltheicon "less"))
-        (Property . ,(all-the-icons-faicon "wrench"))
-        ;; (Unit . ,(company-box-icons-image "Misc.png"))
-        ;; (Value . ,(company-box-icons-image "EnumItem.png"))
-        (Enum . ,(all-the-icons-material "content_copy"))
-        ;; (Keyword . ,(company-box-icons-image "Keyword.png"))
-        (Snippet . ,(all-the-icons-material "content_paste"))
-        (Color . ,(all-the-icons-material "palette"))
-        (File . ,(all-the-icons-faicon "file"))
-        ;; (Reference . ,(company-box-icons-image "Misc.png"))
-        (Folder . ,(all-the-icons-faicon "folder"))
-        ;; (EnumMember . ,(company-box-icons-image "EnumItem.png"))
-        ;; (Constant . ,(company-box-icons-image "Constant.png"))
-        (Struct . ,(all-the-icons-faicon "cogs"))
-        (Event . ,(all-the-icons-faicon "bolt"))
-        ;; (Operator . ,(company-box-icons-image "Misc.png"))
-        (TypeParameter . ,(all-the-icons-faicon "cogs"))
-        ;; (Template . ,(company-box-icons-image "Template.png"))
-        ))))
+    `((Unknown . ,(all-the-icons-faicon "cog"))
+      (Text . ,(all-the-icons-octicon "file-text"))
+      (Method . ,(all-the-icons-faicon "cube"))
+      (Function . ,(all-the-icons-faicon "cube"))
+      (Constructor . ,(all-the-icons-faicon "cube"))
+      (Field . ,(all-the-icons-faicon "cog"))
+      (Variable . ,(all-the-icons-faicon "cog"))
+      (Class . ,(all-the-icons-faicon "cogs"))
+      ;; (Interface . ,(company-box-icons-image "Interface.png"))
+      (Module . ,(all-the-icons-alltheicon "less"))
+      (Property . ,(all-the-icons-faicon "wrench"))
+      ;; (Unit . ,(company-box-icons-image "Misc.png"))
+      ;; (Value . ,(company-box-icons-image "EnumItem.png"))
+      (Enum . ,(all-the-icons-material "content_copy"))
+      ;; (Keyword . ,(company-box-icons-image "Keyword.png"))
+      (Snippet . ,(all-the-icons-material "content_paste"))
+      (Color . ,(all-the-icons-material "palette"))
+      (File . ,(all-the-icons-faicon "file"))
+      ;; (Reference . ,(company-box-icons-image "Misc.png"))
+      (Folder . ,(all-the-icons-faicon "folder"))
+      ;; (EnumMember . ,(company-box-icons-image "EnumItem.png"))
+      ;; (Constant . ,(company-box-icons-image "Constant.png"))
+      (Struct . ,(all-the-icons-faicon "cogs"))
+      (Event . ,(all-the-icons-faicon "bolt"))
+      ;; (Operator . ,(company-box-icons-image "Misc.png"))
+      (TypeParameter . ,(all-the-icons-faicon "cogs"))
+      ;; (Template . ,(company-box-icons-image "Template.png"))
+      )))
 
 (defcustom company-box-icons-alist 'company-box-icons-images
   "Rendering method for icons.
@@ -207,7 +215,6 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
     ("T" . Template))
   "List of icon types to use with PHP candidates.")
 
-
 (defun company-box-icons--acphp (candidate annotation)
   (when (derived-mode-p 'php-mode)
     (-> (get-text-property 0 'ac-php-tag-type candidate)
@@ -227,7 +234,7 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
   (when (get-text-property 0 'yas-annotation candidate)
     'Template))
 
-(defconst company-box-icons--elpy-alist
+defconst company-box-icons--elpy-alist
   '(("class" . Class)
     ("function" . Function)
     ("keyword" . Keyword)
@@ -240,6 +247,15 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
   (when (and (derived-mode-p 'python-mode)
 	         (bound-and-true-p elpy-mode))
     (alist-get annotation company-box-icons--elpy-alist 'Unknown nil 'string-equal)))
-    
+
+(defun company-box-icons-resize (size)
+  "Set icons size in pixels."
+  (interactive "nIcon size in pixels: ")
+  (mapc (lambda (icon)
+          (-> icon
+              (plist-put :height size)
+              (plist-put :width size)))
+        company-box-icons-images))
+
 (provide 'company-box-icons)
 ;;; company-box-icons.el ends here
