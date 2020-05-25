@@ -234,7 +234,7 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
   (when (get-text-property 0 'yas-annotation candidate)
     'Template))
 
-defconst company-box-icons--elpy-alist
+(defconst company-box-icons--elpy-alist
   '(("class" . Class)
     ("function" . Function)
     ("keyword" . Keyword)
