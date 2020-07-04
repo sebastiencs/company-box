@@ -301,7 +301,7 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
 
 (defun company-box-icons--lsp (candidate)
   (-when-let* ((lsp-item (get-text-property 0 'lsp-completion-item candidate))
-               (kind-num (gethash "kind" lsp-item)))
+               (kind-num (lsp-get lsp-item :kind)))
     (alist-get kind-num company-box-icons--lsp-alist)))
 
 (defconst company-box-icons--php-alist
