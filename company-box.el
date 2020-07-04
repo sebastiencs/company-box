@@ -121,6 +121,16 @@ To change the number of _visible_ chandidates, see `company-tooltip-limit'"
   :type 'integer
   :group 'company-box)
 
+(defcustom company-box-tooltip-minimum-width 60
+  "`company-box' minumum width"
+  :type 'integer
+  :group 'company-box)
+
+(defcustom company-box-tooltip-maximum-width 60
+  "`company-box' maximum width"
+  :type 'integer
+  :group 'company-box)
+
 (defcustom company-box-show-single-candidate nil
   "Whether or not to display the candidate if there is only one."
   :type 'boolean
@@ -550,8 +560,9 @@ It doesn't nothing if a font icon is used."
           (width (+ (company-box--calc-len (window-buffer window) start end char-width)
                     (if (company-box--scrollbar-p frame) (* 2 char-width) 0)
                     char-width))
-          (width (max (min width max-width)
-                      (* company-tooltip-minimum-width char-width)))
+          (width (max (min width max-width
+                           (* company-box-tooltip-maximum-width char-width))
+                      (* company-box-tooltip-minimum-width char-width)))
           (diff (abs (- (frame-pixel-width frame) width))))
     (or (and no-update width)
         (and (> diff 2) (set-frame-width frame width nil t)))))
