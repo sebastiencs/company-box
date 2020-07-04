@@ -121,7 +121,7 @@ To change the number of _visible_ chandidates, see `company-tooltip-limit'"
   :type 'integer
   :group 'company-box)
 
-(defcustom company-box-show-single-candidate nil
+(defcustom company-box-show-single-candidate t
   "Whether or not to display the candidate if there is only one."
   :type 'boolean
   :group 'company-box)
