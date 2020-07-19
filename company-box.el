@@ -691,9 +691,8 @@ COMMAND: See `company-frontends'."
   (setq company-box--prefix-pos nil
         company-box--start nil
         company-box--edges nil)
-  (when (company-box--get-frame)
     (company-box--set-frame-position (company-box--get-frame))
-    (company-box--update-scrollbar (company-box--get-frame) t)))
+    (company-box--update-scrollbar (company-box--get-frame) t))
 
 (defun company-box--kill-delay (buffer)
   (run-with-idle-timer
