@@ -631,7 +631,7 @@ It doesn't nothing if a font icon is used."
     (setq company-selection 0)
     )
   (company-box--change-line)
-  (company-box--update-width)))
+  (company-box--update-width))
 
 (defun company-box--prev-line nil
   (interactive)
