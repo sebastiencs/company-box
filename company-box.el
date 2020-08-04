@@ -131,9 +131,13 @@ To change the number of _visible_ chandidates, see `company-tooltip-limit'"
   :type 'integer
   :group 'company-box)
 
-(defcustom company-box-show-single-candidate nil
-  "Whether or not to display the candidate if there is only one."
-  :type 'boolean
+(defcustom company-box-show-single-candidate 'when-no-other-frontend
+  "Whether or not to display the candidate if there is only one.
+`when-no-other-frontend' will display the candidate if no other front ends are
+detected."
+  :type '(choice (const :tag "when-no-other-frontend" when-no-other-frontend)
+                 (const :tag "never" never)
+                 (const :tag "always" always))
   :group 'company-box)
 
 (defcustom company-box-icons-functions
@@ -668,6 +672,11 @@ It doesn't nothing if a font icon is used."
            ;; See the docstring of `select-window'
            (run-with-idle-timer 0 nil (lambda nil (company-box--handle-window-changes t)))))))
 
+(defun company-box--hide-single-candidate nil
+  (or (eq company-box-show-single-candidate 'never)
+      (and (eq company-box-show-single-candidate 'when-no-other-frontend)
+           (cdr company-frontends))))
+
 (defun company-box-frontend (command)
   "`company-mode' frontend using child-frame.
 COMMAND: See `company-frontends'."
@@ -682,7 +691,8 @@ COMMAND: See `company-frontends'."
   (cond
    ((eq command 'hide)
     (company-box-hide))
-   ((and (equal company-candidates-length 1) (null company-box-show-single-candidate))
+   ((and (equal company-candidates-length 1)
+         (company-box--hide-single-candidate))
     (company-box-hide))
    ((eq command 'update)
     (company-box-show))
