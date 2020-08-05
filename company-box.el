@@ -122,12 +122,12 @@ To change the number of _visible_ chandidates, see `company-tooltip-limit'"
   :group 'company-box)
 
 (defcustom company-box-tooltip-minimum-width 60
-  "`company-box' minumum width"
+  "`company-box' minimum width."
   :type 'integer
   :group 'company-box)
 
-(defcustom company-box-tooltip-maximum-width 60
-  "`company-box' maximum width"
+(defcustom company-box-tooltip-maximum-width 260
+  "`company-box' maximum width."
   :type 'integer
   :group 'company-box)
 
