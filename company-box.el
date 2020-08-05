@@ -441,10 +441,15 @@ It doesn't nothing if a font icon is used."
            (icons-in-terminal (or icon 'fa_question_circle)))
           (t icon))))
 
+(defun company-box--using-image-p nil
+  (not (memq company-box-icons-alist '(company-box-icons-icons-in-terminal company-box-icons-all-the-icons))))
+
 (defun company-box--add-icon (candidate)
-  (concat
-   (company-box--get-icon candidate)
-   (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-box--space 2) 3 2))))))
+  (let ((is-image (company-box--using-image-p))
+        (icon (company-box--get-icon candidate)))
+    (concat
+     (if is-image icon (propertize icon 'display '(height 1)))
+     (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-box--space 2) 3 2)))))))
 
 (defun company-box--get-color (backend)
   (alist-get backend company-box-backends-colors))
