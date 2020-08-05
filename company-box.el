@@ -443,7 +443,7 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--add-icon (candidate)
   (concat
-   (propertize (company-box--get-icon candidate) 'display '(height 1))
+   (company-box--get-icon candidate)
    (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-box--space 2) 3 2))))))
 
 (defun company-box--get-color (backend)
@@ -482,7 +482,7 @@ It doesn't nothing if a font icon is used."
                                            (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))))))
           (space company-box--space)
           (icon-p company-box-enable-icon)
-          (annotation-string (and annotation (propertize annotation 'face 'company-box-annotation 'display '(height 1))))
+          (annotation-string (and annotation (propertize annotation 'face 'company-box-annotation)))
           (line (concat (unless (or (and (= space 2) icon-p) (= space 0))
                           (propertize " " 'display `(space :width ,(if (or (= space 1) (not icon-p)) 1 0.75))))
                         (company-box--apply-color icon-string i-color)
