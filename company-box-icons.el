@@ -51,7 +51,7 @@
               :width ,size
               :height ,size))))
 
-(defvar company-box-icons-icons-in-terminal
+(defconst company-box-icons-icons-in-terminal
   '((Unknown fa_question_circle)
     (Text . fa_text_height) ;; Text
     (Method . (fa_tags :face font-lock-function-name-face)) ;; Method
@@ -81,7 +81,7 @@
     (Template . fa_bookmark)) ;; TypeParameter
   )
 
-(defvar company-box-icons-eclipse
+(defconst company-box-icons-eclipse
   (eval-when-compile
     `((Unknown . ,(company-box-icons-image "Namespace.png"))
       (Text . ,(company-box-icons-image "eclipse/text.png"))
@@ -111,7 +111,7 @@
       (TypeParameter . ,(company-box-icons-image "eclipse/typeparameter.png"))
       (Template . ,(company-box-icons-image "eclipse/template.png")))))
 
-(defvar company-box-icons-netbeans
+(defconst company-box-icons-netbeans
   (eval-when-compile
     `((Unknown . ,(company-box-icons-image "Namespace.png"))
       (Text . ,(company-box-icons-image "netbeans/text.png"))
@@ -141,7 +141,7 @@
       (TypeParameter . ,(company-box-icons-image "netbeans/typeparameter.png"))
       (Template . ,(company-box-icons-image "netbeans/template.png")))))
 
-(defvar company-box-icons-images
+(defconst company-box-icons-images
   (eval-when-compile
     `((Unknown . ,(company-box-icons-image "Namespace.png" 14))
       (Text . ,(company-box-icons-image "String.png" 14))
@@ -287,9 +287,11 @@ See `company-box-icons-images' or `company-box-icons-all-the-icons' for the ICON
 [1] https://github.com/Microsoft/language-server-protocol/blob/gh-pages/\
 specification.md#completion-request-leftwards_arrow_with_hook.")
 
+(declare-function lsp-get "ext:lsp-protocol")
+
 (defun company-box-icons--lsp (candidate)
   (-when-let* ((lsp-item (get-text-property 0 'lsp-completion-item candidate))
-               (kind-num (gethash "kind" lsp-item)))
+               (kind-num (lsp-get lsp-item :kind)))
     (alist-get kind-num company-box-icons--lsp-alist)))
 
 (defconst company-box-icons--php-alist
