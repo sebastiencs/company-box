@@ -415,6 +415,7 @@ It doesn't nothing if a font icon is used."
           (char-height (frame-char-height frame))
           (char-width (frame-char-width frame))
           (height (* (min company-candidates-length company-tooltip-limit) char-height))
+          (space-numbers (if (eq company-show-numbers 'left) char-width 0))
           (frame-resize-pixelwise t)
           (mode-line-y (company-box--point-bottom))
           ((p-x . p-y) (company-box--prefix-pos))
@@ -430,8 +431,8 @@ It doesn't nothing if a font icon is used."
                       height))
           (height (- height (mod height char-height)))
           (x (if company-box--with-icons-p
-                 (- p-x (* char-width (if (= company-box--space 2) 2 3)))
-               (- p-x (if (= company-box--space 0) 0 char-width)))))
+                 (- p-x (* char-width (if (= company-box--space 2) 2 3)) space-numbers)
+               (- p-x (if (= company-box--space 0) 0 char-width) space-numbers))))
     ;; Debug
     ;; (message "X+LEFT: %s P-X: %s X: %s LEFT: %s space: %s with-icon: %s LESS: %s"
     ;;          (+ x left) p-x x left company-box--space company-box--with-icons-p (+ (* char-width 3) (/ char-width 2)))
