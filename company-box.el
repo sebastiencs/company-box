@@ -241,13 +241,11 @@ Examples:
 (defvar-local company-box--scrollbar-window nil)
 
 (defconst company-box--numbers
-  (let ((vec (make-vector 20 nil)))
-    (dotimes (index 20 nil)
+  (let ((vec (make-vector 10 nil)))
+    (dotimes (index 10 nil)
       (aset vec index
             (propertize
-             (concat (when (< index 10) " ")
-                     (string-trim (funcall company-show-numbers-function (mod (1+ index) 10)))
-                     (when (>= index 10) " "))
+             (string-trim (funcall company-show-numbers-function (mod (1+ index) 10)))
              'face 'company-box-numbers)))
     vec))
 
@@ -326,18 +324,18 @@ It doesn't nothing if a font icon is used."
     (put-text-property point (1+ point) 'display new-image)))
 
 (defun company-box--update-numbers (current &optional ignore-first remove-after)
-  (when ignore-first
-    (-some--> (next-single-property-change (1+ current) 'company-box--number-pos)
-      (setq current (1+ it))))
-  (let ((offset (if (eq company-show-numbers 'left) 10 0)))
+  (let ((side (if (eq company-show-numbers 'left) 'left-margin 'right-margin)))
+    (when ignore-first
+      (-some--> (next-single-property-change (1+ current) 'company-box--number-pos)
+        (setq current (1+ it))))
     (dotimes (index 10 nil)
       (-some--> current
         (next-single-property-change it 'company-box--number-pos)
         (setq current (1+ it))
-        (put-text-property (1- it) it 'display (aref company-box--numbers (+ index offset))))))
-  (when remove-after
-    (-some--> (next-single-property-change current 'company-box--number-pos)
-      (remove-text-properties it (1+ it) '(display)))))
+        (put-text-property (1- it) it 'display `((margin ,side) ,(aref company-box--numbers index)))))
+    (when remove-after
+      (-some--> (next-single-property-change current 'company-box--number-pos)
+        (put-text-property it (1+ it) 'display `((margin ,side) " "))))))
 
 (defun company-box--maybe-move-number (point)
   (when company-show-numbers
@@ -517,6 +515,10 @@ It doesn't nothing if a font icon is used."
   (concat (and company-common (propertize company-common 'face 'company-tooltip-common))
           (substring (propertize candidate 'face 'company-box-candidate) (length company-common) nil)))
 
+(defun company-box--make-number-prop nil
+  (let ((side (if (eq company-show-numbers 'left) 'left-margin 'right-margin)))
+    (propertize " " 'company-box--number-pos t 'display `((margin ,side) " "))))
+
 (defun company-box--make-line (candidate)
   (-let* (((candidate annotation len-c len-a backend) candidate)
           (color (company-box--get-color backend))
@@ -524,22 +526,20 @@ It doesn't nothing if a font icon is used."
           (icon-string (and company-box--with-icons-p (company-box--add-icon candidate)))
           (candidate-string (company-box--candidate-string candidate))
           (align-width (+ (or len-a 0) (if (eq company-show-numbers t) 1 0)))
-          (align-string (when (or annotation (eq company-show-numbers t))
+          (align-string (when annotation
                           (concat " " (and company-tooltip-align-annotations
-                                           (propertize " " 'display `(space :align-to (- right-fringe ,align-width 1)))))))
+                                           (propertize " " 'display `(space :align-to (- right-margin ,len-a 1)))))))
           (space company-box--space)
           (icon-p company-box-enable-icon)
           (annotation-string (and annotation (propertize annotation 'face 'company-box-annotation)))
           (line (concat (unless (or (and (= space 2) icon-p) (= space 0))
                           (propertize " " 'display `(space :width ,(if (or (= space 1) (not icon-p)) 1 0.75))))
                         (company-box--apply-color icon-string i-color)
-                        (when (eq company-show-numbers 'left)
-                          (propertize " " 'company-box--number-pos t 'invisible t))
+                        (when company-show-numbers
+                          (company-box--make-number-prop))
                         (company-box--apply-color candidate-string c-color)
                         align-string
-                        (company-box--apply-color annotation-string a-color)
-                        (when (eq company-show-numbers t)
-                          (propertize " " 'company-box--number-pos t 'invisible t))))
+                        (company-box--apply-color annotation-string a-color)))
           (len (length line)))
     (add-text-properties 0 len (list 'company-box--len (+ len-c len-a)
                                      'company-box--color s-color)
@@ -709,7 +709,10 @@ It doesn't nothing if a font icon is used."
          (company-box--on-start-change))))
 
 (defun company-box--prevent-changes (&rest _)
-  (set-window-margins nil 0 0))
+  (set-window-margins
+   nil
+   (if (eq company-show-numbers 'left) 1 0)
+   (if (eq company-show-numbers 't) 1 0)))
 
 (defun company-box--handle-window-changes (&optional on-idle)
   (-when-let* ((frame (company-box--get-frame)))
