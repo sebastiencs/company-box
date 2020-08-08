@@ -337,14 +337,16 @@ It doesn't nothing if a font icon is used."
       (-some--> (next-single-property-change current 'company-box--number-pos)
         (put-text-property it (1+ it) 'display `((margin ,side) " "))))))
 
-(defun company-box--maybe-move-number (point)
+(defun company-box--maybe-move-number (point first-render)
   (when company-show-numbers
     (cond ((< point (window-start))
            (company-box--update-numbers point nil t))
           ((>= point (window-end))
-           (company-box--update-numbers (window-start) t)))))
+           (company-box--update-numbers (window-start) t))
+          (first-render
+           (company-box--update-numbers 1)))))
 
-(defun company-box--update-line (selection common)
+(defun company-box--update-line (selection common &optional first-render)
   (company-box--update-image)
   (goto-char 1)
   (forward-line selection)
@@ -353,7 +355,7 @@ It doesn't nothing if a font icon is used."
     (move-overlay (company-box--get-ov-common)
                   (+ company-box--icon-offset beg)
                   (+ 1 (length common) (+ company-box--icon-offset beg)))
-    (company-box--maybe-move-number beg))
+    (company-box--maybe-move-number beg first-render))
   (let ((color (or (get-text-property (point) 'company-box--color)
                    'company-box-selection)))
     (overlay-put (company-box--get-ov) 'face color)
@@ -378,7 +380,7 @@ It doesn't nothing if a font icon is used."
       (setq-local scroll-margin  0)
       (setq-local scroll-preserve-screen-position t)
       (add-hook 'window-configuration-change-hook 'company-box--prevent-changes t t)
-      (company-box--update-line selection common))))
+      (company-box--update-line selection common t))))
 
 (defvar-local company-box--bottom nil)
 
