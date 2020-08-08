@@ -103,6 +103,11 @@ Only the 'background' color is used in this face."
 Only the 'background' color is used in this face."
   :group 'company-box)
 
+(defface company-box-numbers
+  '((t :inherit company-box-candidate))
+  "Face used for numbers when `company-show-numbers' is used."
+  :group 'company-box)
+
 (defcustom company-box-color-icon t
   "Whether or not to color icons.
 Note that icons from images cannot be colored."
@@ -235,6 +240,17 @@ Examples:
 (defvar-local company-box--height nil)
 (defvar-local company-box--scrollbar-window nil)
 
+(defconst company-box--numbers
+  (let ((vec (make-vector 20 nil)))
+    (dotimes (index 20 nil)
+      (aset vec index
+            (propertize
+             (concat (when (< index 10) " ")
+                     (string-trim (funcall company-show-numbers-function (mod (1+ index) 10)))
+                     (when (>= index 10) " "))
+             'face 'company-box-numbers)))
+    vec))
+
 (defvar company-box-selection-hook nil
   "Hook run when the selection changed.")
 
@@ -309,6 +325,27 @@ It doesn't nothing if a font icon is used."
                (new-image (append image (and color (company-box--extract-background color)))))
     (put-text-property point (1+ point) 'display new-image)))
 
+(defun company-box--update-numbers (current &optional ignore-first remove-after)
+  (when ignore-first
+    (-some--> (next-single-property-change (1+ current) 'company-box--number-pos)
+      (setq current (1+ it))))
+  (let ((offset (if (eq company-show-numbers 'left) 10 0)))
+    (dotimes (index 10 nil)
+      (-some--> current
+        (next-single-property-change it 'company-box--number-pos)
+        (setq current (1+ it))
+        (put-text-property (1- it) it 'display (aref company-box--numbers (+ index offset))))))
+  (when remove-after
+    (-some--> (next-single-property-change current 'company-box--number-pos)
+      (remove-text-properties it (1+ it) '(display)))))
+
+(defun company-box--maybe-move-number (point)
+  (when company-show-numbers
+    (cond ((< point (window-start))
+           (company-box--update-numbers point nil t))
+          ((>= point (window-end))
+           (company-box--update-numbers (window-start) t)))))
+
 (defun company-box--update-line (selection common)
   (company-box--update-image)
   (goto-char 1)
@@ -317,7 +354,8 @@ It doesn't nothing if a font icon is used."
     (move-overlay (company-box--get-ov) beg (line-beginning-position 2))
     (move-overlay (company-box--get-ov-common)
                   (+ company-box--icon-offset beg)
-                  (+ 1 (length common) (+ company-box--icon-offset beg))))
+                  (+ 1 (length common) (+ company-box--icon-offset beg)))
+    (company-box--maybe-move-number beg))
   (let ((color (or (get-text-property (point) 'company-box--color)
                    'company-box-selection)))
     (overlay-put (company-box--get-ov) 'face color)
@@ -475,25 +513,33 @@ It doesn't nothing if a font icon is used."
                             nil string))
   string)
 
+(defun company-box--candidate-string (candidate)
+  (concat (and company-common (propertize company-common 'face 'company-tooltip-common))
+          (substring (propertize candidate 'face 'company-box-candidate) (length company-common) nil)))
+
 (defun company-box--make-line (candidate)
   (-let* (((candidate annotation len-c len-a backend) candidate)
           (color (company-box--get-color backend))
           ((c-color a-color i-color s-color) (company-box--resolve-colors color))
           (icon-string (and company-box--with-icons-p (company-box--add-icon candidate)))
-          (candidate-string (concat (and company-common (propertize company-common 'face 'company-tooltip-common))
-                                    (substring (propertize candidate 'face 'company-box-candidate) (length company-common) nil)))
-          (align-string (when annotation
+          (candidate-string (company-box--candidate-string candidate))
+          (align-width (+ (or len-a 0) (if (eq company-show-numbers t) 1 0)))
+          (align-string (when (or annotation (eq company-show-numbers t))
                           (concat " " (and company-tooltip-align-annotations
-                                           (propertize " " 'display `(space :align-to (- right-fringe ,(or len-a 0) 1)))))))
+                                           (propertize " " 'display `(space :align-to (- right-fringe ,align-width 1)))))))
           (space company-box--space)
           (icon-p company-box-enable-icon)
           (annotation-string (and annotation (propertize annotation 'face 'company-box-annotation)))
           (line (concat (unless (or (and (= space 2) icon-p) (= space 0))
                           (propertize " " 'display `(space :width ,(if (or (= space 1) (not icon-p)) 1 0.75))))
                         (company-box--apply-color icon-string i-color)
+                        (when (eq company-show-numbers 'left)
+                          (propertize " " 'company-box--number-pos t 'invisible t))
                         (company-box--apply-color candidate-string c-color)
                         align-string
-                        (company-box--apply-color annotation-string a-color)))
+                        (company-box--apply-color annotation-string a-color)
+                        (when (eq company-show-numbers t)
+                          (propertize " " 'company-box--number-pos t 'invisible t))))
           (len (length line)))
     (add-text-properties 0 len (list 'company-box--len (+ len-c len-a)
                                      'company-box--color s-color)
@@ -550,7 +596,7 @@ It doesn't nothing if a font icon is used."
             (when (> len max)
               (setq max len)))
           (forward-line))))
-    (* (+ max (if company-box--with-icons-p 6 2))
+    (* (+ max (if company-box--with-icons-p 6 2) (if company-show-numbers 2 0))
        char-width)))
 
 (defun company-box--update-width (&optional no-update height)
