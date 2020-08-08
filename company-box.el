@@ -87,7 +87,7 @@
   :group 'company-box)
 
 (defface company-box-selection
-  '((t :inherit company-tooltip-selection))
+  '((t :inherit company-tooltip-selection :extend t))
   "Face used to color the selected candidate."
   :group 'company-box)
 
