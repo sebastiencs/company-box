@@ -635,6 +635,15 @@ It doesn't nothing if a font icon is used."
          (* (min company-candidates-length company-box-max-candidates)
             (frame-char-height frame)))))
 
+(defun company-box--scrollbar-prevent-changes (&rest)
+  (let ((window-min-width 2)
+        (window-safe-min-width 2)
+        (ignore-window-parameters t)
+        (current-size (window-size nil t)))
+    (unless (= current-size 2)
+      ;; (message "MIN %s %s %s" current-size (window-min-size nil t) (window-parameters))
+      (minimize-window))))
+
 (defun company-box--update-scrollbar-buffer (height-blank height-scrollbar percent buffer)
   (with-current-buffer buffer
     (erase-buffer)
@@ -651,6 +660,7 @@ It doesn't nothing if a font icon is used."
                              height-scrollbar))
     (insert (propertize " " 'face (list :background (face-background 'company-box-scrollbar nil t))
                         'display `(space :align-to right-fringe :height ,height-scrollbar)))
+    (add-hook 'window-configuration-change-hook 'company-box--scrollbar-prevent-changes t t)
     (current-buffer)))
 
 (defun company-box--update-scrollbar (frame &optional first)
@@ -673,11 +683,14 @@ It doesn't nothing if a font icon is used."
       (setq
        company-box--scrollbar-window
        (with-selected-frame (company-box--get-frame)
-         (display-buffer-in-side-window
-          (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer)
-          '((side . right) (window-width . 2)))))
+         (let ((window-min-width 2)
+               (window-safe-min-width 2))
+           (display-buffer-in-side-window
+            (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer)
+            '((side . right) (window-width . 2))))))
       (set-frame-parameter frame 'company-box-scrollbar (window-buffer company-box--scrollbar-window))
-      (window-preserve-size company-box--scrollbar-window t t)))))
+      ;;(window-preserve-size company-box--scrollbar-window t t)
+      ))))
 
 ;; ;; (message "selection: %s len: %s PERCENT: %s PERCENTS-DISPLAY: %s SIZE-FRAME: %s HEIGHT-S: %s HEIGHT-B: %s h-frame: %s sum: %s"
 ;; ;;          selection n-elements percent percent-display height height-scrollbar height-blank height (+ height-scrollbar height-blank))
