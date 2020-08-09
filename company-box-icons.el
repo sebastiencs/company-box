@@ -234,16 +234,25 @@
 
 (defcustom company-box-icons-alist 'company-box-icons-images
   "Rendering method for icons.
-With images, you can't change colors of icons.
 
 - Images
+- idea, from idea editors
+- netbeans, from netbeans editor
+- eclipse, from eclipse editor
 - all-the-icons [1]
 - icons-in-terminal [2]
+
+Changing colors of icons only works with `all-the-icons' and
+`icons-in-terminal'.  Colors with others methods are taken from
+the image.
 
 [1] https://github.com/domtronn/all-the-icons.el
 [2] https://github.com/sebastiencs/icons-in-terminal
 ."
   :type '(choice (const :tag "images" company-box-icons-images)
+                 (const :tag "idea" company-box-icons-idea)
+                 (const :tag "netbeans" company-box-icons-netbeans)
+                 (const :tag "eclipse" company-box-icons-eclipse)
                  (const :tag "all-the-icons" company-box-icons-all-the-icons)
                  (const :tag "icons-in-terminal" company-box-icons-icons-in-terminal))
   :group 'company-box)

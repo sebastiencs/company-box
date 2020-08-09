@@ -34,6 +34,10 @@ To customize:
 See the docstring of the variable `company-box-backends-colors`:  
 `C-h v company-box-backends-colors`
 
+### Themes
+
+You can select different themes with `company-box-icons-alist`
+
 ### Icons
 
 See the variable `company-box-icons-functions`  
