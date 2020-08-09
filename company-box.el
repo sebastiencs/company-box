@@ -692,23 +692,23 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--next-line nil
   (interactive)
-  (when (< (1+ company-selection) (min company-candidates-length
-                                       company-box-max-candidates))
-    (setq company-selection (1+ company-selection))
-    )
-  (when (and company-selection-wrap-around (= company-selection (1- (min company-candidates-length
-                                                                         company-box-max-candidates))))
-    (setq company-selection 0)
+  (if (and company-selection-wrap-around (= company-selection (1- (min company-candidates-length
+                                                                       company-box-max-candidates))))
+      (setq company-selection 0)
+    (when (< (1+ company-selection) (min company-candidates-length
+                                         company-box-max-candidates))
+      (setq company-selection (1+ company-selection))
+      )
     )
   (company-box--change-line)
   (company-box--update-width))
 
 (defun company-box--prev-line nil
   (interactive)
-  (setq company-selection (max (1- company-selection) 0))
-  (when (and company-selection-wrap-around (= company-selection 0))
-    (setq company-selection (1- (min company-candidates-length
-                                     company-box-max-candidates)))
+  (if (and company-selection-wrap-around (= company-selection 0))
+      (setq company-selection (1- (min company-candidates-length
+                                       company-box-max-candidates)))
+    (setq company-selection (max (1- company-selection) 0))
     )
   (company-box--change-line)
   (company-box--update-width))
