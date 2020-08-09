@@ -556,8 +556,8 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--make-candidate (candidate)
   (let* ((annotation (-some->> (company-call-backend 'annotation candidate)
-                               (replace-regexp-in-string "[ \t\n\r]+" " ")
-                               (string-trim)))
+                       (replace-regexp-in-string "[ \t\n\r]+" " ")
+                       (string-trim)))
          (len-candidate (string-width candidate))
          (len-annotation (if annotation (string-width annotation) 0))
          (len-total (+ len-candidate len-annotation))
@@ -586,7 +586,7 @@ It doesn't nothing if a font icon is used."
         company-box--prefix-pos nil
         company-box--edges nil)
   (-some-> (company-box--get-frame)
-           (make-frame-invisible))
+    (make-frame-invisible))
   (run-hook-with-args 'company-box-hide-hook (or (frame-parent) (selected-frame))))
 
 (defun company-box--calc-len (buffer start end char-width)
@@ -705,15 +705,24 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--next-line nil
   (interactive)
-  (when (< (1+ company-selection) (min company-candidates-length
-                                       company-box-max-candidates))
-    (setq company-selection (1+ company-selection))
-    (company-box--change-line)
-    (company-box--update-width)))
+  (if (and company-selection-wrap-around (= company-selection (1- (min company-candidates-length
+                                                                       company-box-max-candidates))))
+      (setq company-selection 0)
+    (when (< (1+ company-selection) (min company-candidates-length
+                                         company-box-max-candidates))
+      (setq company-selection (1+ company-selection))
+      )
+    )
+  (company-box--change-line)
+  (company-box--update-width))
 
 (defun company-box--prev-line nil
   (interactive)
-  (setq company-selection (max (1- company-selection) 0))
+  (if (and company-selection-wrap-around (= company-selection 0))
+      (setq company-selection (1- (min company-candidates-length
+                                       company-box-max-candidates)))
+    (setq company-selection (max (1- company-selection) 0))
+    )
   (company-box--change-line)
   (company-box--update-width))
 
@@ -777,6 +786,7 @@ COMMAND: See `company-frontends'."
   (when (company-box--get-frame)
     (company-box--set-frame-position (company-box--get-frame))
     (company-box--update-scrollbar (company-box--get-frame) t)))
+
 
 (defun company-box--kill-delay (buffer)
   (run-with-idle-timer
