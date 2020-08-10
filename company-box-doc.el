@@ -58,6 +58,7 @@
 
 (defvar company-box-frame-parameters)
 (defvar company-box--bottom)
+(defvar company-box-scrollbar)
 
 (defvar-local company-box-doc--timer nil)
 
@@ -73,11 +74,7 @@
           (frame-resize-pixelwise t)
           ((width . height) (window-text-pixel-size window nil nil 10000 10000))
           (bottom (+ company-box--bottom (window-pixel-top) (frame-border-width)))
-          (x (+ (car box-position) box-width
-                (if (and (eq company-box-scrollbar t)
-                         (company-box--scrollbar-p (company-box--get-frame)))
-                    (/ (frame-char-width) 2)
-                  0)))
+          (x (+ (car box-position) box-width (/ (frame-char-width) 2)))
           (y (cdr box-position))
           (y (if (> (+ y height 20) bottom)
                  (- y (- (+ y height) bottom) 20)
