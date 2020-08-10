@@ -146,7 +146,7 @@ detected."
   :group 'company-box)
 
 (defcustom company-box-icons-functions
-  '(company-box-icons--yasnippet company-box-icons--lsp company-box-icons--elisp company-box-icons--acphp)
+  '(company-box-icons--yasnippet company-box-icons--lsp company-box-icons--eglot company-box-icons--elisp company-box-icons--acphp)
   "Functions to call on each candidate that should return an icon.
 The functions takes 1 parameter, the completion candidate.
 

@@ -304,6 +304,11 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
                (kind-num (and (fboundp 'lsp-get) (lsp-get lsp-item :kind))))
     (alist-get kind-num company-box-icons--lsp-alist)))
 
+(defun company-box-icons--eglot (candidate)
+  (-when-let* ((eglot-item (get-text-property 0 'eglot--lsp-item candidate))
+               (kind-num (plist-get eglot-item :kind)))
+    (alist-get kind-num company-box-icons--eglot-alist)))
+
 (defconst company-box-icons--php-alist
   '(("t" . Interface)
     ("c" . Class)
