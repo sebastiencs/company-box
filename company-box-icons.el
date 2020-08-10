@@ -200,7 +200,11 @@
       (TypeParameter . ,(company-box-icons-image "Class.png"))
       (Template . ,(company-box-icons-image "Template.png")))))
 
-(when (require 'all-the-icons nil t)
+(when (and (require 'all-the-icons nil t)
+           (fboundp 'all-the-icons-faicon)
+           (fboundp 'all-the-icons-alltheicon)
+           (fboundp 'all-the-icons-material)
+           (fboundp 'all-the-icons-octicon))
   ;; TODO: fix the rest
   (defvar company-box-icons-all-the-icons
     `((Unknown . ,(all-the-icons-faicon "cog"))

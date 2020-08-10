@@ -242,7 +242,7 @@ Examples:
 
 (defconst company-box--numbers
   (let ((vec (make-vector 10 nil)))
-    (dotimes (index 10 nil)
+    (dotimes (index 10)
       (aset vec index
             (propertize
              (string-trim (funcall company-show-numbers-function (mod (1+ index) 10)))
@@ -328,7 +328,7 @@ It doesn't nothing if a font icon is used."
     (when ignore-first
       (-some--> (next-single-property-change (1+ current) 'company-box--number-pos)
         (setq current (1+ it))))
-    (dotimes (index 10 nil)
+    (dotimes (index 10)
       (-some--> current
         (next-single-property-change it 'company-box--number-pos)
         (setq current (1+ it))
@@ -528,7 +528,6 @@ It doesn't nothing if a font icon is used."
           ((c-color a-color i-color s-color) (company-box--resolve-colors color))
           (icon-string (and company-box--with-icons-p (company-box--add-icon candidate)))
           (candidate-string (company-box--candidate-string candidate))
-          (align-width (+ (or len-a 0) (if (eq company-show-numbers t) 1 0)))
           (align-string (when annotation
                           (concat " " (and company-tooltip-align-annotations
                                            (propertize " " 'display `(space :align-to (- right-margin ,len-a 1)))))))
