@@ -167,6 +167,18 @@ If all functions returns nil, `company-box-icons-unknown' is used.
   :type 'list
   :group 'company-box)
 
+(defcustom company-box-scrollbar t
+  "Whether to draw the custom scrollbar or use default scrollbar.
+
+t means use the custom scrollbar, 'default uses default
+scrollbar, 'left or 'right puts default scrollbars to the right
+or left, and nil means draw no scrollbar."
+  :type '(choice (const :tag "Custom scrollbar" t)
+                 (const :tag "Default scrollbar" 'default)
+                 (const :tag "Default scrollbar on left" 'left)
+                 (const :tag "Default scrollbar on right" 'right)
+                 (const :tag "No scrollbar" nil))
+  :group 'company-box)
 
 (defvar company-box-backends-colors
   '((company-yasnippet . (:all "lime green" :selected (:background "lime green" :foreground "black"))))
@@ -209,7 +221,6 @@ Examples:
     (min-height  . 0)
     (height  . 0)
     (internal-border-width . 1)
-    (vertical-scroll-bars . nil)
     (horizontal-scroll-bars . nil)
     (left-fringe . 0)
     (right-fringe . 0)
@@ -283,7 +294,13 @@ Examples:
          (before-make-frame-hook nil)
          (buffer (or buf (company-box--get-buffer)))
          (params (append company-box-frame-parameters
-                         `((default-minibuffer-frame . ,(selected-frame))
+                         `((vertical-scroll-bars
+                            . ,(cond
+                                ((eq  company-box-scrollbar 'default) (frame-parameter nil 'vertical-scroll-bars))
+                                ((eq  company-box-scrollbar 'left) 'left)
+                                ((eq  company-box-scrollbar 'right) 'right)
+                                (t nil)))
+                           (default-minibuffer-frame . ,(selected-frame))
                            (minibuffer . ,(minibuffer-window))
                            (background-color . ,(face-background 'company-box-background nil t)))))
          (window (display-buffer-in-child-frame buffer `((child-frame-parameters . ,params))))
@@ -616,7 +633,7 @@ It doesn't nothing if a font icon is used."
                    (window-end window)))
           (max-width (- (frame-pixel-width) company-box--x char-width))
           (width (+ (company-box--calc-len (window-buffer window) start end char-width)
-                    (if (company-box--scrollbar-p frame) (* 2 char-width) 0)
+                    (if (and (eq company-box-scrollbar t) (company-box--scrollbar-p frame)) (* 2 char-width) 0)
                     char-width))
           (width (max (min width max-width
                            (* company-box-tooltip-maximum-width char-width))
