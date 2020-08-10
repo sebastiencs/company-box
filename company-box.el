@@ -253,11 +253,13 @@ Examples:
 (defvar-local company-box--scrollbar-window nil)
 
 (defconst company-box--numbers
-  (let ((vec (make-vector 10 nil)))
-    (dotimes (index 10)
+  (let ((vec (make-vector 20 nil)))
+    (dotimes (index 20)
       (aset vec index
             (propertize
-             (string-trim (funcall company-show-numbers-function (mod (1+ index) 10)))
+             (concat
+              (string-trim (funcall company-show-numbers-function (mod (1+ index) 10)))
+              (and (> index 10) " "))
              'face 'company-box-numbers)))
     vec))
 
@@ -342,7 +344,8 @@ It doesn't nothing if a font icon is used."
     (put-text-property point (1+ point) 'display new-image)))
 
 (defun company-box--update-numbers (current &optional ignore-first remove-after)
-  (let ((side (if (eq company-show-numbers 'left) 'left-margin 'right-margin)))
+  (let ((side (if (eq company-show-numbers 'left) 'left-margin 'right-margin))
+        (offset (if (eq company-show-numbers 'left) 0 10)))
     (when ignore-first
       (-some--> (next-single-property-change (1+ current) 'company-box--number-pos)
         (setq current (1+ it))))
@@ -350,10 +353,10 @@ It doesn't nothing if a font icon is used."
       (-some--> current
         (next-single-property-change it 'company-box--number-pos)
         (setq current (1+ it))
-        (put-text-property (1- it) it 'display `((margin ,side) ,(aref company-box--numbers index)))))
+        (put-text-property (1- it) it 'display `((margin ,side) ,(aref company-box--numbers (+ index offset))))))
     (when remove-after
       (-some--> (next-single-property-change current 'company-box--number-pos)
-        (put-text-property it (1+ it) 'display `((margin ,side) " "))))))
+        (put-text-property it (1+ it) 'display `((margin ,side) "  "))))))
 
 (defun company-box--maybe-move-number (point first-render)
   (when company-show-numbers
@@ -539,7 +542,7 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--make-number-prop nil
   (let ((side (if (eq company-show-numbers 'left) 'left-margin 'right-margin)))
-    (propertize " " 'company-box--number-pos t 'display `((margin ,side) " "))))
+    (propertize " " 'company-box--number-pos t 'display `((margin ,side) "  "))))
 
 (defun company-box--make-line (candidate)
   (-let* (((candidate annotation len-c len-a backend) candidate)
@@ -753,7 +756,7 @@ It doesn't nothing if a font icon is used."
   (set-window-margins
    nil
    (if (eq company-show-numbers 'left) 1 0)
-   (if (eq company-show-numbers 't) 1 0)))
+   (if (eq company-show-numbers 't) 2 0)))
 
 (defun company-box--handle-window-changes (&optional on-idle)
   (-when-let* ((frame (company-box--get-frame)))
