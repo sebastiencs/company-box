@@ -635,7 +635,7 @@ It doesn't nothing if a font icon is used."
          (* (min company-candidates-length company-box-max-candidates)
             (frame-char-height frame)))))
 
-(defun company-box--scrollbar-prevent-changes (&rest)
+(defun company-box--scrollbar-prevent-changes (&rest _)
   (let ((window-min-width 2)
         (window-safe-min-width 2)
         (ignore-window-parameters t)
