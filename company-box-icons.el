@@ -47,7 +47,6 @@
                             (member extension imagemagick-enabled-types))))
       `(image :type ,(if use-magick 'imagemagick 'png)
               :file ,(concat company-box-icons-dir file)
-              :height ,(round (* (default-font-height) 0.85))
               :ascent center))))
 
 (defvar company-box-icons-icons-in-terminal
@@ -337,8 +336,7 @@ specification.md#completion-request-leftwards_arrow_with_hook.")
       (cond ((fboundp sym) 'Function)
             ((featurep sym) 'Module)
             ((facep sym) 'Color)
-            ((boundp sym) 'Variable)
-            (t . nil)))))
+            ((boundp sym) 'Variable)))))
 
 (defun company-box-icons--yasnippet (candidate)
   (when (get-text-property 0 'yas-annotation candidate)
