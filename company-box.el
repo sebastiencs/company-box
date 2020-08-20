@@ -186,6 +186,11 @@ If all functions returns nil, `company-box-icons-unknown' is used.
   :type 'boolean
   :group 'company-box)
 
+(defcustom company-box-icon-right-margin 0
+  "Set the space between the icon and the candidate text."
+  :type 'number
+  :group 'company-box)
+
 (defvar company-box-backends-colors
   '((company-yasnippet . (:all "lime green" :selected (:background "lime green" :foreground "black"))))
   "List of colors to use for specific backends.
@@ -521,7 +526,9 @@ It doesn't nothing if a font icon is used."
         (icon (company-box--get-icon candidate)))
     (concat
      (if is-image icon (propertize icon 'display '(height 1)))
-     (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-box--space 2) 3 2)))))))
+     (propertize " " 'display `(space :align-to (+ company-box-icon-right-margin
+                                                   left-fringe
+                                                   ,(if (> company-box--space 2) 3 2)))))))
 
 (defun company-box--get-color (backend)
   (alist-get backend company-box-backends-colors))
