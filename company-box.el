@@ -181,6 +181,11 @@ If all functions returns nil, `company-box-icons-unknown' is used.
                  (const :tag "No scrollbar" nil))
   :group 'company-box)
 
+(defcustom company-box-move-with-point nil
+  "Move company-box-frame with point as you type."
+  :type 'boolean
+  :group 'company-box)
+
 (defvar company-box-backends-colors
   '((company-yasnippet . (:all "lime green" :selected (:background "lime green" :foreground "black"))))
   "List of colors to use for specific backends.
@@ -421,9 +426,11 @@ It doesn't nothing if a font icon is used."
 (defvar-local company-box--edges nil)
 
 (defun company-box--prefix-pos nil
-  (or company-box--prefix-pos
-      (setq company-box--prefix-pos
-            (nth 2 (posn-at-point (- (point) (length company-prefix)))))))
+  (if company-box-move-with-point
+      (nth 2 (posn-at-point (point)))
+    (or company-box--prefix-pos
+        (setq company-box--prefix-pos
+              (nth 2 (posn-at-point (- (point) (length company-prefix))))))))
 
 (defun company-box--edges nil
   (or company-box--edges
@@ -454,13 +461,15 @@ It doesn't nothing if a font icon is used."
                       height))
           (height (- height (mod height char-height)))
           (scrollbar-width (if (eq company-box-scrollbar 'left) (frame-scroll-bar-width frame) 0))
-          (x (if company-box--with-icons-p
-                 (- p-x (* char-width (if (= company-box--space 2) 2 3)) space-numbers scrollbar-width)
-               (- p-x (if (= company-box--space 0) 0 char-width) space-numbers scrollbar-width))))
+          (x (if company-box-move-with-point
+                 p-x
+               (if company-box--with-icons-p
+                   (- p-x (* char-width (if (= company-box--space 2) 2 3)) space-numbers scrollbar-width)
+                 (- p-x (if (= company-box--space 0) 0 char-width) space-numbers scrollbar-width)))))
     ;; Debug
     ;; (message "X+LEFT: %s P-X: %s X: %s LEFT: %s space: %s with-icon: %s LESS: %s"
     ;;          (+ x left) p-x x left company-box--space company-box--with-icons-p (+ (* char-width 3) (/ char-width 2)))
-    (setq company-box--x (+ x left)
+    (setq company-box--x (if company-box-move-with-point x (+ x left))
           company-box--start (or company-box--start (window-start))
           company-box--height height)
     (set-frame-size frame (company-box--update-width t (/ height char-height))
