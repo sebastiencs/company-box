@@ -188,7 +188,9 @@ If all functions returns nil, `company-box-icons-unknown' is used.
   :group 'company-box)
 
 (defcustom company-box-icon-right-margin 0
-  "Set the space between the icon and the candidate text."
+  "Set the space between the icon and the candidate text. It can be an integer
+or a float number. For example, set `1' to add a space thats width is equal to a
+character (see `frame-char-width'), set `0.5' to get half width of a character."
   :type 'number
   :group 'company-box)
 
