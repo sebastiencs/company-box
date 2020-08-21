@@ -181,9 +181,10 @@ If all functions returns nil, `company-box-icons-unknown' is used.
                  (const :tag "No scrollbar" nil))
   :group 'company-box)
 
-(defcustom company-box-move-with-point nil
-  "Move company-box-frame with point as you type."
-  :type 'boolean
+(defcustom company-box-frame-behavior 'default
+  "Change frame position behavior."
+  :type '(choice (const :tag "Default" 'default)
+                 (const :tag "Follow point as you type" 'point))
   :group 'company-box)
 
 (defcustom company-box-icon-right-margin 0
@@ -431,7 +432,7 @@ It doesn't nothing if a font icon is used."
 (defvar-local company-box--edges nil)
 
 (defun company-box--prefix-pos nil
-  (if company-box-move-with-point
+  (if (eq company-box-frame-behavior 'point)
       (nth 2 (posn-at-point (point)))
     (or company-box--prefix-pos
         (setq company-box--prefix-pos
@@ -466,7 +467,7 @@ It doesn't nothing if a font icon is used."
                       height))
           (height (- height (mod height char-height)))
           (scrollbar-width (if (eq company-box-scrollbar 'left) (frame-scroll-bar-width frame) 0))
-          (x (if company-box-move-with-point
+          (x (if (eq company-box-frame-behavior 'point)
                  p-x
                (if company-box--with-icons-p
                    (- p-x (* char-width (if (= company-box--space 2) 2 3)) space-numbers scrollbar-width)
@@ -474,7 +475,7 @@ It doesn't nothing if a font icon is used."
     ;; Debug
     ;; (message "X+LEFT: %s P-X: %s X: %s LEFT: %s space: %s with-icon: %s LESS: %s"
     ;;          (+ x left) p-x x left company-box--space company-box--with-icons-p (+ (* char-width 3) (/ char-width 2)))
-    (setq company-box--x (if company-box-move-with-point x (+ x left))
+    (setq company-box--x (if (eq company-box-frame-behavior 'point) x (+ x left))
           company-box--start (or company-box--start (window-start))
           company-box--height height)
     (set-frame-size frame (company-box--update-width t (/ height char-height))
