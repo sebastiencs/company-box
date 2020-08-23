@@ -774,7 +774,7 @@ It doesn't nothing if a font icon is used."
 (defun company-box--set-width (&optional win-start value-only)
   (message "UPDATE-WIDTH BUFFER %s %s FRAME=%s HEIGHT=%s WIN-START=%s VALUE-ONLY=%s" (current-buffer) company-box--x (company-box--get-frame (frame-parent)) company-box--chunk-size win-start value-only)
   (-let* ((inhibit-redisplay t)
-          (height company-box--chunk-size)
+          ;; (height company-box--chunk-size)
           (frame (company-box--get-frame (frame-parent)))
           (window (frame-parameter (frame-parent) 'company-box-window))
           (char-width (frame-char-width frame))
@@ -952,11 +952,12 @@ It doesn't nothing if a font icon is used."
   (setq company-box--state
         (list company-prefix
               company-common
-              company-candidates
-              company-candidates-length)))
+              ;; company-candidates
+              ;; company-candidates-length
+              )))
 
 (defun company-box--update nil
-  (-let* (((prefix common candidates candidates-length) company-box--state))
+  (-let* (((prefix common) company-box--state))
     (if (and (string= company-prefix prefix)
              (string= company-common common))
         (company-box--move-selection)
