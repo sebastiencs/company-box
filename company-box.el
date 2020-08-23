@@ -505,30 +505,40 @@ It doesn't nothing if a font icon is used."
       (pop list))
     (or kind 'Unknown)))
 
-(defun company-box--get-icon (candidate)
-  (let ((icon (alist-get (company-box--get-kind candidate)
-                         (symbol-value company-box-icons-alist))))
-    (cond ((listp icon)
-           (cond ((eq 'image (car icon))
-                  (unless (plist-get icon :height)
-                    (setq icon (append icon `(:height ,(round (* (frame-char-height) 0.90))))))
-                  (propertize " " 'display icon 'company-box-image t
-                              'display-origin icon))
-                 ((and company-box-color-icon icon)
-                  (apply 'icons-in-terminal icon))
-                 (t (icons-in-terminal (or (car icon) 'fa_question_circle)))))
-          ((symbolp icon)
-           (icons-in-terminal (or icon 'fa_question_circle)))
-          (t icon))))
-
-(defun company-box--using-image-p nil
-  (not (memq company-box-icons-alist '(company-box-icons-icons-in-terminal company-box-icons-all-the-icons))))
+(defun company-box--get-icon (icon)
+  (cond ((listp icon)
+         (cond ((eq 'image (car icon))
+                (unless (plist-get icon :height)
+                  (setq icon (append icon `(:height ,(round (* (frame-char-height) 0.90))))))
+                (propertize " " 'display icon 'company-box-image t
+                            'display-origin icon))
+               ((and company-box-color-icon icon)
+                (apply 'icons-in-terminal icon))
+               (t (icons-in-terminal (or (car icon) 'fa_question_circle)))))
+        ((symbolp icon)
+         (icons-in-terminal (or icon 'fa_question_circle)))
+        (t icon)))
 
 (defun company-box--add-icon (candidate)
-  (let ((is-image (company-box--using-image-p))
-        (icon (company-box--get-icon candidate)))
+  (-let* ((icon (alist-get (company-box--get-kind candidate)
+                           (symbol-value company-box-icons-alist)))
+          (is-image (and (listp icon) (eq 'image (car icon))))
+          (icon-string (company-box--get-icon icon))
+          (display-props (unless is-image (get-text-property 0 'display icon-string))))
     (concat
-     (if is-image icon (propertize icon 'display '(height 1)))
+     (cond (is-image icon-string)
+           (display-props
+            ;; The string already has a display prop, add height to it
+            (--> (if (listp (car display-props))
+                     (append display-props '((height 0.95)))
+                   (append `(,display-props) '((height 0.95))))
+                 (put-text-property 0 (length icon-string) 'display it icon-string))
+            icon-string)
+           (t
+            ;; Make sure the string is not bigger than other text.
+            ;; It causes invalid computation of the frame size, ..
+            (put-text-property 0 (length icon-string) 'display '((height 0.95)) icon-string)
+            icon-string))
      (propertize " " 'display `(space :align-to (+ company-box-icon-right-margin
                                                    left-fringe
                                                    ,(if (> company-box--space 2) 3 2)))))))
