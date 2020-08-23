@@ -181,6 +181,19 @@ If all functions returns nil, `company-box-icons-unknown' is used.
                  (const :tag "No scrollbar" nil))
   :group 'company-box)
 
+(defcustom company-box-frame-behavior 'default
+  "Change frame position behavior."
+  :type '(choice (const :tag "Default" 'default)
+                 (const :tag "Follow point as you type" 'point))
+  :group 'company-box)
+
+(defcustom company-box-icon-right-margin 0
+  "Set the space between the icon and the candidate text. It can be an integer
+or a float number. For example, set `1' to add a space thats width is equal to a
+character (see `frame-char-width'), set `0.5' to get half width of a character."
+  :type 'number
+  :group 'company-box)
+
 (defvar company-box-backends-colors
   '((company-yasnippet . (:all "lime green" :selected (:background "lime green" :foreground "black"))))
   "List of colors to use for specific backends.
@@ -421,9 +434,11 @@ It doesn't nothing if a font icon is used."
 (defvar-local company-box--edges nil)
 
 (defun company-box--prefix-pos nil
-  (or company-box--prefix-pos
-      (setq company-box--prefix-pos
-            (nth 2 (posn-at-point (- (point) (length company-prefix)))))))
+  (if (eq company-box-frame-behavior 'point)
+      (nth 2 (posn-at-point (point)))
+    (or company-box--prefix-pos
+        (setq company-box--prefix-pos
+              (nth 2 (posn-at-point (- (point) (length company-prefix))))))))
 
 (defun company-box--edges nil
   (or company-box--edges
@@ -454,13 +469,15 @@ It doesn't nothing if a font icon is used."
                       height))
           (height (- height (mod height char-height)))
           (scrollbar-width (if (eq company-box-scrollbar 'left) (frame-scroll-bar-width frame) 0))
-          (x (if company-box--with-icons-p
-                 (- p-x (* char-width (if (= company-box--space 2) 2 3)) space-numbers scrollbar-width)
-               (- p-x (if (= company-box--space 0) 0 char-width) space-numbers scrollbar-width))))
+          (x (if (eq company-box-frame-behavior 'point)
+                 p-x
+               (if company-box--with-icons-p
+                   (- p-x (* char-width (if (= company-box--space 2) 2 3)) space-numbers scrollbar-width)
+                 (- p-x (if (= company-box--space 0) 0 char-width) space-numbers scrollbar-width)))))
     ;; Debug
     ;; (message "X+LEFT: %s P-X: %s X: %s LEFT: %s space: %s with-icon: %s LESS: %s"
     ;;          (+ x left) p-x x left company-box--space company-box--with-icons-p (+ (* char-width 3) (/ char-width 2)))
-    (setq company-box--x (+ x left)
+    (setq company-box--x (if (eq company-box-frame-behavior 'point) x (+ x left))
           company-box--start (or company-box--start (window-start))
           company-box--height height)
     (set-frame-size frame (company-box--update-width t (/ height char-height))
@@ -512,7 +529,9 @@ It doesn't nothing if a font icon is used."
         (icon (company-box--get-icon candidate)))
     (concat
      (if is-image icon (propertize icon 'display '(height 1)))
-     (propertize " " 'display `(space :align-to (+ left-fringe ,(if (> company-box--space 2) 3 2)))))))
+     (propertize " " 'display `(space :align-to (+ company-box-icon-right-margin
+                                                   left-fringe
+                                                   ,(if (> company-box--space 2) 3 2)))))))
 
 (defun company-box--get-color (backend)
   (alist-get backend company-box-backends-colors))
