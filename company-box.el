@@ -126,7 +126,7 @@ To change the number of _visible_ chandidates, see `company-tooltip-limit'"
   :type 'integer
   :group 'company-box)
 
-
+(make-obsolete-variable 'company-box-max-candidates nil "")
 
 (defcustom company-box-tooltip-minimum-width 60
   "`company-box' minimum width."
@@ -394,7 +394,7 @@ It doesn't nothing if a font icon is used."
 (defvar-local company-box--last-start nil)
 
 (defun company-box--handle-scroll (win new-start)
-  (message "HANDLE SCROLL %s %s %s %s %s" (current-buffer) win new-start window-scroll-functions company-box--x)
+  ;; (message "HANDLE SCROLL %s %s %s %s %s" (current-buffer) win new-start window-scroll-functions company-box--x)
   (setq company-box--last-start new-start)
   (when company-box--x
     (when (>= (abs (- company-box--last-scroll company-selection))
@@ -403,7 +403,7 @@ It doesn't nothing if a font icon is used."
     (setq company-box--last-scroll company-selection)
     (company-box--maybe-move-number new-start)
     (company-box--set-width new-start))
-  (message "DONE")
+  ;; (message "DONE")
   )
 
 (defun company-box--move-overlays (selection common &optional new-point)
@@ -576,7 +576,7 @@ It doesn't nothing if a font icon is used."
 (defun company-box--update-frame-position (frame)
   (-let (((new-x . width) (company-box--set-width nil t))
          (inhibit-redisplay t))
-    (message "WIDTH %s" width)
+    ;; (message "WIDTH %s" width)
     (modify-frame-parameters
      frame
      `((width . (text-pixels . ,width))
@@ -772,7 +772,7 @@ It doesn't nothing if a font icon is used."
           (cons start (company-box--point-at-line height start)))))))
 
 (defun company-box--set-width (&optional win-start value-only)
-  (message "UPDATE-WIDTH BUFFER %s %s FRAME=%s HEIGHT=%s WIN-START=%s VALUE-ONLY=%s" (current-buffer) company-box--x (company-box--get-frame (frame-parent)) company-box--chunk-size win-start value-only)
+  ;; (message "UPDATE-WIDTH BUFFER %s %s FRAME=%s HEIGHT=%s WIN-START=%s VALUE-ONLY=%s" (current-buffer) company-box--x (company-box--get-frame (frame-parent)) company-box--chunk-size win-start value-only)
   (-let* ((inhibit-redisplay t)
           ;; (height company-box--chunk-size)
           (frame (company-box--get-frame (frame-parent)))
@@ -791,11 +791,11 @@ It doesn't nothing if a font icon is used."
           (frame-width (frame-pixel-width (frame-parent)))
           (new-x (and (> (+ width company-box--x) frame-width)
                       (max 0 (- frame-width width char-width)))))
-    (message "HERE WINDOW=%s DIFF=%s WIDTH=%s MAX-WIDTH=%s START=%s END=%s CHAR-WIDTH=%s" window diff width max-width start end char-width)
+    ;;(message "HERE WINDOW=%s DIFF=%s WIDTH=%s MAX-WIDTH=%s START=%s END=%s CHAR-WIDTH=%s" window diff width max-width start end char-width)
     (or (and value-only (cons new-x width))
         (and (> diff 2)
              (progn
-               (message "SET_FRAME_WIDTH %s" width)
+               ;;(message "SET_FRAME_WIDTH %s" width)
                t)
              (modify-frame-parameters
               frame
@@ -857,13 +857,13 @@ It doesn't nothing if a font icon is used."
            (window-scroll-functions nil))
       (cond
        ((and first (= percent-display 1) (window-live-p company-box--scrollbar-window))
-        (message "DELETE")
+        ;;(message "DELETE")
         (delete-window company-box--scrollbar-window))
        ((window-live-p company-box--scrollbar-window)
-        (message "UPDATE %s BUFFER=%s SCROLLBAR=%s" company-box--scrollbar-window (current-buffer) buffer)
+        ;;(message "UPDATE %s BUFFER=%s SCROLLBAR=%s" company-box--scrollbar-window (current-buffer) buffer)
         (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer))
        ((/= percent-display 1)
-        (message "CREATE %s BUFFER=%s SCROLLBAR=%s" company-box--scrollbar-window (current-buffer) buffer)
+        ;;(message "CREATE %s BUFFER=%s SCROLLBAR=%s" company-box--scrollbar-window (current-buffer) buffer)
         (setq
          company-box--scrollbar-window
          (with-selected-frame (company-box--get-frame)
@@ -874,7 +874,7 @@ It doesn't nothing if a font icon is used."
              (display-buffer-in-side-window
               (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer)
               '((side . right) (window-width . 2))))))
-        (message "CREATED %s" company-box--scrollbar-window)
+        ;;(message "CREATED %s" company-box--scrollbar-window)
         (set-frame-parameter frame 'company-box-scrollbar (window-buffer company-box--scrollbar-window))
         ;;(window-preserve-size company-box--scrollbar-window t t)
         )))))
@@ -895,7 +895,7 @@ It doesn't nothing if a font icon is used."
         (candidates-length company-candidates-length)
         (inhibit-redisplay t)
         (inhibit-modification-hooks t))
-    (message "MOVE-SELECTION WINDOW=%s" (get-buffer-window (company-box--get-buffer) t))
+    ;;(message "MOVE-SELECTION WINDOW=%s" (get-buffer-window (company-box--get-buffer) t))
     (with-selected-window (get-buffer-window (company-box--get-buffer) t)
       (setq company-selection selection)
       (let ((new-point (company-box--point-at-line selection)))
@@ -1018,7 +1018,7 @@ COMMAND: See `company-frontends'."
         (inhibit-modification-hooks t)
         (window-scroll-functions nil))
     (when (and (frame-live-p frame) (frame-visible-p frame))
-      (message "ON CHANGED %s" frame)
+      ;;(message "ON CHANGED %s" frame)
       ;;(company-box--set-frame-position frame)
       (company-box--compute-frame-position frame)
       (company-box--ensure-full-window-is-rendered)
