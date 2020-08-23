@@ -397,29 +397,36 @@ It doesn't nothing if a font icon is used."
   ;; (message "HANDLE SCROLL %s %s %s %s %s" (current-buffer) win new-start window-scroll-functions company-box--x)
   (setq company-box--last-start new-start)
   (when company-box--x
-    (when (>= (abs (- company-box--last-scroll company-selection))
+    (when (>= (abs (- company-box--last-scroll (or company-selection 0)))
               company-box--chunk-size)
       (company-box--ensure-full-window-is-rendered new-start))
-    (setq company-box--last-scroll company-selection)
+    (setq company-box--last-scroll (or company-selection 0))
     (company-box--maybe-move-number new-start)
     (company-box--set-width new-start))
   ;; (message "DONE")
   )
 
+(defun company-box--move-overlay-no-selection nil
+  (goto-char 1)
+  (move-overlay (company-box--get-ov) 1 1)
+  (move-overlay (company-box--get-ov-common) 1 1))
+
 (defun company-box--move-overlays (selection common &optional new-point)
-  (company-box--update-image)
-  (goto-char (if new-point new-point (company-box--point-at-line selection)))
-  (let ((beg (line-beginning-position))
-        (inhibit-modification-hooks t))
-    (move-overlay (company-box--get-ov) beg (line-beginning-position 2))
-    (move-overlay (company-box--get-ov-common)
-                  (+ company-box--icon-offset beg)
-                  (+ 1 (length common) (+ company-box--icon-offset beg))))
-  (let ((color (or (get-text-property (point) 'company-box--color)
-                   'company-box-selection)))
-    (overlay-put (company-box--get-ov) 'face color)
-    (overlay-put (company-box--get-ov-common) 'face 'company-tooltip-common-selection)
-    (company-box--update-image color)))
+  (if (null selection)
+      (company-box--move-overlay-no-selection)
+    (company-box--update-image)
+    (goto-char (if new-point new-point (company-box--point-at-line selection)))
+    (let ((beg (line-beginning-position))
+          (inhibit-modification-hooks t))
+      (move-overlay (company-box--get-ov) beg (line-beginning-position 2))
+      (move-overlay (company-box--get-ov-common)
+                    (+ company-box--icon-offset beg)
+                    (+ 1 (length common) (+ company-box--icon-offset beg))))
+    (let ((color (or (get-text-property (point) 'company-box--color)
+                     'company-box-selection)))
+      (overlay-put (company-box--get-ov) 'face color)
+      (overlay-put (company-box--get-ov-common) 'face 'company-tooltip-common-selection)
+      (company-box--update-image color))))
 
 
 (defun company-box--get-candidates-between (start end)
@@ -760,7 +767,7 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--get-start-end-for-width (win win-start)
   (let ((height company-box--chunk-size)
-        (selection company-selection)
+        (selection (or company-selection 0))
         (box-buffer (window-buffer win)))
     (if win-start
         (cons win-start (with-current-buffer box-buffer
@@ -842,7 +849,7 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--update-scrollbar (frame &optional first)
   (when (eq company-box-scrollbar t)
-    (let* ((selection company-selection)
+    (let* ((selection (or company-selection 0))
            (buffer (company-box--get-buffer "-scrollbar"))
            (h-frame company-box--height)
            (n-elements company-candidates-length)
@@ -886,7 +893,7 @@ It doesn't nothing if a font icon is used."
 (defun company-box--point-at-line (&optional line start)
   (save-excursion
     (goto-char (or start 1))
-    (forward-line (or line company-selection))
+    (forward-line (or line company-selection 0))
     (point)))
 
 (defun company-box--move-selection (&optional first-render)
@@ -912,7 +919,7 @@ It doesn't nothing if a font icon is used."
                ;; Line is not rendered at point
                (company-box--render-lines new-point)
                (company-box--move-overlays selection common))))
-      (when (= selection (1- candidates-length))
+      (when (equal selection (1- candidates-length))
         ;; Ensure window doesn't go past last candidate
         (--> (- company-box--chunk-size)
              (company-box--point-at-line it (point-max))

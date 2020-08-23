@@ -117,6 +117,7 @@
 (defun company-box-doc--show (selection frame)
   (-when-let* ((valid-state (and (eq (selected-frame) frame)
                                  company-box--bottom
+                                 company-selection
                                  (company-box--get-frame)
                                  (frame-visible-p (company-box--get-frame))))
                (candidate (nth selection company-candidates))
