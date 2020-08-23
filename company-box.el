@@ -574,15 +574,15 @@ It doesn't nothing if a font icon is used."
             company-box--chunk-size (/ height char-height)))))
 
 (defun company-box--update-frame-position (frame)
-  (let ((width (company-box--set-width nil t))
-        (inhibit-redisplay t))
+  (-let (((new-x . width) (company-box--set-width nil t))
+         (inhibit-redisplay t))
     (message "WIDTH %s" width)
     (modify-frame-parameters
      frame
      `((width . (text-pixels . ,width))
        (height . (text-pixels . ,company-box--height))
        (user-size . t)
-       (left . (+ ,company-box--x))
+       (left . (+ ,(or new-x company-box--x)))
        (top . (+ ,company-box--top))
        (user-position . t)
        (company-box-window-origin . ,(selected-window))
@@ -779,21 +779,28 @@ It doesn't nothing if a font icon is used."
           (window (frame-parameter (frame-parent) 'company-box-window))
           (char-width (frame-char-width frame))
           ((start . end) (company-box--get-start-end-for-width window win-start))
-          (max-width (- (frame-pixel-width (frame-parent)) company-box--x char-width))
+          ;; (max-width (- (frame-pixel-width (frame-parent)) company-box--x char-width))
+          (max-width 0)
           (width (+ (company-box--calc-len (window-buffer window) start end char-width)
                     (if (and (eq company-box-scrollbar t) (company-box--scrollbar-p frame)) (* 2 char-width) 0)
                     char-width))
-          (width (max (min width max-width
+          (width (max (min width
                            (* company-box-tooltip-maximum-width char-width))
                       (* company-box-tooltip-minimum-width char-width)))
-          (diff (abs (- (frame-pixel-width frame) width))))
+          (diff (abs (- (frame-pixel-width frame) width)))
+          (frame-width (frame-pixel-width (frame-parent)))
+          (new-x (and (> (+ width company-box--x) frame-width)
+                      (max 0 (- frame-width width char-width)))))
     (message "HERE WINDOW=%s DIFF=%s WIDTH=%s MAX-WIDTH=%s START=%s END=%s CHAR-WIDTH=%s" window diff width max-width start end char-width)
-    (or (and value-only width)
+    (or (and value-only (cons new-x width))
         (and (> diff 2)
              (progn
                (message "SET_FRAME_WIDTH %s" width)
                t)
-             (set-frame-width frame width nil t)))))
+             (modify-frame-parameters
+              frame
+              `((width . (text-pixels . ,width))
+                (left . (+ ,(or new-x company-box--x)))))))))
 
 (defun company-box--percent (a b)
   (/ (float a) b))
