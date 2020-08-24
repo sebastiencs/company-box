@@ -258,7 +258,6 @@ Examples:
 (defvar-local company-box--ov-common nil)
 (defvar-local company-box--max 0)
 (defvar-local company-box--with-icons-p nil)
-(defvar-local company-box--icon-offset 3)
 (defvar-local company-box--x nil)
 (defvar-local company-box--space nil)
 (defvar-local company-box--start nil)
@@ -384,11 +383,10 @@ It doesn't nothing if a font icon is used."
   (company-box--update-image)
   (goto-char 1)
   (forward-line selection)
-  (let ((beg (line-beginning-position)))
+  (let* ((beg (line-beginning-position))
+         (candidate-start (next-single-property-change beg 'company-box--candidate-string nil (+ beg 100))))
     (move-overlay (company-box--get-ov) beg (line-beginning-position 2))
-    (move-overlay (company-box--get-ov-common)
-                  (+ company-box--icon-offset beg)
-                  (+ 1 (length common) (+ company-box--icon-offset beg)))
+    (move-overlay (company-box--get-ov-common) candidate-start (+ candidate-start (length common)))
     (company-box--maybe-move-number beg first-render))
   (let ((color (or (get-text-property (point) 'company-box--color)
                    'company-box-selection)))
@@ -568,8 +566,8 @@ It doesn't nothing if a font icon is used."
   string)
 
 (defun company-box--candidate-string (candidate)
-  (concat (and company-common (propertize company-common 'face 'company-tooltip-common))
-          (substring (propertize candidate 'face 'company-box-candidate) (length company-common) nil)))
+  (concat (and company-common (propertize company-common 'face 'company-tooltip-common 'company-box--candidate-string t))
+          (substring (propertize candidate 'face 'company-box-candidate 'company-box--candidate-string t) (length company-common) nil)))
 
 (defun company-box--make-number-prop nil
   (let ((side (if (eq company-show-numbers 'left) 'left-margin 'right-margin)))
