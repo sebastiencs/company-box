@@ -677,7 +677,7 @@ It doesn't nothing if a font icon is used."
         (and (> diff 2) (set-frame-width frame width nil t)))))
 
 (defun company-box--percent (a b)
-  (/ (float a) b))
+  (/ (float a) (float b)))
 
 (defun company-box--scrollbar-p (frame)
   (/= 1 (company-box--percent
@@ -713,7 +713,7 @@ It doesn't nothing if a font icon is used."
     (setq-local window-safe-min-width 2)
     (unless (zerop height-blank)
       (insert (propertize " " 'display `(space :align-to right-fringe :height ,height-blank))
-              (propertize "\n" 'face '(:height 1))))
+              (propertize "\n" 'face (list :height 1))))
     (setq height-scrollbar (if (= percent 1)
                                ;; Due to float/int casting in the emacs code, there might 1 or 2
                                ;; remainings pixels
@@ -737,8 +737,8 @@ It doesn't nothing if a font icon is used."
            (blank-pixels (* (- h-frame scrollbar-pixels) percent))
            (height-blank (/ blank-pixels (frame-char-height frame))))
       (when company-box-debug-scrollbar
-        (message "[SCROLL] SELECTION=%s BUFFER=%s H-FRAME=%s N-ELEMENTS=%s PERCENT=%s PERCENT-DISPLAY=%s SCROLLBAR-PIXEL=%s HEIGHT=SCROLLBAR=%s BLANK-PIXELS=%s HEIGHT-BLANK=%s"
-                 selection buffer h-frame n-elements percent percent-display scrollbar-pixels height-scrollbar blank-pixels height-blank))
+        (message "[SCROLL] SELECTION=%s BUFFER=%s H-FRAME=%s N-ELEMENTS=%s PERCENT=%s PERCENT-DISPLAY=%s SCROLLBAR-PIXEL=%s HEIGHT=SCROLLBAR=%s BLANK-PIXELS=%s HEIGHT-BLANK=%s FRAME-CHAR-HEIGHT=%s FRAME-CHAR-HEIGHT-NO-FRAME=%s FRAME=%s MUL=%s"
+                 selection buffer h-frame n-elements percent percent-display scrollbar-pixels height-scrollbar blank-pixels height-blank (frame-char-height frame) (frame-char-height) frame (* n-elements (frame-char-height frame))))
       (cond
        ((and first (= percent-display 1) (window-live-p company-box--scrollbar-window))
         (delete-window company-box--scrollbar-window))
