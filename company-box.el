@@ -406,6 +406,7 @@ It doesn't nothing if a font icon is used."
             header-line-format nil
             display-line-numbers nil
             truncate-lines t
+            show-trailing-whitespace nil
             cursor-in-non-selected-windows nil)
       (setq-local scroll-step 1)
       (setq-local scroll-conservatively 10000)
@@ -708,6 +709,7 @@ It doesn't nothing if a font icon is used."
     (erase-buffer)
     (setq header-line-format nil
           mode-line-format nil
+          show-trailing-whitespace nil
           cursor-in-non-selected-windows nil)
     (setq-local window-min-width 2)
     (setq-local window-safe-min-width 2)

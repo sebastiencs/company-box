@@ -100,6 +100,7 @@
         (setq mode-line-format nil
               display-line-numbers nil
               header-line-format nil
+              show-trailing-whitespace nil
               cursor-in-non-selected-windows nil)
         (current-buffer)))))
 
