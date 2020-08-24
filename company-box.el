@@ -685,13 +685,22 @@ It doesn't nothing if a font icon is used."
          (* (min company-candidates-length company-box-max-candidates)
             (frame-char-height frame)))))
 
+(defvar company-box-debug-scrollbar nil)
+
 (defun company-box--scrollbar-prevent-changes (&rest _)
+  (when company-box-debug-scrollbar
+    (message "CURRENT-BUFFER=%s MIN-WIDTH=%s SAFE-MIN-WIDTH=%s MIN-SIZE=%s MIN-SIZE-IGNORE=%s"
+             (current-buffer) window-min-width window-safe-min-width
+             (window-min-size nil t) (window-min-size nil t t)))
   (let ((window-min-width 2)
         (window-safe-min-width 2)
         (ignore-window-parameters t)
         (current-size (window-size nil t)))
+    (when company-box-debug-scrollbar
+      (message "MIN CURRENT-SIZE=%s WIN-MIN-SIZE=%s WIN-PARAMS=%s FRAME-PARAMS=%s HOOKS=%s"
+               current-size (window-min-size nil t) (window-parameters) (frame-parameters (company-box--get-frame))
+               window-configuration-change-hook))
     (unless (= current-size 2)
-      ;; (message "MIN %s %s %s" current-size (window-min-size nil t) (window-parameters))
       (minimize-window))))
 
 (defun company-box--update-scrollbar-buffer (height-blank height-scrollbar percent buffer)
@@ -700,6 +709,8 @@ It doesn't nothing if a font icon is used."
     (setq header-line-format nil
           mode-line-format nil
           cursor-in-non-selected-windows nil)
+    (setq-local window-min-width 2)
+    (setq-local window-safe-min-width 2)
     (unless (zerop height-blank)
       (insert (propertize " " 'display `(space :align-to right-fringe :height ,height-blank))
               (propertize "\n" 'face '(:height 1))))
