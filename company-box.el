@@ -689,7 +689,7 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--scrollbar-prevent-changes (&rest _)
   (when company-box-debug-scrollbar
-    (message "CURRENT-BUFFER=%s MIN-WIDTH=%s SAFE-MIN-WIDTH=%s MIN-SIZE=%s MIN-SIZE-IGNORE=%s"
+    (message "[CHANGES] CURRENT-BUFFER=%s MIN-WIDTH=%s SAFE-MIN-WIDTH=%s MIN-SIZE=%s MIN-SIZE-IGNORE=%s"
              (current-buffer) window-min-width window-safe-min-width
              (window-min-size nil t) (window-min-size nil t t)))
   (let ((window-min-width 2)
@@ -697,7 +697,7 @@ It doesn't nothing if a font icon is used."
         (ignore-window-parameters t)
         (current-size (window-size nil t)))
     (when company-box-debug-scrollbar
-      (message "MIN CURRENT-SIZE=%s WIN-MIN-SIZE=%s WIN-PARAMS=%s FRAME-PARAMS=%s HOOKS=%s"
+      (message "[CHANGES] MIN CURRENT-SIZE=%s WIN-MIN-SIZE=%s WIN-PARAMS=%s FRAME-PARAMS=%s HOOKS=%s"
                current-size (window-min-size nil t) (window-parameters) (frame-parameters (company-box--get-frame))
                window-configuration-change-hook))
     (unless (= current-size 2)
@@ -736,6 +736,9 @@ It doesn't nothing if a font icon is used."
            (height-scrollbar (/ scrollbar-pixels (frame-char-height frame)))
            (blank-pixels (* (- h-frame scrollbar-pixels) percent))
            (height-blank (/ blank-pixels (frame-char-height frame))))
+      (when company-box-debug-scrollbar
+        (message "[SCROLL] SELECTION=%s BUFFER=%s H-FRAME=%s N-ELEMENTS=%s PERCENT=%s PERCENT-DISPLAY=%s SCROLLBAR-PIXEL=%s HEIGHT=SCROLLBAR=%s BLANK-PIXELS=%s HEIGHT-BLANK=%s"
+                 selection buffer h-frame n-elements percent percent-display scrollbar-pixels height-scrollbar blank-pixels height-blank))
       (cond
        ((and first (= percent-display 1) (window-live-p company-box--scrollbar-window))
         (delete-window company-box--scrollbar-window))
