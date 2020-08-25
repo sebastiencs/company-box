@@ -194,6 +194,14 @@ character (see `frame-char-width'), set `0.5' to get half width of a character."
   :type 'number
   :group 'company-box)
 
+(defcustom company-box-highlight-prefix nil
+  "Highlight the prefix instead of common.
+Faces used are `company-tooltip-common' and `company-tooltip-common-selection'
+for both cases."
+  :type 'boolean
+  :safe #'booleanp
+  :group 'company-box)
+
 (defvar company-box-backends-colors
   '((company-yasnippet . (:all "lime green" :selected (:background "lime green" :foreground "black"))))
   "List of colors to use for specific backends.
@@ -379,15 +387,21 @@ It doesn't nothing if a font icon is used."
           (first-render
            (company-box--update-numbers 1)))))
 
-(defun company-box--update-line (selection common &optional first-render)
+(defun company-box--length-common (&optional common prefix)
+  ;; Return prefix length when company-box-highlight-prefix is non nil
+  (length (if company-box-highlight-prefix (or prefix company-prefix) (or common company-common))))
+
+(defun company-box--update-line (selection common prefix &optional first-render)
   (company-box--update-image)
   (goto-char 1)
   (forward-line selection)
-  (let* ((beg (line-beginning-position))
-         (candidate-start (next-single-property-change beg 'company-box--candidate-string nil (+ beg 100))))
-    (move-overlay (company-box--get-ov) beg (line-beginning-position 2))
-    (move-overlay (company-box--get-ov-common) candidate-start (+ candidate-start (length common)))
-    (company-box--maybe-move-number beg first-render))
+  (let* ((bol (line-beginning-position))
+         (eol (line-beginning-position 2))
+         (start-common (next-single-property-change bol 'company-box--candidate-string nil eol))
+         (end-common (+ start-common (company-box--length-common common prefix))))
+    (move-overlay (company-box--get-ov) bol eol)
+    (move-overlay (company-box--get-ov-common) start-common end-common)
+    (company-box--maybe-move-number bol first-render))
   (let ((color (or (get-text-property (point) 'company-box--color)
                    'company-box-selection)))
     (overlay-put (company-box--get-ov) 'face color)
@@ -398,7 +412,8 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--render-buffer (string)
   (let ((selection company-selection)
-        (common company-common))
+        (common company-common)
+        (prefix company-prefix))
     (with-current-buffer (company-box--get-buffer)
       (erase-buffer)
       (insert string "\n")
@@ -413,7 +428,7 @@ It doesn't nothing if a font icon is used."
       (setq-local scroll-margin  0)
       (setq-local scroll-preserve-screen-position t)
       (add-hook 'window-configuration-change-hook 'company-box--prevent-changes t t)
-      (company-box--update-line selection common t))))
+      (company-box--update-line selection common prefix t))))
 
 (defvar-local company-box--bottom nil)
 
@@ -566,9 +581,13 @@ It doesn't nothing if a font icon is used."
                             nil string))
   string)
 
+(defun company-box--propertize-candidate (string &optional face)
+  (and string (propertize string 'face (or face 'company-box-candidate) 'company-box--candidate-string t)))
+
 (defun company-box--candidate-string (candidate)
-  (concat (and company-common (propertize company-common 'face 'company-tooltip-common 'company-box--candidate-string t))
-          (substring (propertize candidate 'face 'company-box-candidate 'company-box--candidate-string t) (length company-common) nil)))
+  (concat (-> (if company-box-highlight-prefix company-prefix company-common)
+              (company-box--propertize-candidate 'company-tooltip-common))
+          (substring (company-box--propertize-candidate candidate) (company-box--length-common) nil)))
 
 (defun company-box--make-number-prop nil
   (let ((side (if (eq company-show-numbers 'left) 'left-margin 'right-margin)))
@@ -765,9 +784,10 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--change-line nil
   (let ((selection company-selection)
-        (common company-common))
+        (common company-common)
+        (prefix company-prefix))
     (with-selected-window (get-buffer-window (company-box--get-buffer) t)
-      (company-box--update-line selection common))
+      (company-box--update-line selection common prefix))
     (company-box--update-scrollbar (company-box--get-frame))))
 
 (defun company-box--next-line nil
