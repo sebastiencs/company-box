@@ -870,7 +870,10 @@ COMMAND: See `company-frontends'."
     (when (boundp 'dimmer-prevent-dimming-predicates)
       (add-to-list
        'dimmer-prevent-dimming-predicates
-       'company-box--is-own-buffer))))
+       'company-box--is-own-buffer)))
+  (with-eval-after-load 'golden-ratio
+    (when (boundp 'golden-ratio-exclude-buffer-regexp)
+      (add-to-list 'golden-ratio-exclude-buffer-regexp " *company-box"))))
 
 (defvar company-box-mode-map nil
   "Keymap when `company-box' is active.")
