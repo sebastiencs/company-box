@@ -5,7 +5,7 @@
 ;; Author: Sebastien Chapuis <sebastien@chapu.is>
 ;; URL: https://github.com/sebastiencs/company-box
 ;; Keywords: company, completion, front-end, convenience
-;; Package-Requires: ((emacs "26.0.91") (dash "2.13") (dash-functional "1.2.0") (company "0.9.6"))
+;; Package-Requires: ((emacs "26.0.91") (dash "2.13") (dash-functional "1.2.0") (company "0.9.6") (markdown-mode "2.3"))
 ;; Version: 0.0.1
 
 ;;; License
@@ -302,6 +302,11 @@ Examples:
                (frame-parameter nil 'name))
            suffix
            "*")))
+
+(defun company-box-visible-p nil
+  "Return non nil if company-box frame is visible."
+  (-some-> (company-box--get-frame)
+           (frame-visible-p)))
 
 (defun company-box--with-icons-p nil
   (let ((spaces (+ (- (current-column) (string-width company-prefix))
