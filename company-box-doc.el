@@ -135,7 +135,7 @@
     (when (timerp company-box-doc--timer)
       (cancel-timer company-box-doc--timer))
     (setq company-box-doc--timer
-          (run-with-idle-timer
+          (run-with-timer
            company-box-doc-delay nil
            (lambda nil
              (company-box-doc--show selection frame)
