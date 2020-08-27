@@ -138,7 +138,7 @@ To change the number of _visible_ chandidates, see `company-tooltip-limit'"
   :type 'integer
   :group 'company-box)
 
-(defcustom company-box-show-single-candidate 'when-no-other-frontend
+(defcustom company-box-show-single-candidate 'always
   "Whether or not to display the candidate if there is only one.
 `when-no-other-frontend' will display the candidate if no other front ends are
 detected."
@@ -194,6 +194,14 @@ If all functions returns nil, `company-box-icons-unknown' is used.
 or a float number. For example, set `1' to add a space thats width is equal to a
 character (see `frame-char-width'), set `0.5' to get half width of a character."
   :type 'number
+  :group 'company-box)
+
+(defcustom company-box-highlight-prefix nil
+  "Highlight the prefix instead of common.
+Faces used are `company-tooltip-common' and `company-tooltip-common-selection'
+for both cases."
+  :type 'boolean
+  :safe #'booleanp
   :group 'company-box)
 
 (defvar company-box-backends-colors
@@ -260,7 +268,6 @@ Examples:
 (defvar-local company-box--ov-common nil)
 (defvar-local company-box--max 0)
 (defvar-local company-box--with-icons-p nil)
-(defvar-local company-box--icon-offset 3)
 (defvar-local company-box--x nil)
 (defvar-local company-box--top nil)
 (defvar-local company-box--space nil)
@@ -390,6 +397,10 @@ It doesn't nothing if a font icon is used."
   (when company-show-numbers
     (company-box--update-numbers start)))
 
+(defun company-box--length-common (&optional common prefix)
+  ;; Return prefix length when company-box-highlight-prefix is non nil
+  (length (if company-box-highlight-prefix (or prefix company-prefix) (or common company-common))))
+
 (defvar-local company-box--last-scroll 0)
 (defvar-local company-box--last-start nil)
 
@@ -411,22 +422,27 @@ It doesn't nothing if a font icon is used."
   (move-overlay (company-box--get-ov) 1 1)
   (move-overlay (company-box--get-ov-common) 1 1))
 
-(defun company-box--move-overlays (selection common &optional new-point)
+(defun company-box--move-overlays (selection common prefix &optional new-point)
   (if (null selection)
       (company-box--move-overlay-no-selection)
     (company-box--update-image)
     (goto-char (if new-point new-point (company-box--point-at-line selection)))
-    (let ((beg (line-beginning-position))
-          (inhibit-modification-hooks t))
-      (move-overlay (company-box--get-ov) beg (line-beginning-position 2))
-      (move-overlay (company-box--get-ov-common)
-                    (+ company-box--icon-offset beg)
-                    (+ 1 (length common) (+ company-box--icon-offset beg))))
-    (let ((color (or (get-text-property (point) 'company-box--color)
-                     'company-box-selection)))
-      (overlay-put (company-box--get-ov) 'face color)
-      (overlay-put (company-box--get-ov-common) 'face 'company-tooltip-common-selection)
-      (company-box--update-image color))))
+  (let* ((bol (line-beginning-position))
+         (eol (line-beginning-position 2))
+         (inhibit-modification-hooks t)
+         (start-common (next-single-property-change bol 'company-box--candidate-string nil eol))
+         (end-common (+ start-common (company-box--length-common common prefix))))
+    (move-overlay (company-box--get-ov) bol eol)
+    (move-overlay (company-box--get-ov-common) start-common end-common)
+    ;;(company-box--maybe-move-number bol first-render)
+    )
+  (let ((color (or (get-text-property (point) 'company-box--color)
+                   'company-box-selection)))
+    (overlay-put (company-box--get-ov) 'face color)
+    (overlay-put (company-box--get-ov-common) 'face 'company-tooltip-common-selection)
+    (company-box--update-image color))
+  (run-hook-with-args 'company-box-selection-hook selection
+                      (or (frame-parent) (selected-frame)))))
 
 
 (defun company-box--get-candidates-between (start end)
@@ -477,6 +493,9 @@ It doesn't nothing if a font icon is used."
         (inhibit-modification-hooks t)
         (candidates-length company-candidates-length)
         (show-numbers company-show-numbers)
+        (selection company-selection)
+        (common company-common)
+        (prefix company-prefix)
         (with-icons-p company-box--with-icons-p))
     (with-current-buffer (company-box--get-buffer)
       (erase-buffer)
@@ -491,6 +510,7 @@ It doesn't nothing if a font icon is used."
               header-line-format nil
               display-line-numbers nil
               truncate-lines t
+              show-trailing-whitespace nil
               company-box--parent-buffer buffer
               company-box--first-render t
               cursor-in-non-selected-windows nil)
@@ -620,30 +640,40 @@ It doesn't nothing if a font icon is used."
       (pop list))
     (or kind 'Unknown)))
 
-(defun company-box--get-icon (candidate)
-  (let ((icon (alist-get (company-box--get-kind candidate)
-                         (symbol-value company-box-icons-alist))))
-    (cond ((listp icon)
-           (cond ((eq 'image (car icon))
-                  (unless (plist-get icon :height)
-                    (setq icon (append icon `(:height ,(round (* (frame-char-height) 0.95))))))
-                  (propertize " " 'display icon 'company-box-image t
-                              'display-origin icon))
-                 ((and company-box-color-icon icon)
-                  (apply 'icons-in-terminal icon))
-                 (t (icons-in-terminal (or (car icon) 'fa_question_circle)))))
-          ((symbolp icon)
-           (icons-in-terminal (or icon 'fa_question_circle)))
-          (t icon))))
-
-(defun company-box--using-image-p nil
-  (not (memq company-box-icons-alist '(company-box-icons-icons-in-terminal company-box-icons-all-the-icons))))
+(defun company-box--get-icon (icon)
+  (cond ((listp icon)
+         (cond ((eq 'image (car icon))
+                (unless (plist-get icon :height)
+                  (setq icon (append icon `(:height ,(round (* (frame-char-height) 0.90))))))
+                (propertize " " 'display icon 'company-box-image t
+                            'display-origin icon))
+               ((and company-box-color-icon icon)
+                (apply 'icons-in-terminal icon))
+               (t (icons-in-terminal (or (car icon) 'fa_question_circle)))))
+        ((symbolp icon)
+         (icons-in-terminal (or icon 'fa_question_circle)))
+        (t icon)))
 
 (defun company-box--add-icon (candidate)
-  (let ((is-image (company-box--using-image-p))
-        (icon (company-box--get-icon candidate)))
+  (-let* ((icon (alist-get (company-box--get-kind candidate)
+                           (symbol-value company-box-icons-alist)))
+          (is-image (and (listp icon) (eq 'image (car icon))))
+          (icon-string (company-box--get-icon icon))
+          (display-props (unless is-image (get-text-property 0 'display icon-string))))
     (concat
-     (if is-image icon (propertize icon 'display '(height 1)))
+     (cond (is-image icon-string)
+           (display-props
+            ;; The string already has a display prop, add height to it
+            (--> (if (listp (car display-props))
+                     (append display-props '((height 0.95)))
+                   (append `(,display-props) '((height 0.95))))
+                 (put-text-property 0 (length icon-string) 'display it icon-string))
+            icon-string)
+           (t
+            ;; Make sure the string is not bigger than other text.
+            ;; It causes invalid computation of the frame size, ..
+            (put-text-property 0 (length icon-string) 'display '((height 0.95)) icon-string)
+            icon-string))
      (propertize " " 'display `(space :align-to (+ company-box-icon-right-margin
                                                    left-fringe
                                                    ,(if (> company-box--space 2) 3 2)))))))
@@ -672,9 +702,13 @@ It doesn't nothing if a font icon is used."
                             nil string))
   string)
 
+(defun company-box--propertize-candidate (string &optional face)
+  (and string (propertize string 'face (or face 'company-box-candidate) 'company-box--candidate-string t)))
+
 (defun company-box--candidate-string (candidate)
-  (concat (and company-common (propertize company-common 'face 'company-tooltip-common))
-          (substring (propertize candidate 'face 'company-box-candidate) (length company-common) nil)))
+  (concat (-> (if company-box-highlight-prefix company-prefix company-common)
+              (company-box--propertize-candidate 'company-tooltip-common))
+          (substring (company-box--propertize-candidate candidate) (company-box--length-common) nil)))
 
 (defun company-box--make-number-prop nil
   (let ((side (if (eq company-show-numbers 'left) 'left-margin 'right-margin)))
@@ -810,7 +844,7 @@ It doesn't nothing if a font icon is used."
                 (left . (+ ,(or new-x company-box--x)))))))))
 
 (defun company-box--percent (a b)
-  (/ (float a) b))
+  (/ (float a) (float b)))
 
 (defun company-box--scrollbar-p (frame)
   (/= 1 (company-box--percent
@@ -818,13 +852,22 @@ It doesn't nothing if a font icon is used."
          (* company-candidates-length
             (frame-char-height frame)))))
 
+(defvar company-box-debug-scrollbar nil)
+
 (defun company-box--scrollbar-prevent-changes (&rest _)
+  (when company-box-debug-scrollbar
+    (message "[CHANGES] CURRENT-BUFFER=%s MIN-WIDTH=%s SAFE-MIN-WIDTH=%s MIN-SIZE=%s MIN-SIZE-IGNORE=%s"
+             (current-buffer) window-min-width window-safe-min-width
+             (window-min-size nil t) (window-min-size nil t t)))
   (let ((window-min-width 2)
         (window-safe-min-width 2)
         (ignore-window-parameters t)
         (current-size (window-size nil t)))
+    (when company-box-debug-scrollbar
+      (message "[CHANGES] MIN CURRENT-SIZE=%s WIN-MIN-SIZE=%s WIN-PARAMS=%s FRAME-PARAMS=%s HOOKS=%s"
+               current-size (window-min-size nil t) (window-parameters) (frame-parameters (company-box--get-frame))
+               window-configuration-change-hook))
     (unless (= current-size 2)
-      ;; (message "MIN %s %s %s" current-size (window-min-size nil t) (window-parameters))
       (minimize-window))))
 
 (defun company-box--update-scrollbar-buffer (height-blank height-scrollbar percent buffer)
@@ -832,10 +875,13 @@ It doesn't nothing if a font icon is used."
     (erase-buffer)
     (setq header-line-format nil
           mode-line-format nil
+          show-trailing-whitespace nil
           cursor-in-non-selected-windows nil)
+    (setq-local window-min-width 2)
+    (setq-local window-safe-min-width 2)
     (unless (zerop height-blank)
       (insert (propertize " " 'display `(space :align-to right-fringe :height ,height-blank))
-              (propertize "\n" 'face '(:height 1))))
+              (propertize "\n" 'face (list :height 1))))
     (setq height-scrollbar (if (= percent 1)
                                ;; Due to float/int casting in the emacs code, there might 1 or 2
                                ;; remainings pixels
@@ -862,6 +908,9 @@ It doesn't nothing if a font icon is used."
            (inhibit-redisplay t)
            (inhibit-eval-during-redisplay t)
            (window-scroll-functions nil))
+      (when company-box-debug-scrollbar
+        (message "[SCROLL] SELECTION=%s BUFFER=%s H-FRAME=%s N-ELEMENTS=%s PERCENT=%s PERCENT-DISPLAY=%s SCROLLBAR-PIXEL=%s HEIGHT=SCROLLBAR=%s BLANK-PIXELS=%s HEIGHT-BLANK=%s FRAME-CHAR-HEIGHT=%s FRAME-CHAR-HEIGHT-NO-FRAME=%s FRAME=%s MUL=%s"
+                 selection buffer h-frame n-elements percent percent-display scrollbar-pixels height-scrollbar blank-pixels height-blank (frame-char-height frame) (frame-char-height) frame (* n-elements (frame-char-height frame))))
       (cond
        ((and first (= percent-display 1) (window-live-p company-box--scrollbar-window))
         ;;(message "DELETE")
@@ -899,9 +948,11 @@ It doesn't nothing if a font icon is used."
 (defun company-box--move-selection (&optional first-render)
   (let ((selection company-selection)
         (common company-common)
+        (prefix company-prefix)
         (candidates-length company-candidates-length)
         (inhibit-redisplay t)
-        (inhibit-modification-hooks t))
+        (inhibit-modification-hooks t)
+        (prefix company-prefix))
     ;;(message "MOVE-SELECTION WINDOW=%s" (get-buffer-window (company-box--get-buffer) t))
     (with-selected-window (get-buffer-window (company-box--get-buffer) t)
       (setq company-selection selection)
@@ -918,7 +969,7 @@ It doesn't nothing if a font icon is used."
               (t
                ;; Line is not rendered at point
                (company-box--render-lines new-point)
-               (company-box--move-overlays selection common))))
+               (company-box--move-overlays selection common prefix))))
       (when (equal selection (1- candidates-length))
         ;; Ensure window doesn't go past last candidate
         (--> (- company-box--chunk-size)
@@ -940,7 +991,7 @@ It doesn't nothing if a font icon is used."
     (and (frame-live-p frame)
          (frame-visible-p frame)
          (or (not (eq (selected-window) (frame-parameter frame 'company-box-window-origin)))
-             (not (eq (current-buffer) (frame-parameter frame 'company-box-buffer-origin))))
+             (not (eq (window-buffer) (frame-parameter frame 'company-box-buffer-origin))))
          (if on-idle (company-box-hide)
            ;; Handle when this function (in `buffer-list-update-hook') has been
            ;; triggered by a function that select only temporary another window/buffer.
@@ -1051,7 +1102,10 @@ COMMAND: See `company-frontends'."
     (when (boundp 'dimmer-prevent-dimming-predicates)
       (add-to-list
        'dimmer-prevent-dimming-predicates
-       'company-box--is-own-buffer))))
+       'company-box--is-own-buffer)))
+  (with-eval-after-load 'golden-ratio
+    (when (boundp 'golden-ratio-exclude-buffer-regexp)
+      (add-to-list 'golden-ratio-exclude-buffer-regexp " *company-box"))))
 
 (defun company-box--set-mode (&optional frame)
   (cond
