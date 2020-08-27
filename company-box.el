@@ -271,7 +271,6 @@ Examples:
 (defvar-local company-box--x nil)
 (defvar-local company-box--top nil)
 (defvar-local company-box--space nil)
-;;(defvar-local company-box--start nil)
 (defvar-local company-box--height nil)
 (defvar-local company-box--scrollbar-window nil)
 (defvar-local company-box--parent-buffer nil)
@@ -405,7 +404,6 @@ It doesn't nothing if a font icon is used."
 (defvar-local company-box--last-start nil)
 
 (defun company-box--handle-scroll (win new-start)
-  ;; (message "HANDLE SCROLL %s %s %s %s %s" (current-buffer) win new-start window-scroll-functions company-box--x)
   (setq company-box--last-start new-start)
   (when company-box--x
     (when (>= (abs (- company-box--last-scroll (or company-selection 0)))
@@ -413,9 +411,7 @@ It doesn't nothing if a font icon is used."
       (company-box--ensure-full-window-is-rendered new-start))
     (setq company-box--last-scroll (or company-selection 0))
     (company-box--maybe-move-number new-start)
-    (company-box--set-width new-start))
-  ;; (message "DONE")
-  )
+    (company-box--set-width new-start)))
 
 (defun company-box--move-overlay-no-selection nil
   (goto-char 1)
@@ -427,22 +423,19 @@ It doesn't nothing if a font icon is used."
       (company-box--move-overlay-no-selection)
     (company-box--update-image)
     (goto-char (if new-point new-point (company-box--point-at-line selection)))
-  (let* ((bol (line-beginning-position))
-         (eol (line-beginning-position 2))
-         (inhibit-modification-hooks t)
-         (start-common (next-single-property-change bol 'company-box--candidate-string nil eol))
-         (end-common (+ start-common (company-box--length-common common prefix))))
-    (move-overlay (company-box--get-ov) bol eol)
-    (move-overlay (company-box--get-ov-common) start-common end-common)
-    ;;(company-box--maybe-move-number bol first-render)
-    )
-  (let ((color (or (get-text-property (point) 'company-box--color)
-                   'company-box-selection)))
-    (overlay-put (company-box--get-ov) 'face color)
-    (overlay-put (company-box--get-ov-common) 'face 'company-tooltip-common-selection)
-    (company-box--update-image color))
-  (run-hook-with-args 'company-box-selection-hook selection
-                      (or (frame-parent) (selected-frame)))))
+    (let* ((bol (line-beginning-position))
+           (eol (line-beginning-position 2))
+           (inhibit-modification-hooks t)
+           (start-common (next-single-property-change bol 'company-box--candidate-string nil eol))
+           (end-common (+ start-common (company-box--length-common common prefix))))
+      (move-overlay (company-box--get-ov) bol eol)
+      (move-overlay (company-box--get-ov-common) start-common end-common))
+    (let ((color (or (get-text-property (point) 'company-box--color)
+                     'company-box-selection))
+          (inhibit-modification-hooks t))
+      (overlay-put (company-box--get-ov) 'face color)
+      (overlay-put (company-box--get-ov-common) 'face 'company-tooltip-common-selection)
+      (company-box--update-image color))))
 
 
 (defun company-box--get-candidates-between (start end)
@@ -452,10 +445,8 @@ It doesn't nothing if a font icon is used."
       (-when-let* ((candidate (get-text-property start 'company-box-candidate)))
         (aset vector index candidate)
         (setq index (1+ index)))
-      ;;(message "MISSED %s %s %s" index start (text-properties-at start)))
       (setq start (1+ start)))
     ;; Return nil when the vector is empty
-    ;; (message "VECTOR=%s START=%s END=%s" vector start end)
     (and (aref vector 0) vector)))
 
 (defvar-local company-box--first-render nil)
@@ -493,9 +484,6 @@ It doesn't nothing if a font icon is used."
         (inhibit-modification-hooks t)
         (candidates-length company-candidates-length)
         (show-numbers company-show-numbers)
-        (selection company-selection)
-        (common company-common)
-        (prefix company-prefix)
         (with-icons-p company-box--with-icons-p))
     (with-current-buffer (company-box--get-buffer)
       (erase-buffer)
@@ -603,7 +591,6 @@ It doesn't nothing if a font icon is used."
 (defun company-box--update-frame-position (frame)
   (-let (((new-x . width) (company-box--set-width nil t))
          (inhibit-redisplay t))
-    ;; (message "WIDTH %s" width)
     (modify-frame-parameters
      frame
      `((width . (text-pixels . ,width))
@@ -628,7 +615,6 @@ It doesn't nothing if a font icon is used."
   (unless (frame-visible-p (company-box--get-frame))
     (make-frame-visible (company-box--get-frame)))
   (company-box--update-scrollbar (company-box--get-frame) t)
-  ;; (message "ICIIII %s" (window-start (get-buffer-window (company-box--get-buffer))))
   (with-current-buffer (company-box--get-buffer)
     (company-box--maybe-move-number (or company-box--last-start 1))))
 
@@ -775,7 +761,6 @@ It doesn't nothing if a font icon is used."
 (defun company-box-hide nil
   (setq company-box--bottom nil
         company-box--x nil
-        ;;company-box--start nil
         company-box--prefix-pos nil
         company-box--last-start nil
         company-box--edges nil)
@@ -813,15 +798,11 @@ It doesn't nothing if a font icon is used."
           (cons start (company-box--point-at-line height start)))))))
 
 (defun company-box--set-width (&optional win-start value-only)
-  ;; (message "UPDATE-WIDTH BUFFER %s %s FRAME=%s HEIGHT=%s WIN-START=%s VALUE-ONLY=%s" (current-buffer) company-box--x (company-box--get-frame (frame-parent)) company-box--chunk-size win-start value-only)
   (-let* ((inhibit-redisplay t)
-          ;; (height company-box--chunk-size)
           (frame (company-box--get-frame (frame-parent)))
           (window (frame-parameter (frame-parent) 'company-box-window))
           (char-width (frame-char-width frame))
           ((start . end) (company-box--get-start-end-for-width window win-start))
-          ;; (max-width (- (frame-pixel-width (frame-parent)) company-box--x char-width))
-          (max-width 0)
           (width (+ (company-box--calc-len (window-buffer window) start end char-width)
                     (if (and (eq company-box-scrollbar t) (company-box--scrollbar-p frame)) (* 2 char-width) 0)
                     char-width))
@@ -832,12 +813,8 @@ It doesn't nothing if a font icon is used."
           (frame-width (frame-pixel-width (frame-parent)))
           (new-x (and (> (+ width company-box--x) frame-width)
                       (max 0 (- frame-width width char-width)))))
-    ;;(message "HERE WINDOW=%s DIFF=%s WIDTH=%s MAX-WIDTH=%s START=%s END=%s CHAR-WIDTH=%s" window diff width max-width start end char-width)
     (or (and value-only (cons new-x width))
         (and (> diff 2)
-             (progn
-               ;;(message "SET_FRAME_WIDTH %s" width)
-               t)
              (modify-frame-parameters
               frame
               `((width . (text-pixels . ,width))
@@ -890,7 +867,6 @@ It doesn't nothing if a font icon is used."
     (insert (propertize " " 'face (list :background (face-background 'company-box-scrollbar nil t))
                         'display `(space :align-to right-fringe :height ,height-scrollbar)))
     (add-hook 'window-configuration-change-hook 'company-box--scrollbar-prevent-changes t t)
-    ;; (message "LAAAA %s" (current-buffer))
     (current-buffer)))
 
 (defun company-box--update-scrollbar (frame &optional first)
@@ -913,27 +889,20 @@ It doesn't nothing if a font icon is used."
                  selection buffer h-frame n-elements percent percent-display scrollbar-pixels height-scrollbar blank-pixels height-blank (frame-char-height frame) (frame-char-height) frame (* n-elements (frame-char-height frame))))
       (cond
        ((and first (= percent-display 1) (window-live-p company-box--scrollbar-window))
-        ;;(message "DELETE")
         (delete-window company-box--scrollbar-window))
        ((window-live-p company-box--scrollbar-window)
-        ;;(message "UPDATE %s BUFFER=%s SCROLLBAR=%s" company-box--scrollbar-window (current-buffer) buffer)
         (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer))
        ((/= percent-display 1)
-        ;;(message "CREATE %s BUFFER=%s SCROLLBAR=%s" company-box--scrollbar-window (current-buffer) buffer)
         (setq
          company-box--scrollbar-window
          (with-selected-frame (company-box--get-frame)
            (let* ((window-min-width 2)
                   (window-safe-min-width 2)
                   (window-scroll-functions nil))
-             ;; (message "NEW BUFFER %s" new-buffer)
              (display-buffer-in-side-window
               (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer)
               '((side . right) (window-width . 2))))))
-        ;;(message "CREATED %s" company-box--scrollbar-window)
-        (set-frame-parameter frame 'company-box-scrollbar (window-buffer company-box--scrollbar-window))
-        ;;(window-preserve-size company-box--scrollbar-window t t)
-        )))))
+        (set-frame-parameter frame 'company-box-scrollbar (window-buffer company-box--scrollbar-window)))))))
 
 ;; ;; (message "selection: %s len: %s PERCENT: %s PERCENTS-DISPLAY: %s SIZE-FRAME: %s HEIGHT-S: %s HEIGHT-B: %s h-frame: %s sum: %s"
 ;; ;;          selection n-elements percent percent-display height height-scrollbar height-blank height (+ height-scrollbar height-blank))
@@ -948,12 +917,10 @@ It doesn't nothing if a font icon is used."
 (defun company-box--move-selection (&optional first-render)
   (let ((selection company-selection)
         (common company-common)
-        (prefix company-prefix)
         (candidates-length company-candidates-length)
         (inhibit-redisplay t)
         (inhibit-modification-hooks t)
         (prefix company-prefix))
-    ;;(message "MOVE-SELECTION WINDOW=%s" (get-buffer-window (company-box--get-buffer) t))
     (with-selected-window (get-buffer-window (company-box--get-buffer) t)
       (setq company-selection selection)
       (let ((new-point (company-box--point-at-line selection)))
@@ -962,7 +929,7 @@ It doesn't nothing if a font icon is used."
                ;; This avoid to render the lines when it's already visible
                ;; causing window-start to jump
                (company-box--render-lines (1- new-point))
-               (company-box--move-overlays selection common))
+               (company-box--move-overlays selection common prefix))
               ((get-text-property new-point 'company-box--rendered)
                ;; Line is already rendered, just move overlays
                (company-box--move-overlays selection common new-point))
@@ -1062,27 +1029,21 @@ COMMAND: See `company-frontends'."
            (line-end company-box--chunk-size)
            (end (company-box--point-at-line line-end start))
            (nlines (- end start)))
-      ;; (message "START=%s END=%s NLINES=%s CHUNK=%s" start end nlines line-end)
       (dotimes (index nlines)
         (unless (get-text-property (- end (1+ index)) 'company-box--rendered)
           (company-box--render-lines (- end (1+ index)) t))))))
 
 (defun company-box--on-start-change nil
   (setq company-box--prefix-pos nil
-        ;;company-box--start nil
         company-box--edges nil)
   (let ((frame (company-box--get-frame))
         (inhibit-redisplay t)
         (inhibit-modification-hooks t)
         (window-scroll-functions nil))
     (when (and (frame-live-p frame) (frame-visible-p frame))
-      ;;(message "ON CHANGED %s" frame)
-      ;;(company-box--set-frame-position frame)
       (company-box--compute-frame-position frame)
       (company-box--ensure-full-window-is-rendered)
-      (company-box--update-frame-position frame)
-      ;;(company-box--update-scrollbar (company-box--get-frame) t)
-      )))
+      (company-box--update-frame-position frame))))
 
 (defun company-box--kill-delay (buffer)
   (run-with-idle-timer
