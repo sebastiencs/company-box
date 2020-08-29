@@ -932,7 +932,7 @@ It doesn't nothing if a font icon is used."
                (company-box--move-overlays selection common prefix))
               ((get-text-property new-point 'company-box--rendered)
                ;; Line is already rendered, just move overlays
-               (company-box--move-overlays selection common new-point))
+               (company-box--move-overlays selection common prefix new-point))
               (t
                ;; Line is not rendered at point
                (company-box--render-lines new-point)
