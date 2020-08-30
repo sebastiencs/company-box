@@ -5,7 +5,7 @@
 ;; Author: Sebastien Chapuis <sebastien@chapu.is>
 ;; URL: https://github.com/sebastiencs/company-box
 ;; Keywords: company, completion, front-end, convenience
-;; Package-Requires: ((emacs "26.0.91") (dash "2.13") (dash-functional "1.2.0") (company "0.9.6"))
+;; Package-Requires: ((emacs "26.0.91") (dash "2.13") (dash-functional "1.2.0") (company "0.9.6") (frame-local "0.0.1"))
 ;; Version: 0.0.1
 
 ;;; License
@@ -69,6 +69,7 @@
 (require 'company)
 (require 'company-box-icons)
 (require 'company-box-doc)
+(require 'frame-local)
 
 (defgroup company-box nil
   "Front-end for Company."
@@ -291,21 +292,22 @@ Examples:
   "Hook run when the selection changed.")
 
 (defun company-box--get-frame (&optional frame)
-  "Return the child frame."
-  (frame-parameter frame 'company-box-frame))
+  "Return the company-box child frame on FRAME."
+  (frame-local-getq company-box-frame frame))
 
 (defsubst company-box--set-frame (frame)
-  "Set the frame parameter ‘company-box-frame’ to FRAME."
-  (set-frame-parameter nil 'company-box-frame frame))
+  "Set the frame symbol ‘company-box-frame’ to FRAME."
+  (frame-local-setq company-box-frame frame))
+
+(defun company-box--get-id nil
+  (or (frame-local-getq company-box-buffer-id)
+      (frame-local-setq company-box-buffer-id (or (frame-parameter nil 'window-id)
+                                                  (frame-parameter nil 'name)))))
 
 (defun company-box--get-buffer (&optional suffix)
   "Construct the buffer name, it should be unique for each frame."
   (get-buffer-create
-   (concat " *company-box-"
-           (or (frame-parameter nil 'window-id)
-               (frame-parameter nil 'name))
-           suffix
-           "*")))
+   (concat " *company-box-" (company-box--get-id) suffix "*")))
 
 (defun company-box--with-icons-p nil
   (let ((spaces (+ (- (current-column) (string-width company-prefix))
@@ -332,10 +334,10 @@ Examples:
                            (background-color . ,(face-background 'company-box-background nil t)))))
          (window (display-buffer-in-child-frame buffer `((child-frame-parameters . ,params))))
          (frame (window-frame window)))
-    (set-frame-parameter frame 'company-box-buffer buffer)
+    (frame-local-setq company-box-buffer buffer frame)
     (set-frame-parameter frame 'desktop-dont-save t)
     (unless buf
-      (set-frame-parameter nil 'company-box-window window))
+      (frame-local-setq company-box-window window))
     (set-window-dedicated-p window t)
     (redirect-frame-focus frame (frame-parent frame))
     (set-frame-parameter frame 'name "")
@@ -591,6 +593,8 @@ It doesn't nothing if a font icon is used."
 (defun company-box--update-frame-position (frame)
   (-let (((new-x . width) (company-box--set-width nil t))
          (inhibit-redisplay t))
+    (frame-local-setq company-box-window-origin (selected-window) frame)
+    (frame-local-setq company-box-buffer-origin (current-buffer) frame)
     (modify-frame-parameters
      frame
      `((width . (text-pixels . ,width))
@@ -599,8 +603,6 @@ It doesn't nothing if a font icon is used."
        (left . (+ ,(or new-x company-box--x)))
        (top . (+ ,company-box--top))
        (user-position . t)
-       (company-box-window-origin . ,(selected-window))
-       (company-box-buffer-origin . ,(current-buffer))
        (right-fringe . 0)
        (left-fringe . 0)))))
 
@@ -800,7 +802,7 @@ It doesn't nothing if a font icon is used."
 (defun company-box--set-width (&optional win-start value-only)
   (-let* ((inhibit-redisplay t)
           (frame (company-box--get-frame (frame-parent)))
-          (window (frame-parameter (frame-parent) 'company-box-window))
+          (window (frame-local-getq company-box-window (frame-parent)))
           (char-width (frame-char-width frame))
           ((start . end) (company-box--get-start-end-for-width window win-start))
           (width (+ (company-box--calc-len (window-buffer window) start end char-width)
@@ -902,7 +904,7 @@ It doesn't nothing if a font icon is used."
              (display-buffer-in-side-window
               (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer)
               '((side . right) (window-width . 2))))))
-        (set-frame-parameter frame 'company-box-scrollbar (window-buffer company-box--scrollbar-window)))))))
+        (frame-local-setq company-box-scrollbar (window-buffer company-box--scrollbar-window) frame))))))
 
 ;; ;; (message "selection: %s len: %s PERCENT: %s PERCENTS-DISPLAY: %s SIZE-FRAME: %s HEIGHT-S: %s HEIGHT-B: %s h-frame: %s sum: %s"
 ;; ;;          selection n-elements percent percent-display height height-scrollbar height-blank height (+ height-scrollbar height-blank))
@@ -957,8 +959,8 @@ It doesn't nothing if a font icon is used."
   (-when-let* ((frame (company-box--get-frame)))
     (and (frame-live-p frame)
          (frame-visible-p frame)
-         (or (not (eq (selected-window) (frame-parameter frame 'company-box-window-origin)))
-             (not (eq (window-buffer) (frame-parameter frame 'company-box-buffer-origin))))
+         (or (not (eq (selected-window) (frame-local-getq company-box-window-origin frame)))
+             (not (eq (window-buffer) (frame-local-getq company-box-buffer-origin frame))))
          (if on-idle (company-box-hide)
            ;; Handle when this function (in `buffer-list-update-hook') has been
            ;; triggered by a function that select only temporary another window/buffer.
@@ -991,7 +993,7 @@ It doesn't nothing if a font icon is used."
 (defvar-local company-box--parent-start nil)
 
 (defun company-box--handle-scroll-parent (win new-start)
-  (when (and (eq (frame-parameter (company-box--get-frame) 'company-box-window-origin) win)
+  (when (and (eq (frame-local-getq company-box-window-origin (company-box--get-frame)) win)
              (not (equal company-box--parent-start new-start)))
     (company-box--on-start-change)
     (setq company-box--parent-start new-start)))
@@ -1052,8 +1054,8 @@ COMMAND: See `company-frontends'."
              (kill-buffer buffer)))))
 
 (defun company-box--kill-buffer (frame)
-  (company-box--kill-delay (frame-parameter frame 'company-box-buffer))
-  (company-box--kill-delay (frame-parameter frame 'company-box-scrollbar)))
+  (company-box--kill-delay (frame-local-getq company-box-buffer frame))
+  (company-box--kill-delay (frame-local-getq company-box-scrollbar frame)))
 
 (defun company-box--is-box-buffer nil
   (string-prefix-p " *company-box" (buffer-name)))

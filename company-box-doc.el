@@ -30,6 +30,7 @@
 
 (require 'dash)
 (require 'company)
+(require 'frame-local)
 
 (defgroup company-box-doc nil
   "Display documentation popups alongside company-box"
@@ -125,16 +126,16 @@
                (doc (or (company-call-backend 'quickhelp-string candidate)
                         (company-box-doc--fetch-doc-buffer candidate)))
                (doc (company-box-doc--make-buffer doc)))
-    (unless (frame-live-p (frame-parameter nil 'company-box-doc-frame))
-      (set-frame-parameter nil 'company-box-doc-frame (company-box-doc--make-frame doc)))
-    (company-box-doc--set-frame-position (frame-parameter nil 'company-box-doc-frame))
-    (unless (frame-visible-p (frame-parameter nil 'company-box-doc-frame))
-      (make-frame-visible (frame-parameter nil 'company-box-doc-frame)))))
+    (unless (frame-live-p (frame-local-getq company-box-doc-frame))
+      (frame-local-setq company-box-doc-frame (company-box-doc--make-frame doc)))
+    (company-box-doc--set-frame-position (frame-local-getq company-box-doc-frame))
+    (unless (frame-visible-p (frame-local-getq company-box-doc-frame))
+      (make-frame-visible (frame-local-getq company-box-doc-frame)))))
 
 (defun company-box-doc (selection frame)
   (when company-box-doc-enable
-    (-some-> (frame-parameter frame 'company-box-doc-frame)
-             (make-frame-invisible))
+    (-some-> (frame-local-getq company-box-doc-frame frame)
+      (make-frame-invisible))
     (when (timerp company-box-doc--timer)
       (cancel-timer company-box-doc--timer))
     (setq company-box-doc--timer
@@ -145,8 +146,8 @@
              (company-ensure-emulation-alist))))))
 
 (defun company-box-doc--hide (frame)
-  (-some-> (frame-parameter frame 'company-box-doc-frame)
-           (make-frame-invisible)))
+  (-some-> (frame-local-getq company-box-doc-frame frame)
+    (make-frame-invisible)))
 
 (defun company-box-doc-manually ()
   (interactive)
