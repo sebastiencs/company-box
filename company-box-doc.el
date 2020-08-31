@@ -31,6 +31,7 @@
 (require 'dash)
 (require 'company)
 (require 'frame-local)
+(require 'cl-macs)
 
 (defgroup company-box-doc nil
   "Display documentation popups alongside company-box"
@@ -117,20 +118,27 @@
     frame))
 
 (defun company-box-doc--show (selection frame)
-  (-when-let* ((valid-state (and (eq (selected-frame) frame)
-                                 company-box--bottom
-                                 company-selection
-                                 (company-box--get-frame)
-                                 (frame-visible-p (company-box--get-frame))))
-               (candidate (nth selection company-candidates))
-               (doc (or (company-call-backend 'quickhelp-string candidate)
-                        (company-box-doc--fetch-doc-buffer candidate)))
-               (doc (company-box-doc--make-buffer doc)))
-    (unless (frame-live-p (frame-local-getq company-box-doc-frame))
-      (frame-local-setq company-box-doc-frame (company-box-doc--make-frame doc)))
-    (company-box-doc--set-frame-position (frame-local-getq company-box-doc-frame))
-    (unless (frame-visible-p (frame-local-getq company-box-doc-frame))
-      (make-frame-visible (frame-local-getq company-box-doc-frame)))))
+  (cl-letf (((symbol-function 'completing-read) #'company-box-completing-read))
+    (-when-let* ((valid-state (and (eq (selected-frame) frame)
+                                   company-box--bottom
+                                   company-selection
+                                   (company-box--get-frame)
+                                   (frame-visible-p (company-box--get-frame))))
+                 (candidate (nth selection company-candidates))
+                 (doc (or (company-call-backend 'quickhelp-string candidate)
+                          (company-box-doc--fetch-doc-buffer candidate)))
+                 (doc (company-box-doc--make-buffer doc)))
+      (unless (frame-live-p (frame-local-getq company-box-doc-frame))
+        (frame-local-setq company-box-doc-frame (company-box-doc--make-frame doc)))
+      (company-box-doc--set-frame-position (frame-local-getq company-box-doc-frame))
+      (unless (frame-visible-p (frame-local-getq company-box-doc-frame))
+        (make-frame-visible (frame-local-getq company-box-doc-frame))))))
+
+(defun company-box-completing-read (prompt candidates &rest rest)
+  "`cider', and probably other libraries, prompt the user to
+resolve ambiguous documentation requests.  Instead of failing we
+just grab the first candidate and press forward."
+  (car candidates))
 
 (defun company-box-doc (selection frame)
   (when company-box-doc-enable
