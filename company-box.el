@@ -749,7 +749,12 @@ It doesn't nothing if a font icon is used."
           len-annotation
           backend)))
 
+(defvar-local company-box--parent-start nil)
+
 (defun company-box-show (&optional on-update)
+  (unless on-update
+    (setq company-box--parent-start (window-start))
+    (add-hook 'window-scroll-functions 'company-box--handle-scroll-parent nil t))
   (company-box--save)
   (setq company-box--max 0
         company-box--with-icons-p (company-box--with-icons-p))
@@ -984,13 +989,14 @@ It doesn't nothing if a font icon is used."
               )))
 
 (defun company-box--update nil
-  (-let* (((prefix common) company-box--state))
-    (if (and (string= company-prefix prefix)
+  (-let* (((prefix common) company-box--state)
+          (frame (company-box--get-frame))
+          (frame-visible (and (frame-live-p frame) (frame-visible-p frame))))
+    (if (and frame-visible
+             (string= company-prefix prefix)
              (string= company-common common))
         (company-box--move-selection)
-      (company-box-show 'update))))
-
-(defvar-local company-box--parent-start nil)
+      (company-box-show frame-visible))))
 
 (defun company-box--handle-scroll-parent (win new-start)
   (when (and (eq (frame-local-getq company-box-window-origin (company-box--get-frame)) win)
@@ -1016,8 +1022,6 @@ COMMAND: See `company-frontends'."
          (company-box--hide-single-candidate))
     (company-box-hide))
    ((eq command 'show)
-    (setq company-box--parent-start (window-start))
-    (add-hook 'window-scroll-functions 'company-box--handle-scroll-parent nil t)
     (company-box-show))
    ((eq command 'update)
     (company-box--update))
