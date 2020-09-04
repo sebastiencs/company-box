@@ -388,7 +388,9 @@ It doesn't nothing if a font icon is used."
     (company-box--remove-numbers side)
     (dotimes (index 10)
       (-some--> start
-        (next-single-property-change it 'company-box--number-pos)
+        (if (get-text-property it 'company-box--number-pos)
+            it
+          (next-single-property-change it 'company-box--number-pos))
         (progn
           (push it company-box--numbers-pos)
           (setq start (1+ it)))
