@@ -986,15 +986,18 @@ It doesn't nothing if a font icon is used."
   (setq company-box--state
         (list company-prefix
               company-common
+              company-search-string
+              company-candidates-length
               ;; company-candidates
-              ;; company-candidates-length
               )))
 
 (defun company-box--update nil
-  (-let* (((prefix common) company-box--state)
+  (-let* (((prefix common search length) company-box--state)
           (frame (company-box--get-frame))
           (frame-visible (and (frame-live-p frame) (frame-visible-p frame))))
     (if (and frame-visible
+             (equal search company-search-string)
+             (equal length company-candidates-length)
              (string= company-prefix prefix)
              (string= company-common common))
         (company-box--move-selection)
