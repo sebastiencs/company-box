@@ -82,6 +82,10 @@
   "Face used to color candidates."
   :group 'company-box)
 
+(define-obsolete-face-alias 'company-box-annotation 'company-tooltip-annotation nil)
+(define-obsolete-face-alias 'company-box-selection 'company-tooltip-selection nil)
+(define-obsolete-face-alias 'company-box-background 'company-tooltip nil)
+
 (defface company-box-annotation
   '((t :inherit company-tooltip-annotation))
   "Face used to color annotations."
@@ -99,7 +103,7 @@ Only the 'background' color is used in this face."
   :group 'company-box)
 
 (defface company-box-scrollbar
-  '((t :inherit company-box-selection))
+  '((t :inherit company-tooltip-selection))
   "Face used for the scrollbar.
 Only the 'background' color is used in this face."
   :group 'company-box)
@@ -331,7 +335,7 @@ Examples:
                          `((vertical-scroll-bars . ,(company-box--make-scrollbar-parameter))
                            (default-minibuffer-frame . ,(selected-frame))
                            (minibuffer . ,(minibuffer-window))
-                           (background-color . ,(face-background 'company-box-background nil t)))))
+                           (background-color . ,(face-background 'company-tooltip nil t)))))
          (window (display-buffer-in-child-frame buffer `((child-frame-parameters . ,params))))
          (frame (window-frame window)))
     (frame-local-setq company-box-buffer buffer frame)
@@ -435,7 +439,7 @@ It doesn't nothing if a font icon is used."
       (move-overlay (company-box--get-ov) bol eol)
       (move-overlay (company-box--get-ov-common) start-common end-common))
     (let ((color (or (get-text-property (point) 'company-box--color)
-                     'company-box-selection))
+                     'company-tooltip-selection))
           (inhibit-modification-hooks t))
       (overlay-put (company-box--get-ov) 'face color)
       (overlay-put (company-box--get-ov-common) 'face 'company-tooltip-common-selection)
@@ -696,9 +700,8 @@ It doesn't nothing if a font icon is used."
   (and string (propertize string 'face (or face 'company-box-candidate) 'company-box--candidate-string t)))
 
 (defun company-box--candidate-string (candidate)
-  (concat (-> (if company-box-highlight-prefix company-prefix company-common)
-              (company-box--propertize-candidate 'company-tooltip-common))
-          (substring (company-box--propertize-candidate candidate) (company-box--length-common) nil)))
+  (let ((company-tooltip-align-annotations nil))
+    (company-fill-propertize candidate nil (length candidate) nil nil nil)))
 
 (defun company-box--make-number-prop nil
   (let ((side (if (eq company-show-numbers 'left) 'left-margin 'right-margin)))
@@ -715,7 +718,7 @@ It doesn't nothing if a font icon is used."
                                            (propertize " " 'display `(space :align-to (- right-margin ,len-a 1)))))))
           (space company-box--space)
           (icon-p company-box-enable-icon)
-          (annotation-string (and annotation (propertize annotation 'face 'company-box-annotation)))
+          (annotation-string (and annotation (propertize annotation 'face 'company-tooltip-annotation)))
           (line (concat (unless (or (and (= space 2) icon-p) (= space 0))
                           (propertize " " 'display `(space :width ,(if (or (= space 1) (not icon-p)) 1 0.75))))
                         (company-box--apply-color icon-string i-color)
