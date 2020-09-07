@@ -725,7 +725,9 @@ It doesn't nothing if a font icon is used."
                           (company-box--make-number-prop))
                         (company-box--apply-color candidate-string c-color)
                         align-string
-                        (company-box--apply-color annotation-string a-color)))
+                        (company-box--apply-color annotation-string a-color)
+                        ;; Hack to make sure the selection face goes until the end, even without :extend
+                        (propertize " " 'display `(space :align-to right-fringe))))
           (len (length line)))
     (add-text-properties 0 len (list 'company-box--len (+ len-c len-a)
                                      'company-box--color s-color)
