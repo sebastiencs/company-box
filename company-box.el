@@ -696,12 +696,11 @@ It doesn't nothing if a font icon is used."
                             nil string))
   string)
 
-(defun company-box--propertize-candidate (string &optional face)
-  (and string (propertize string 'face (or face 'company-box-candidate) 'company-box--candidate-string t)))
-
 (defun company-box--candidate-string (candidate)
-  (let ((company-tooltip-align-annotations nil))
-    (company-fill-propertize candidate nil (length candidate) nil nil nil)))
+  (let* ((company-tooltip-align-annotations nil)
+         (string (company-fill-propertize candidate nil (length candidate) nil nil nil)))
+    (add-text-properties 0 (length string) '(company-box--candidate-string t) string)
+    string))
 
 (defun company-box--make-number-prop nil
   (let ((side (if (eq company-show-numbers 'left) 'left-margin 'right-margin)))
