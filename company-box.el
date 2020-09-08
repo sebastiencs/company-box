@@ -60,9 +60,6 @@
 
 ;;; Code:
 
-(unless (require 'icons-in-terminal nil t)
-  (defun icons-in-terminal (&rest _) " "))
-
 (require 'subr-x)
 (require 'dash)
 (require 'dash-functional)
@@ -163,10 +160,10 @@ The functions takes 1 parameter, the completion candidate.
 It should return an ICON or nil.
 An ICON can be either a SYMBOL, an IMAGE, a LIST, a STRING:
 
-- SYMBOL:  It is the name of the icon (from `icons-in-terminal').
+- SYMBOL:  It is the name of the icon (from `company-box--icons-in-terminal').
 - IMAGE:   An image descriptor [1]
            Example: '(image :type png :file \"/path/to/image.png\")
-- LIST:    The list is then `apply' to `icons-in-terminal' function.
+- LIST:    The list is then `apply' to `company-box--icons-in-terminal' function.
            Example: '(fa_icon :face some-face :foreground \"red\")
 - STRING:  A simple string which is inserted, should be of length 1
 
@@ -296,6 +293,12 @@ Examples:
 (defvar company-box-selection-hook nil
   "Hook run when the selection changed.")
 
+
+(defalias 'company-box--icons-in-terminal
+  (if (require 'icons-in-terminal nil t)
+      'icons-in-terminal
+    (lambda (&rest _) " ")))
+
 (defun company-box--get-frame (&optional frame)
   "Return the company-box child frame on FRAME."
   (frame-local-getq company-box-frame frame))
@@ -412,7 +415,7 @@ It doesn't nothing if a font icon is used."
 (defvar-local company-box--last-scroll 0)
 (defvar-local company-box--last-start nil)
 
-(defun company-box--handle-scroll (win new-start)
+(defun company-box--handle-scroll (_win new-start)
   (setq company-box--last-start new-start)
   (when company-box--x
     (when (>= (abs (- company-box--last-scroll (or company-selection 0)))
@@ -648,10 +651,10 @@ It doesn't nothing if a font icon is used."
                 (propertize " " 'display icon 'company-box-image t
                             'display-origin icon))
                ((and company-box-color-icon icon)
-                (apply 'icons-in-terminal icon))
-               (t (icons-in-terminal (or (car icon) 'fa_question_circle)))))
+                (apply 'company-box--icons-in-terminal icon))
+               (t (company-box--icons-in-terminal (or (car icon) 'fa_question_circle)))))
         ((symbolp icon)
-         (icons-in-terminal (or icon 'fa_question_circle)))
+         (company-box--icons-in-terminal (or icon 'fa_question_circle)))
         (t icon)))
 
 (defun company-box--add-icon (candidate)
