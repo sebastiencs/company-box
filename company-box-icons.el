@@ -199,12 +199,11 @@
       (TypeParameter . ,(company-box-icons-image "Class.png"))
       (Template . ,(company-box-icons-image "Template.png")))))
 
-(when (and (require 'all-the-icons nil t)
-           (fboundp 'all-the-icons-faicon)
-           (fboundp 'all-the-icons-alltheicon)
-           (fboundp 'all-the-icons-material)
-           (fboundp 'all-the-icons-octicon))
-  ;; TODO: fix the rest
+(declare-function all-the-icons-faicon "ext:all-the-icons")
+(declare-function all-the-icons-material "ext:all-the-icons")
+(declare-function all-the-icons-octicon "ext:all-the-icons")
+
+(when (require 'all-the-icons nil t)
   (defvar company-box-icons-all-the-icons
     `((Unknown . ,(all-the-icons-faicon "cog"))
       (Text . ,(all-the-icons-octicon "file-text"))
