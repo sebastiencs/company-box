@@ -696,9 +696,9 @@ It doesn't nothing if a font icon is used."
                             nil string))
   string)
 
-(defun company-box--candidate-string (candidate)
+(defun company-box--candidate-string (candidate length-candidate)
   (let* ((company-tooltip-align-annotations nil)
-         (string (company-fill-propertize candidate nil (length candidate) nil nil nil)))
+         (string (company-fill-propertize candidate nil length-candidate nil nil nil)))
     (add-text-properties 0 (length string) '(company-box--candidate-string t) string)
     string))
 
@@ -711,7 +711,7 @@ It doesn't nothing if a font icon is used."
           (color (company-box--get-color backend))
           ((c-color a-color i-color s-color) (company-box--resolve-colors color))
           (icon-string (and company-box--with-icons-p (company-box--add-icon candidate)))
-          (candidate-string (company-box--candidate-string candidate))
+          (candidate-string (company-box--candidate-string candidate len-c))
           (align-string (when annotation
                           (concat " " (and company-tooltip-align-annotations
                                            (propertize " " 'display `(space :align-to (- right-margin ,len-a 1)))))))
