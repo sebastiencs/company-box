@@ -76,15 +76,20 @@
   :prefix "company-box-"
   :group 'company)
 
+(define-obsolete-face-alias 'company-box-annotation 'company-tooltip-annotation nil)
+(define-obsolete-face-alias 'company-box-selection 'company-tooltip-selection nil)
+(define-obsolete-face-alias 'company-box-background 'company-tooltip nil)
+(define-obsolete-face-alias 'company-box-candidate 'company-tooltip nil)
+(define-obsolete-face-alias 'company-box-numbers 'company-tooltip nil)
+(make-obsolete-variable 'company-box-max-candidates nil "")
+(make-obsolete-variable 'company-box-tooltip-minimum-width 'company-tooltip-minimum-width nil "")
+(make-obsolete-variable 'company-box-tooltip-maximum-width 'company-tooltip-maximum-width nil "")
+
 (defface company-box-candidate
   '((((background light)) :foreground "black")
     (t :foreground "white"))
   "Face used to color candidates."
   :group 'company-box)
-
-(define-obsolete-face-alias 'company-box-annotation 'company-tooltip-annotation nil)
-(define-obsolete-face-alias 'company-box-selection 'company-tooltip-selection nil)
-(define-obsolete-face-alias 'company-box-background 'company-tooltip nil)
 
 (defface company-box-annotation
   '((t :inherit company-tooltip-annotation))
@@ -130,8 +135,6 @@ A big number might slowndown the rendering.
 To change the number of _visible_ chandidates, see `company-tooltip-limit'"
   :type 'integer
   :group 'company-box)
-
-(make-obsolete-variable 'company-box-max-candidates nil "")
 
 (defcustom company-box-tooltip-minimum-width 60
   "`company-box' minimum width."
@@ -285,11 +288,9 @@ Examples:
   (let ((vec (make-vector 20 nil)))
     (dotimes (index 20)
       (aset vec index
-            (propertize
-             (concat
-              (string-trim (funcall company-show-numbers-function (mod (1+ index) 10)))
-              (and (> index 10) " "))
-             'face 'company-box-numbers)))
+            (concat
+             (string-trim (funcall company-show-numbers-function (mod (1+ index) 10)))
+             (and (> index 10) " "))))
     vec))
 
 (defvar company-box-selection-hook nil
@@ -727,11 +728,12 @@ It doesn't nothing if a font icon is used."
                         (company-box--apply-color candidate-string c-color)
                         align-string
                         (company-box--apply-color annotation-string a-color)
-                        ;; Hack to make sure the selection face goes until the end, even without :extend
+                        ;; Trick to make sure the selection face goes until the end, even without :extend
                         (propertize " " 'display `(space :align-to right-fringe))))
           (len (length line)))
     (add-text-properties 0 len (list 'company-box--len (+ len-c len-a)
-                                     'company-box--color s-color)
+                                     'company-box--color s-color
+                                     'mouse-face 'company-tooltip-mouse)
                          line)
     line))
 
@@ -821,8 +823,8 @@ It doesn't nothing if a font icon is used."
                     (if (and (eq company-box-scrollbar t) (company-box--scrollbar-p frame)) (* 2 char-width) 0)
                     char-width))
           (width (max (min width
-                           (* company-box-tooltip-maximum-width char-width))
-                      (* company-box-tooltip-minimum-width char-width)))
+                           (* company-tooltip-maximum-width char-width))
+                      (* company-tooltip-minimum-width char-width)))
           (diff (abs (- (frame-pixel-width frame) width)))
           (frame-width (frame-pixel-width (frame-parent)))
           (new-x (and (> (+ width company-box--x) frame-width)
