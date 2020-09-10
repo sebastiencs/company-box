@@ -698,7 +698,8 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--candidate-string (candidate length-candidate)
   (let* ((company-tooltip-align-annotations nil)
-         (string (company-fill-propertize candidate nil length-candidate nil nil nil)))
+         (string (-> (company--clean-string candidate)
+                     (company-fill-propertize nil length-candidate nil nil nil))))
     (add-text-properties 0 (length string) '(company-box--candidate-string t) string)
     string))
 
