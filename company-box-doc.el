@@ -67,7 +67,7 @@
 (defun company-box-doc--fetch-doc-buffer (candidate)
   (let ((inhibit-message t))
     (-some-> (company-call-backend 'doc-buffer candidate)
-             (get-buffer))))
+      (get-buffer))))
 
 (defun company-box-doc--set-frame-position (frame)
   (-let* ((box-position (frame-position (company-box--get-frame)))
@@ -118,7 +118,10 @@
     frame))
 
 (defun company-box-doc--show (selection frame)
-  (cl-letf (((symbol-function 'completing-read) #'company-box-completing-read))
+  (cl-letf (((symbol-function 'completing-read) #'company-box-completing-read)
+            (window-configuration-change-hook nil)
+            (inhibit-redisplay t)
+            (buffer-list-update-hook nil))
     (-when-let* ((valid-state (and (eq (selected-frame) frame)
                                    company-box--bottom
                                    company-selection
