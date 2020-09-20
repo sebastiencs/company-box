@@ -339,6 +339,7 @@ Examples:
                          `((vertical-scroll-bars . ,(company-box--make-scrollbar-parameter))
                            (default-minibuffer-frame . ,(selected-frame))
                            (minibuffer . ,(minibuffer-window))
+                           (inhibit-double-buffering . t)
                            (background-color . ,(face-background 'company-tooltip nil t)))))
          (window (display-buffer-in-child-frame buffer `((child-frame-parameters . ,params))))
          (frame (window-frame window)))
