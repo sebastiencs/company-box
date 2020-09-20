@@ -269,6 +269,8 @@ Examples:
     (no-special-glyphs . t))
   "Frame parameters used to create the frame.")
 
+(defvar company-box-debug-scrollbar nil)
+
 (defvar-local company-box--ov nil)
 (defvar-local company-box--ov-common nil)
 (defvar-local company-box--max 0)
@@ -838,6 +840,8 @@ It doesn't nothing if a font icon is used."
           (frame-width (frame-pixel-width (frame-parent)))
           (new-x (and (> (+ width company-box--x) frame-width)
                       (max 0 (- frame-width width char-width)))))
+    (when company-box-debug-scrollbar
+      (message "[RESIZE] NEW-WIDTH=%s OLD=%s" (/ width char-width) (frame-parameter frame 'width)))
     (or (and value-only (cons new-x width))
         (and (> diff 2)
              (modify-frame-parameters
@@ -853,8 +857,6 @@ It doesn't nothing if a font icon is used."
          company-box--height
          (* company-candidates-length
             (frame-char-height frame)))))
-
-(defvar company-box-debug-scrollbar nil)
 
 (defun company-box--scrollbar-prevent-changes (&rest _)
   (when company-box-debug-scrollbar
