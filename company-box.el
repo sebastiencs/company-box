@@ -841,7 +841,8 @@ It doesn't nothing if a font icon is used."
           (new-x (and (> (+ width company-box--x) frame-width)
                       (max 0 (- frame-width width char-width)))))
     (when company-box-debug-scrollbar
-      (message "[RESIZE] NEW-WIDTH=%s OLD=%s" (/ width char-width) (frame-parameter frame 'width)))
+      (message "[RESIZE] NEW-WIDTH=%s NEW-PIXEL=%s OLD=%s OLD-PIXEL=%s"
+               (/ width char-width) width (frame-parameter frame 'width) (frame-pixel-width frame)))
     (or (and value-only (cons new-x width))
         (and (> diff 2)
              (modify-frame-parameters
