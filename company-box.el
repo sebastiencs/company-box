@@ -201,8 +201,10 @@ character (see `frame-char-width'), set `0.5' to get half width of a character."
   :type 'number
   :group 'company-box)
 
+(make-obsolete-variable 'company-box-highlight-prefix nil nil)
+
 (defcustom company-box-highlight-prefix nil
-  "Highlight the prefix instead of common.
+  "[OBSOLETE] Highlight the prefix instead of common.
 Faces used are `company-tooltip-common' and `company-tooltip-common-selection'
 for both cases."
   :type 'boolean
@@ -411,10 +413,6 @@ It doesn't nothing if a font icon is used."
   (when company-show-numbers
     (company-box--update-numbers start)))
 
-(defun company-box--length-common (&optional common prefix)
-  ;; Return prefix length when company-box-highlight-prefix is non nil
-  (length (if company-box-highlight-prefix (or prefix company-prefix) (or common company-common))))
-
 (defvar-local company-box--last-scroll 0)
 (defvar-local company-box--last-start nil)
 
@@ -433,7 +431,7 @@ It doesn't nothing if a font icon is used."
   (move-overlay (company-box--get-ov) 1 1)
   (move-overlay (company-box--get-ov-common) 1 1))
 
-(defun company-box--move-overlays (selection common prefix &optional new-point)
+(defun company-box--move-overlays (selection common &optional new-point)
   (if (null selection)
       (company-box--move-overlay-no-selection)
     (company-box--update-image)
@@ -442,7 +440,7 @@ It doesn't nothing if a font icon is used."
            (eol (line-beginning-position 2))
            (inhibit-modification-hooks t)
            (start-common (next-single-property-change bol 'company-box--candidate-string nil eol))
-           (end-common (+ start-common (company-box--length-common common prefix))))
+           (end-common (+ start-common (length common))))
       (move-overlay (company-box--get-ov) bol eol)
       (move-overlay (company-box--get-ov-common) start-common end-common))
     (let ((color (or (get-text-property (point) 'company-box--color)
@@ -951,8 +949,7 @@ It doesn't nothing if a font icon is used."
         (inhibit-redisplay t)
         (inhibit-modification-hooks t)
         (buffer-list-update-hook nil)
-        (window-configuration-change-hook nil)
-        (prefix company-prefix))
+        (window-configuration-change-hook nil))
     (with-selected-window (get-buffer-window (company-box--get-buffer) t)
       (setq company-selection selection)
       (let ((new-point (company-box--point-at-line selection))
@@ -963,14 +960,14 @@ It doesn't nothing if a font icon is used."
                ;; This avoid to render the lines when it's already visible
                ;; causing window-start to jump
                (company-box--render-lines (1- new-point))
-               (company-box--move-overlays selection common prefix))
+               (company-box--move-overlays selection common))
               ((get-text-property new-point 'company-box--rendered)
                ;; Line is already rendered, just move overlays
-               (company-box--move-overlays selection common prefix new-point))
+               (company-box--move-overlays selection common new-point))
               (t
                ;; Line is not rendered at point
                (company-box--render-lines new-point)
-               (company-box--move-overlays selection common prefix))))
+               (company-box--move-overlays selection common))))
       (when (equal selection (1- candidates-length))
         ;; Ensure window doesn't go past last candidate
         (--> (- company-box--chunk-size)
