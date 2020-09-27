@@ -98,7 +98,7 @@
          (inhibit-modification-hooks t)
          (string (cond ((stringp object) object)
                        ((bufferp object) (with-current-buffer object (buffer-string))))))
-    (when (> (length (string-trim string)) 0)
+    (when (and string (> (length (string-trim string)) 0))
       (with-current-buffer (company-box--get-buffer "doc")
         (erase-buffer)
         (insert string)
