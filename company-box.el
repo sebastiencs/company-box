@@ -431,7 +431,13 @@ It doesn't nothing if a font icon is used."
   (move-overlay (company-box--get-ov) 1 1)
   (move-overlay (company-box--get-ov-common) 1 1))
 
-(defun company-box--move-overlays (selection common &optional new-point)
+(defun company-box--end-of-common (start eol)
+  (while (and (memq 'company-tooltip-common (get-text-property start 'face))
+              (not (eq start eol)))
+    (setq start (next-single-property-change start 'face nil eol)))
+  start)
+
+(defun company-box--move-overlays (selection &optional new-point)
   (if (null selection)
       (company-box--move-overlay-no-selection)
     (company-box--update-image)
@@ -440,7 +446,7 @@ It doesn't nothing if a font icon is used."
            (eol (line-beginning-position 2))
            (inhibit-modification-hooks t)
            (start-common (next-single-property-change bol 'company-box--candidate-string nil eol))
-           (end-common (+ start-common (length common))))
+           (end-common (company-box--end-of-common start-common eol)))
       (move-overlay (company-box--get-ov) bol eol)
       (move-overlay (company-box--get-ov-common) start-common end-common))
     (let ((color (or (get-text-property (point) 'company-box--color)
@@ -960,14 +966,14 @@ It doesn't nothing if a font icon is used."
                ;; This avoid to render the lines when it's already visible
                ;; causing window-start to jump
                (company-box--render-lines (1- new-point))
-               (company-box--move-overlays selection common))
+               (company-box--move-overlays selection))
               ((get-text-property new-point 'company-box--rendered)
                ;; Line is already rendered, just move overlays
-               (company-box--move-overlays selection common new-point))
+               (company-box--move-overlays selection new-point))
               (t
                ;; Line is not rendered at point
                (company-box--render-lines new-point)
-               (company-box--move-overlays selection common))))
+               (company-box--move-overlays selection))))
       (when (equal selection (1- candidates-length))
         ;; Ensure window doesn't go past last candidate
         (--> (- company-box--chunk-size)
