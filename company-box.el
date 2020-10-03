@@ -337,6 +337,7 @@ Examples:
 
 (defun company-box--make-frame (&optional buf)
   (let* ((after-make-frame-functions nil)
+         (display-buffer-alist nil)
          (before-make-frame-hook nil)
          (buffer (or buf (company-box--get-buffer)))
          (params (append company-box-frame-parameters
@@ -932,6 +933,7 @@ It doesn't nothing if a font icon is used."
            (let* ((window-min-width 2)
                   (window-safe-min-width 2)
                   (window-configuration-change-hook nil)
+                  (display-buffer-alist nil)
                   (window-scroll-functions nil))
              (display-buffer-in-side-window
               (company-box--update-scrollbar-buffer height-blank height-scrollbar percent buffer)
@@ -950,7 +952,6 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--move-selection (&optional first-render)
   (let ((selection company-selection)
-        (common company-common)
         (candidates-length company-candidates-length)
         (inhibit-redisplay t)
         (inhibit-modification-hooks t)

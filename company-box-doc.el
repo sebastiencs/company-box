@@ -122,6 +122,7 @@
   (cl-letf (((symbol-function 'completing-read) #'company-box-completing-read)
             (window-configuration-change-hook nil)
             (inhibit-redisplay t)
+            (display-buffer-alist nil)
             (buffer-list-update-hook nil))
     (-when-let* ((valid-state (and (eq (selected-frame) frame)
                                    company-box--bottom
