@@ -67,8 +67,10 @@
 
 (defun company-box-doc--fetch-doc-buffer (candidate)
   (let ((inhibit-message t))
-    (-some-> (company-call-backend 'doc-buffer candidate)
-      (get-buffer))))
+    (--> (while-no-input
+           (-some-> (company-call-backend 'doc-buffer candidate)
+             (get-buffer)))
+         (if (eq t it) nil it))))
 
 (defun company-box-doc--set-frame-position (frame)
   (-let* ((box-position (frame-position (company-box--get-frame)))
