@@ -623,7 +623,7 @@ It doesn't nothing if a font icon is used."
      `((width . (text-pixels . ,width))
        (height . (text-pixels . ,company-box--height))
        (user-size . t)
-       (left . (+ ,(or new-x company-box--x)))
+       (left . (+ ,(round (or new-x company-box--x))))
        (top . (+ ,company-box--top))
        (user-position . t)
        (right-fringe . 0)
