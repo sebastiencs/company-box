@@ -855,7 +855,7 @@ It doesn't nothing if a font icon is used."
              (modify-frame-parameters
               frame
               `((width . (text-pixels . ,width))
-                (left . (+ ,(or new-x company-box--x)))))))))
+                (left . (+ ,(round (or new-x company-box--x))))))))))
 
 (defun company-box--percent (a b)
   (/ (float a) (float b)))
