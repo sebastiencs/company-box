@@ -1041,6 +1041,18 @@ It doesn't nothing if a font icon is used."
     (company-box--on-start-change)
     (setq company-box--parent-start new-start)))
 
+(defvar company-mouse-event)
+(defun company-box--select-mouse ()
+  "Select the candidate from `company-mouse-event'."
+  (let ((posn (event-end company-mouse-event)))
+    (when (eq (company-box--get-buffer) (window-buffer (posn-window posn)))
+      (setq company-selection
+            (with-current-buffer (company-box--get-buffer)
+              (1- (line-number-at-pos (posn-point posn)))))
+      (company-box--move-selection)
+      ;; success
+      t)))
+
 (defun company-box-frontend (command)
   "`company-mode' frontend using child-frame.
 COMMAND: See `company-frontends'."
@@ -1062,6 +1074,8 @@ COMMAND: See `company-frontends'."
     (company-box-show))
    ((eq command 'update)
     (company-box--update))
+   ((eq command 'select-mouse)
+    (company-box--select-mouse))
    ;; ((eq command 'post-command)
    ;;  (company-box--post-command))
    ))
