@@ -5,7 +5,7 @@
 ;; Author: Sebastien Chapuis <sebastien@chapu.is>
 ;; URL: https://github.com/sebastiencs/company-box
 ;; Keywords: company, completion, front-end, convenience
-;; Package-Requires: ((emacs "26.0.91") (dash "2.13") (dash-functional "1.2.0") (company "0.9.6") (frame-local "0.0.1"))
+;; Package-Requires: ((emacs "26.0.91") (dash "2.18") (company "0.9.6") (frame-local "0.0.1"))
 ;; Version: 0.0.1
 
 ;;; License
@@ -62,7 +62,6 @@
 
 (require 'subr-x)
 (require 'dash)
-(require 'dash-functional)
 (require 'company)
 (require 'company-box-icons)
 (require 'company-box-doc)
