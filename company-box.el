@@ -62,7 +62,6 @@
 
 (require 'subr-x)
 (require 'dash)
-(require 'dash-functional)
 (require 'company)
 (require 'company-box-icons)
 (require 'company-box-doc)
