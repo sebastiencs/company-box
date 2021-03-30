@@ -433,8 +433,11 @@ It doesn't nothing if a font icon is used."
   (move-overlay (company-box--get-ov-common) 1 1))
 
 (defun company-box--end-of-common (start eol)
-  (while (and (memq 'company-tooltip-common (get-text-property start 'face))
-              (not (eq start eol)))
+  (while (let ((face (get-text-property start 'face)))
+           (and (or (eq face 'company-tooltip-common)
+                    (and (listp face)
+                         (memq 'company-tooltip-common face)))
+                (not (eq start eol))))
     (setq start (next-single-property-change start 'face nil eol)))
   start)
 
