@@ -345,6 +345,7 @@ Examples:
                            (default-minibuffer-frame . ,(selected-frame))
                            (minibuffer . ,(minibuffer-window))
                            (inhibit-double-buffering . t)
+                           (foreground-color . ,(face-foreground 'company-tooltip nil t))
                            (background-color . ,(face-background 'company-tooltip nil t)))))
          (window (display-buffer-in-child-frame buffer `((child-frame-parameters . ,params))))
          (frame (window-frame window)))
