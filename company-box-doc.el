@@ -102,8 +102,9 @@
                        ((bufferp object) (with-current-buffer object (buffer-string))))))
     (when (and string (> (length (string-trim string)) 0))
       (with-current-buffer (company-box--get-buffer "doc")
-        (erase-buffer)
-        (insert string)
+        (let ((inhibit-read-only t))
+          (erase-buffer)
+          (insert string))
         (setq mode-line-format nil
               display-line-numbers nil
               header-line-format nil

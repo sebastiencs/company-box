@@ -318,8 +318,11 @@ Examples:
 
 (defun company-box--get-buffer (&optional suffix)
   "Construct the buffer name, it should be unique for each frame."
-  (get-buffer-create
-   (concat " *company-box-" (company-box--get-id) suffix "*")))
+  (with-current-buffer
+      (get-buffer-create
+       (concat " *company-box-" (company-box--get-id) suffix "*"))
+    (read-only-mode 1)
+    (current-buffer)))
 
 (defun company-box--with-icons-p nil
   (let ((spaces (+ (- (current-column) (string-width company-prefix))
@@ -381,13 +384,15 @@ It doesn't nothing if a font icon is used."
                (point (text-property-any bol (min (+ bol 2) (point-max)) 'company-box-image t))
                (image (get-text-property point 'display-origin))
                (new-image (append image (and color (company-box--extract-background color)))))
-    (put-text-property point (1+ point) 'display new-image)))
+    (let ((inhibit-read-only t))
+      (put-text-property point (1+ point) 'display new-image))))
 
 (defvar-local company-box--numbers-pos nil)
 
 (defun company-box--remove-numbers (&optional side)
   (let ((side (or side (if (eq company-show-numbers 'left) 'left-margin 'right-margin)))
-        (max (point-max)))
+        (max (point-max))
+        (inhibit-read-only t))
     (--each company-box--numbers-pos
       (and (< it max)
            (get-text-property it 'company-box--number-pos)
@@ -487,6 +492,7 @@ It doesn't nothing if a font icon is used."
               (start (company-box--get-start point height))
               (end (company-box--get-end point height))
               (candidates (company-box--get-candidates-between start end))
+              (inhibit-read-only t)
               (inhibit-modification-hooks t)
               (inhibit-redisplay t))
     (unless no-remove-numbers
@@ -511,9 +517,10 @@ It doesn't nothing if a font icon is used."
         (window-configuration-change-hook nil)
         (buffer-list-update-hook nil))
     (with-current-buffer (company-box--get-buffer)
-      (erase-buffer)
-      (insert string)
-      (put-text-property (point-min) (point-max) 'company-box--rendered nil)
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (insert string)
+        (put-text-property (point-min) (point-max) 'company-box--rendered nil))
       (setq company-box--first-render t
             company-candidates-length candidates-length
             company-show-numbers show-numbers
@@ -887,25 +894,26 @@ It doesn't nothing if a font icon is used."
 
 (defun company-box--update-scrollbar-buffer (height-blank height-scrollbar percent buffer)
   (with-current-buffer buffer
-    (erase-buffer)
-    (setq header-line-format nil
-          mode-line-format nil
-          show-trailing-whitespace nil
-          cursor-in-non-selected-windows nil)
-    (setq-local window-min-width 2)
-    (setq-local window-safe-min-width 2)
-    (unless (zerop height-blank)
-      (insert (propertize " " 'display `(space :align-to right-fringe :height ,height-blank))
-              (propertize "\n" 'face (list :height 1))))
-    (setq height-scrollbar (if (= percent 1)
-                               ;; Due to float/int casting in the emacs code, there might 1 or 2
-                               ;; remainings pixels
-                               (+ height-scrollbar 10)
-                             height-scrollbar))
-    (insert (propertize " " 'face (list :background (face-background 'company-box-scrollbar nil t))
-                        'display `(space :align-to right-fringe :height ,height-scrollbar)))
-    (add-hook 'window-configuration-change-hook 'company-box--scrollbar-prevent-changes t t)
-    (current-buffer)))
+    (let ((inhibit-read-only t))
+      (erase-buffer)
+      (setq header-line-format nil
+            mode-line-format nil
+            show-trailing-whitespace nil
+            cursor-in-non-selected-windows nil)
+      (setq-local window-min-width 2)
+      (setq-local window-safe-min-width 2)
+      (unless (zerop height-blank)
+        (insert (propertize " " 'display `(space :align-to right-fringe :height ,height-blank))
+                (propertize "\n" 'face (list :height 1))))
+      (setq height-scrollbar (if (= percent 1)
+                                 ;; Due to float/int casting in the emacs code, there might 1 or 2
+                                 ;; remainings pixels
+                                 (+ height-scrollbar 10)
+                               height-scrollbar))
+      (insert (propertize " " 'face (list :background (face-background 'company-box-scrollbar nil t))
+                          'display `(space :align-to right-fringe :height ,height-scrollbar)))
+      (add-hook 'window-configuration-change-hook 'company-box--scrollbar-prevent-changes t t)
+      (current-buffer))))
 
 (defun company-box--update-scrollbar (frame &optional first)
   (when (eq company-box-scrollbar t)
