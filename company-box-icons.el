@@ -204,6 +204,8 @@
 (declare-function all-the-icons-octicon "ext:all-the-icons")
 
 (when (require 'all-the-icons nil t)
+  (setq all-the-icons-scale-factor 1
+	all-the-icons-default-adjust 0)
   (defvar company-box-icons-all-the-icons
     `((Unknown . ,(all-the-icons-faicon "code"))
       (Text . ,(all-the-icons-material "text_format"))
