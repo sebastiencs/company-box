@@ -602,7 +602,7 @@ It doesn't nothing if a font icon is used."
           (x (if (eq company-box-frame-behavior 'point)
                  p-x
                (if company-box--with-icons-p
-                   (- p-x (* char-width (if (= company-box--space 2) 2 3)) space-numbers scrollbar-width)
+                   (- p-x (* char-width (+ company-box-icon-right-margin (if (= company-box--space 2) 2 3))) space-numbers scrollbar-width)
                  (- p-x (if (= company-box--space 0) 0 char-width) space-numbers scrollbar-width)))))
     (setq company-box--x (max (+ x left) 0)
           company-box--top (+ y top)
@@ -626,7 +626,7 @@ It doesn't nothing if a font icon is used."
      `((width . (text-pixels . ,width))
        (height . (text-pixels . ,company-box--height))
        (user-size . t)
-       (left . (+ ,(or new-x company-box--x)))
+       (left . (+ ,(round (or new-x company-box--x))))
        (top . (+ ,company-box--top))
        (user-position . t)
        (right-fringe . 0)
@@ -858,7 +858,7 @@ It doesn't nothing if a font icon is used."
              (modify-frame-parameters
               frame
               `((width . (text-pixels . ,width))
-                (left . (+ ,(or new-x company-box--x)))))))))
+                (left . (+ ,(round (or new-x company-box--x))))))))))
 
 (defun company-box--percent (a b)
   (/ (float a) (float b)))
