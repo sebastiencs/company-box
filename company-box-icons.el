@@ -203,34 +203,67 @@
 (declare-function all-the-icons-material "ext:all-the-icons")
 (declare-function all-the-icons-octicon "ext:all-the-icons")
 
+(defun company-box--all-the-icons-set-foreground (icon color)
+  "Propertize `all-the-icons' ICON foreground with COLOR."
+  (let ((icon-face (plist-put (get-text-property 0 'face icon) :foreground color)))
+    (propertize icon 'face icon-face 'font-lock-face icon-face)))
+
 (when (require 'all-the-icons nil t)
   (defvar company-box-icons-all-the-icons
     `((Unknown . ,(all-the-icons-faicon "code"))
       (Text . ,(all-the-icons-material "text_format"))
-      (Method . ,(all-the-icons-faicon "cube"))
-      (Function . ,(all-the-icons-faicon "cube"))
-      (Constructor . ,(all-the-icons-faicon "cube"))
-      (Field . ,(all-the-icons-faicon "tag"))
-      (Variable . ,(all-the-icons-faicon "tag"))
-      (Class . ,(all-the-icons-faicon "cogs"))
-      (Interface . ,(all-the-icons-faicon "italic"))
+      (Method . ,(company-box--all-the-icons-set-foreground
+                  (all-the-icons-faicon "cube")
+                  (face-foreground 'font-lock-function-name-face)))
+      (Function . ,(company-box--all-the-icons-set-foreground
+                    (all-the-icons-faicon "cube")
+                    (face-foreground 'font-lock-function-name-face)))
+      (Constructor . ,(company-box--all-the-icons-set-foreground
+                       (all-the-icons-faicon "cube")
+                       (face-foreground 'font-lock-function-name-face)))
+      (Field . ,(company-box--all-the-icons-set-foreground
+                 (all-the-icons-faicon "tag")
+                 (face-foreground 'font-lock-variable-name-face)))
+      (Variable . ,(company-box--all-the-icons-set-foreground
+                    (all-the-icons-faicon "tag")
+                    (face-foreground 'font-lock-variable-name-face)))
+      (Class . ,(company-box--all-the-icons-set-foreground
+                 (all-the-icons-faicon "cogs")
+                 (face-foreground 'font-lock-type-face)))
+      (Interface . ,(company-box--all-the-icons-set-foreground
+                     (all-the-icons-faicon "italic")
+                     (face-foreground 'font-lock-type-face)))
       (Module . ,(all-the-icons-faicon "code"))
       (Property . ,(all-the-icons-faicon "wrench"))
       (Unit . ,(all-the-icons-material "streetview"))
       (Value . ,(all-the-icons-faicon "tag"))
-      (Enum . ,(all-the-icons-material "library_books"))
-      (Keyword . ,(all-the-icons-material "vpn_key"))
+      (Enum . ,(company-box--all-the-icons-set-foreground
+                (all-the-icons-material "library_books")
+                (face-foreground 'font-lock-type-face)))
+      (Keyword . ,(company-box--all-the-icons-set-foreground
+                   (all-the-icons-material "vpn_key")
+                   (face-foreground 'font-lock-keyword-face)))
       (Snippet . ,(all-the-icons-faicon "expand"))
       (Color . ,(all-the-icons-material "palette"))
       (File . ,(all-the-icons-faicon "file"))
       (Reference . ,(all-the-icons-material "streetview"))
       (Folder . ,(all-the-icons-faicon "folder-open"))
-      (EnumMember . ,(all-the-icons-faicon "book"))
-      (Constant . ,(all-the-icons-faicon "bars"))
-      (Struct . ,(all-the-icons-faicon "cogs"))
-      (Event . ,(all-the-icons-faicon "bolt"))
+      (EnumMember . ,(company-box--all-the-icons-set-foreground
+                      (all-the-icons-faicon "book")
+                      (face-foreground 'font-lock-constant-face)))
+      (Constant . ,(company-box--all-the-icons-set-foreground
+                    (all-the-icons-faicon "bars")
+                    (face-foreground 'font-lock-constant-face)))
+      (Struct . ,(company-box--all-the-icons-set-foreground
+                  (all-the-icons-faicon "cogs")
+                  (face-foreground 'font-lock-type-face)))
+      (Event . ,(company-box--all-the-icons-set-foreground
+                 (all-the-icons-faicon "bolt")
+                 (face-foreground 'font-lock-type-face)))
       (Operator . ,(all-the-icons-material "streetview"))
-      (TypeParameter . ,(all-the-icons-faicon "cogs"))
+      (TypeParameter . ,(company-box--all-the-icons-set-foreground
+                         (all-the-icons-faicon "cogs")
+                         (face-foreground 'font-lock-type-face)))
       (Template . ,(all-the-icons-material "settings_ethernet")))))
 
 (defcustom company-box-icons-alist 'company-box-icons-images
