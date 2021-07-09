@@ -290,7 +290,7 @@ Examples:
     (dotimes (index 20)
       (aset vec index
             (concat
-             (string-trim (funcall company-quick-access-hint-function (mod (1+ index) 10)))
+             (string-trim (funcall company-quick-access-hint-function (mod index 10)))
              (and (> index 10) " "))))
     vec))
 
