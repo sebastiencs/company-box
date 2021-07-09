@@ -784,7 +784,8 @@ It doesn't nothing if a font icon is used."
 (defun company-box-show (&optional on-update)
   (unless on-update
     (setq company-box--parent-start (window-start))
-    (add-hook 'window-scroll-functions 'company-box--handle-scroll-parent nil t))
+    (add-hook 'window-scroll-functions 'company-box--handle-scroll-parent nil t)
+    (set-frame-width (company-box--get-frame) company-tooltip-minimum-width))
   (company-box--save)
   (setq company-box--max 0
         company-box--with-icons-p (company-box--with-icons-p))
@@ -839,13 +840,17 @@ It doesn't nothing if a font icon is used."
           (frame (company-box--get-frame (frame-parent)))
           (window (frame-local-getq company-box-window (frame-parent)))
           (char-width (frame-char-width frame))
+          (current-width (* (frame-width frame) char-width))
           ((start . end) (company-box--get-start-end-for-width window win-start))
           (width (+ (company-box--calc-len (window-buffer window) start end char-width)
                     (if (and (eq company-box-scrollbar t) (company-box--scrollbar-p frame)) (* 2 char-width) 0)
                     char-width))
           (width (max (min width
                            (* company-tooltip-maximum-width char-width))
-                      (* company-tooltip-minimum-width char-width)))
+                      (* company-tooltip-minimum-width char-width)
+                      (if company-tooltip-width-grow-only
+                          current-width
+                        0)))
           (diff (abs (- (frame-pixel-width frame) width)))
           (frame-width (frame-pixel-width (frame-parent)))
           (new-x (and (> (+ width company-box--x) frame-width)
