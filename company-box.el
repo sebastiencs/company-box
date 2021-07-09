@@ -62,7 +62,7 @@
 
 (require 'subr-x)
 (require 'dash)
-(require 'dash-functional)
+(require 'dash)
 (require 'company)
 (require 'company-box-icons)
 (require 'company-box-doc)
@@ -112,7 +112,7 @@ Only the 'background' color is used in this face."
 
 (defface company-box-numbers
   '((t :inherit company-box-candidate))
-  "Face used for numbers when `company-show-numbers' is used."
+  "Face used for numbers when `company-show-quick-access' is used."
   :group 'company-box)
 
 (defcustom company-box-color-icon t
@@ -290,7 +290,7 @@ Examples:
     (dotimes (index 20)
       (aset vec index
             (concat
-             (string-trim (funcall company-show-numbers-function (mod (1+ index) 10)))
+             (string-trim (funcall company-quick-access-hint-function (mod (1+ index) 10)))
              (and (> index 10) " "))))
     vec))
 
@@ -386,7 +386,7 @@ It doesn't nothing if a font icon is used."
 (defvar-local company-box--numbers-pos nil)
 
 (defun company-box--remove-numbers (&optional side)
-  (let ((side (or side (if (eq company-show-numbers 'left) 'left-margin 'right-margin)))
+  (let ((side (or side (if (eq company-show-quick-access 'left) 'left-margin 'right-margin)))
         (max (point-max)))
     (--each company-box--numbers-pos
       (and (< it max)
@@ -395,8 +395,8 @@ It doesn't nothing if a font icon is used."
     (setq company-box--numbers-pos nil)))
 
 (defun company-box--update-numbers (start)
-  (let ((side (if (eq company-show-numbers 'left) 'left-margin 'right-margin))
-        (offset (if (eq company-show-numbers 'left) 0 10))
+  (let ((side (if (eq company-show-quick-access 'left) 'left-margin 'right-margin))
+        (offset (if (eq company-show-quick-access 'left) 0 10))
         (inhibit-redisplay t)
         (inhibit-modification-hooks t))
     (company-box--remove-numbers side)
@@ -411,7 +411,7 @@ It doesn't nothing if a font icon is used."
         (put-text-property (1- it) it 'display `((margin ,side) ,(aref company-box--numbers (+ index offset))))))))
 
 (defun company-box--maybe-move-number (start)
-  (when company-show-numbers
+  (when company-show-quick-access
     (company-box--update-numbers start)))
 
 (defvar-local company-box--last-scroll 0)
@@ -506,7 +506,7 @@ It doesn't nothing if a font icon is used."
   (let ((buffer (current-buffer))
         (inhibit-modification-hooks t)
         (candidates-length company-candidates-length)
-        (show-numbers company-show-numbers)
+        (show-numbers company-show-quick-access)
         (with-icons-p company-box--with-icons-p)
         (window-configuration-change-hook nil)
         (buffer-list-update-hook nil))
@@ -516,7 +516,7 @@ It doesn't nothing if a font icon is used."
       (put-text-property (point-min) (point-max) 'company-box--rendered nil)
       (setq company-box--first-render t
             company-candidates-length candidates-length
-            company-show-numbers show-numbers
+            company-show-quick-access show-numbers
             company-box--with-icons-p with-icons-p)
       (unless on-update
         (setq mode-line-format nil
@@ -583,7 +583,7 @@ It doesn't nothing if a font icon is used."
           (char-height (frame-char-height frame))
           (char-width (frame-char-width frame))
           (height (* (min company-candidates-length company-tooltip-limit) char-height))
-          (space-numbers (if (eq company-show-numbers 'left) char-width 0))
+          (space-numbers (if (eq company-show-quick-access 'left) char-width 0))
           (frame-resize-pixelwise t)
           (mode-line-y (company-box--point-bottom))
           ((p-x . p-y) (company-box--prefix-pos))
@@ -726,7 +726,7 @@ It doesn't nothing if a font icon is used."
     string))
 
 (defun company-box--make-number-prop nil
-  (let ((side (if (eq company-show-numbers 'left) 'left-margin 'right-margin)))
+  (let ((side (if (eq company-show-quick-access 'left) 'left-margin 'right-margin)))
     (propertize " " 'company-box--number-pos t 'display `((margin ,side) "  "))))
 
 (defun company-box--make-line (candidate)
@@ -744,7 +744,7 @@ It doesn't nothing if a font icon is used."
           (line (concat (unless (or (and (= space 2) icon-p) (= space 0))
                           (propertize " " 'display `(space :width ,(if (or (= space 1) (not icon-p)) 1 0.75))))
                         (company-box--apply-color icon-string i-color)
-                        (when company-show-numbers
+                        (when company-show-quick-access
                           (company-box--make-number-prop))
                         (company-box--apply-color candidate-string c-color)
                         align-string
@@ -818,7 +818,7 @@ It doesn't nothing if a font icon is used."
             (when (> len max)
               (setq max len)))
           (forward-line))))
-    (* (+ max (if company-box--with-icons-p 6 2) (if company-show-numbers 2 0))
+    (* (+ max (if company-box--with-icons-p 6 2) (if company-show-quick-access 2 0))
        char-width)))
 
 (defun company-box--get-start-end-for-width (win win-start)
@@ -993,8 +993,8 @@ It doesn't nothing if a font icon is used."
 (defun company-box--prevent-changes (&rest _)
   (set-window-margins
    nil
-   (if (eq company-show-numbers 'left) 1 0)
-   (if (eq company-show-numbers 't) 2 0)))
+   (if (eq company-show-quick-access 'left) 1 0)
+   (if (eq company-show-quick-access 't) 2 0)))
 
 (defun company-box--handle-window-changes (&optional on-idle)
   (-when-let* ((frame (company-box--get-frame)))
