@@ -182,16 +182,16 @@ If all functions returns nil, `company-box-icons-unknown' is used.
 - 'left or 'right puts default scrollbars to the left or right
 - nil means draw no scrollbar."
   :type '(choice (const :tag "Custom scrollbar" t)
-                 (const :tag "Inherit scrollbar" 'inherit)
-                 (const :tag "Default scrollbar on left" 'left)
-                 (const :tag "Default scrollbar on right" 'right)
+                 (const :tag "Inherit scrollbar" inherit)
+                 (const :tag "Default scrollbar on left" left)
+                 (const :tag "Default scrollbar on right" right)
                  (const :tag "No scrollbar" nil))
   :group 'company-box)
 
 (defcustom company-box-frame-behavior 'default
   "Change frame position behavior."
-  :type '(choice (const :tag "Default" 'default)
-                 (const :tag "Follow point as you type" 'point))
+  :type '(choice (const :tag "Default" default)
+                 (const :tag "Follow point as you type" point))
   :group 'company-box)
 
 (defcustom company-box-icon-right-margin 0
