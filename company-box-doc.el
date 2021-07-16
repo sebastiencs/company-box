@@ -66,7 +66,7 @@
 (defvar-local company-box-doc--timer nil)
 
 (defun company-box-doc--fetch-doc-buffer (candidate)
-  (let ((inhibit-message t))
+  (let ((inhibit-message t) (message-log-max nil))
     (--> (while-no-input
            (-some-> (company-call-backend 'doc-buffer candidate)
              (get-buffer)))
