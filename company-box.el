@@ -632,6 +632,10 @@ It doesn't nothing if a font icon is used."
        (right-fringe . 0)
        (left-fringe . 0)))))
 
+(defun company-box--update-frame-background (frame)
+  (with-selected-frame frame
+    (set-background-color (face-background 'company-tooltip nil t))))
+
 (defun company-box--display (string on-update)
   "Display the completions."
   (company-box--render-buffer string on-update)
@@ -640,6 +644,7 @@ It doesn't nothing if a font icon is used."
   (company-box--compute-frame-position (company-box--get-frame))
   (company-box--move-selection t)
   (company-box--update-frame-position (company-box--get-frame))
+  (company-box--update-frame-background (company-box--get-frame))
   (unless (frame-visible-p (company-box--get-frame))
     (make-frame-visible (company-box--get-frame)))
   (company-box--update-scrollbar (company-box--get-frame) t)
