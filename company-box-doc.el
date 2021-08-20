@@ -147,15 +147,11 @@ resolve ambiguous documentation requests.  Instead of failing we
 just grab the first candidate and press forward."
   (car candidates))
 
-(let ((frame (measure-time (company-box-doc--make-frame (generate-new-buffer "test")))))
-	(measure-time (make-frame-invisible frame))
-	(measure-time (make-frame-visible frame))
-	(measure-time (delete-frame frame)))
-
 (defun company-box-doc (selection frame)
   (when company-box-doc-enable
-    (-some-> (frame-local-getq company-box-doc-frame frame)
-      (make-frame-invisible))
+    (when-let* ((local-frame (frame-local-getq company-box-doc-frame frame))
+                ((frame-visible-p local-frame)))
+      (make-frame-invisible local-frame))
     (when (timerp company-box-doc--timer)
       (cancel-timer company-box-doc--timer))
     (setq company-box-doc--timer
