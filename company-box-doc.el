@@ -158,7 +158,7 @@ just grab the first candidate and press forward."
           (run-with-timer
            company-box-doc-delay nil
            (lambda nil
-             (company-box-doc--show selection frame)
+             (company-box-doc--show (or selection 1) frame)
              (company-ensure-emulation-alist))))))
 
 (defun company-box-doc--hide (frame)
