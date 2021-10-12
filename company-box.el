@@ -580,7 +580,7 @@ It doesn't nothing if a font icon is used."
                                       (window-tab-line-height)
                                     0))
           (top (+ top window-tab-line-height))
-          (char-height (frame-char-height frame))
+          (char-height (line-pixel-height))
           (char-width (frame-char-width frame))
           (height (* (min company-candidates-length company-tooltip-limit) char-height))
           (space-numbers (if (eq company-show-quick-access 'left) char-width 0))
