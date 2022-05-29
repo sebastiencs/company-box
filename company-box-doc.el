@@ -149,8 +149,9 @@ just grab the first candidate and press forward."
 
 (defun company-box-doc (selection frame)
   (when company-box-doc-enable
-    (-some-> (frame-local-getq company-box-doc-frame frame)
-      (make-frame-invisible))
+    (if-let ((fr (frame-local-getq company-box-doc-frame frame)))
+        (when (frame-visible-p fr)
+          (make-frame-invisible fr)))
     (when (timerp company-box-doc--timer)
       (cancel-timer company-box-doc--timer))
     (setq company-box-doc--timer
