@@ -355,6 +355,8 @@ Examples:
     (set-window-dedicated-p window t)
     (redirect-frame-focus frame (frame-parent frame))
     (set-frame-parameter frame 'name "")
+    (with-selected-frame frame
+      (set-frame-parameter frame 'tab-bar-lines 0)))
     frame))
 
 (defun company-box--get-ov nil
