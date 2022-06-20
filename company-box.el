@@ -356,8 +356,7 @@ Examples:
     (redirect-frame-focus frame (frame-parent frame))
     (set-frame-parameter frame 'name "")
     (with-selected-frame frame
-      (when (bound-and-true-p tab-bar-mode)
-        (tab-bar-mode -1)))
+      (set-frame-parameter frame 'tab-bar-lines 0)))
     frame))
 
 (defun company-box--get-ov nil
