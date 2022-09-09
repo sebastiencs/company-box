@@ -1108,6 +1108,13 @@ COMMAND: See `company-frontends'."
       (company-box--ensure-full-window-is-rendered)
       (company-box--update-frame-position frame))))
 
+(defun company-box--delete-frame ()
+  "Delete the child frame if it exists."
+  (-when-let (frame (company-box--get-frame))
+    (and (frame-live-p frame)
+         (delete-frame frame))
+    (company-box--set-frame nil)))
+
 (defun company-box--kill-delay (buffer)
   (run-with-idle-timer
    0 nil (lambda nil
@@ -1128,6 +1135,12 @@ COMMAND: See `company-frontends'."
 (defun company-box--dimmer-hide (&rest _)
   (frame-local-setq company-box--dimmer-parent nil))
 
+(defun company-box--handle-theme-change (&rest _)
+  ;; Deleting frames will force to rebuild them from scratch
+  ;; and use the correct new colors
+  (company-box-doc--delete-frame)
+  (company-box--delete-frame))
+
 (defun company-box--tweak-external-packages nil
   (with-eval-after-load 'dimmer
     (when (boundp 'dimmer-prevent-dimming-predicates)
@@ -1138,6 +1151,7 @@ COMMAND: See `company-frontends'."
       (add-to-list
        'dimmer-buffer-exclusion-predicates
        'company-box--is-box-buffer))
+    (advice-add 'load-theme :before 'company-box--handle-theme-change)
     (advice-add 'company-box-show :before 'company-box--dimmer-show)
     (advice-add 'company-box-hide :before 'company-box--dimmer-hide))
   (with-eval-after-load 'golden-ratio

@@ -164,6 +164,13 @@ just grab the first candidate and press forward."
     (and (frame-live-p frame)
          (make-frame-invisible frame))))
 
+(defun company-box-doc--delete-frame ()
+  "Delete the child frame if it exists."
+  (-when-let (frame (frame-local-getq company-box-doc-frame))
+    (and (frame-live-p frame)
+         (delete-frame frame))
+    (frame-local-setq company-box-doc-frame nil)))
+
 (defun company-box-doc-manually ()
   (interactive)
   (company-box-doc--show company-selection (or (frame-parent) (selected-frame))))
