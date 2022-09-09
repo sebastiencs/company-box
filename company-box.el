@@ -305,7 +305,8 @@ Examples:
 
 (defun company-box--get-frame (&optional frame)
   "Return the company-box child frame on FRAME."
-  (frame-local-getq company-box-frame frame))
+  (let ((frame (frame-local-getq company-box-frame frame)))
+    (and (frame-live-p frame) frame)))
 
 (defsubst company-box--set-frame (frame)
   "Set the frame symbol ‘company-box-frame’ to FRAME."
