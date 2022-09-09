@@ -52,7 +52,7 @@
 (defcustom company-box-doc-no-wrap nil
   "Specify whether or not to wrap the documentation box at the edge of the Emacs frame."
   :type 'boolean
-  :group 'company-box)
+  :group 'company-box-doc)
 
 (defvar company-box-doc-frame-parameters
   '((internal-border-width . 10))
@@ -85,8 +85,9 @@
           ((width . height)
            (if company-box-doc-no-wrap
                (window-text-pixel-size window nil nil 10000 10000)
-               (window-text-pixel-size window nil nil (- (frame-outer-width) (+ 20 (+ box-width (nth 0 box-position)))) (- (frame-outer-height) 20))
-           ))
+             (window-text-pixel-size window nil nil
+                                     (- (frame-native-width) (+ 20 (+ box-width (nth 0 box-position))))
+                                     (- (frame-native-height) 20))))
           (bottom (+ company-box--bottom (window-pixel-top) (frame-border-width)))
           (x (+ (car box-position) box-width (/ (frame-char-width) 2)))
           (y (cdr box-position))
