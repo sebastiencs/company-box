@@ -118,8 +118,8 @@
               display-line-numbers nil
               header-line-format nil
               show-trailing-whitespace nil
+              truncate-lines nil
               cursor-in-non-selected-windows nil)
-        (toggle-truncate-lines -1)
         (current-buffer)))))
 
 (defun company-box-doc--make-frame (buffer)
