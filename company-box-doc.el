@@ -85,9 +85,13 @@
           ((width . height)
            (if company-box-doc-no-wrap
                (window-text-pixel-size window nil nil 10000 10000)
-             (window-text-pixel-size window nil nil
-                                     (- (frame-native-width) (+ 20 (+ box-width (nth 0 box-position))))
-                                     (- (frame-native-height) 20))))
+             (window-text-pixel-size
+              window nil nil
+              ;; Use the widest space available (left or right of the box frame)
+              (let ((space-right (- (frame-native-width) (+ 40 (car box-position) box-width)))
+                    (space-left (- (car box-position) 40)))
+                (if (< space-right space-left) space-left space-right))
+              (- (frame-native-height) 40))))
           (bottom (+ company-box--bottom (window-pixel-top) (frame-border-width)))
           (x (+ (car box-position) box-width (/ (frame-char-width) 2)))
           (y (cdr box-position))
@@ -102,7 +106,7 @@
                         (> space-left (+ width border (/ (frame-char-width) 2)))
                         (- (car box-position) width border (/ (frame-char-width) 2))))
                  x)))
-    (set-frame-position frame (max x 0) (max y 0))
+    (set-frame-position frame (max x 0) (max y 10))
     (set-frame-size frame width height t)))
 
 (defun company-box-doc--make-buffer (object)
