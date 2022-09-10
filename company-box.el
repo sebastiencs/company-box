@@ -268,6 +268,7 @@ Examples:
     (drag-internal-border . t)
     (left-fringe . 0)
     (right-fringe . 0)
+    (tab-bar-lines . 0)
     (no-special-glyphs . t))
   "Frame parameters used to create the frame.")
 
