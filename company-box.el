@@ -840,7 +840,7 @@ It doesn't nothing if a font icon is used."
           (frame (company-box--get-frame (frame-parent)))
           (window (frame-local-getq company-box-window (frame-parent)))
           (char-width (frame-char-width frame))
-          (current-width (* (frame-width frame) char-width))
+          (current-width (frame-inner-width frame))
           ((start . end) (company-box--get-start-end-for-width window win-start))
           (width (+ (company-box--calc-len (window-buffer window) start end char-width)
                     (if (and (eq company-box-scrollbar t) (company-box--scrollbar-p frame)) (* 2 char-width) 0)
