@@ -841,13 +841,19 @@ It doesn't nothing if a font icon is used."
           (frame (company-box--get-frame (frame-parent)))
           (window (frame-local-getq company-box-window (frame-parent)))
           (char-width (frame-char-width frame))
+          (current-width (frame-inner-width frame))
           ((start . end) (company-box--get-start-end-for-width window win-start))
           (width (+ (company-box--calc-len (window-buffer window) start end char-width)
                     (if (and (eq company-box-scrollbar t) (company-box--scrollbar-p frame)) (* 2 char-width) 0)
                     char-width))
           (width (max (min width
                            (* company-tooltip-maximum-width char-width))
-                      (* company-tooltip-minimum-width char-width)))
+                      (* company-tooltip-minimum-width char-width)
+                      (if (and company-tooltip-width-grow-only
+                               ;; Will only be true when updating
+                               (frame-visible-p frame))
+                          current-width
+                        0)))
           (diff (abs (- (frame-pixel-width frame) width)))
           (frame-width (frame-pixel-width (frame-parent)))
           (new-x (and (> (+ width company-box--x) frame-width)
