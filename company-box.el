@@ -73,11 +73,6 @@
   :prefix "company-box-"
   :group 'company)
 
-(define-obsolete-face-alias 'company-box-annotation 'company-tooltip-annotation nil)
-(define-obsolete-face-alias 'company-box-selection 'company-tooltip-selection nil)
-(define-obsolete-face-alias 'company-box-background 'company-tooltip nil)
-(define-obsolete-face-alias 'company-box-candidate 'company-tooltip nil)
-(define-obsolete-face-alias 'company-box-numbers 'company-tooltip nil)
 (make-obsolete-variable 'company-box-max-candidates nil "")
 (make-obsolete-variable 'company-box-tooltip-minimum-width 'company-tooltip-minimum-width nil "")
 (make-obsolete-variable 'company-box-tooltip-maximum-width 'company-tooltip-maximum-width nil "")
@@ -114,6 +109,12 @@ Only the 'background' color is used in this face."
   '((t :inherit company-box-candidate))
   "Face used for numbers when `company-show-quick-access' is used."
   :group 'company-box)
+
+(define-obsolete-face-alias 'company-box-annotation 'company-tooltip-annotation nil)
+(define-obsolete-face-alias 'company-box-selection 'company-tooltip-selection nil)
+(define-obsolete-face-alias 'company-box-background 'company-tooltip nil)
+(define-obsolete-face-alias 'company-box-candidate 'company-tooltip nil)
+(define-obsolete-face-alias 'company-box-numbers 'company-tooltip nil)
 
 (defcustom company-box-color-icon t
   "Whether or not to color icons.
