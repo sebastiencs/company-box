@@ -995,7 +995,7 @@ It doesn't nothing if a font icon is used."
              (set-window-start nil it))))
     (unless first-render
       (company-box--update-scrollbar (company-box--get-frame) first-render))
-    (run-with-idle-timer 0 nil (lambda nil (run-hook-with-args 'company-box-selection-hook selection
+    (run-with-timer 0 nil (lambda nil (run-hook-with-args 'company-box-selection-hook selection
                                                                (or (frame-parent) (selected-frame)))))))
 
 (defun company-box--prevent-changes (&rest _)
