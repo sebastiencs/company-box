@@ -202,6 +202,13 @@ character (see `frame-char-width'), set `0.5' to get half width of a character."
   :type 'number
   :group 'company-box)
 
+(defcustom company-box-frame-top-margin 0
+  "Set extra space above the top of the frame, in pixels.
+For example, set '70' if you're using copilot, to make sure
+the frame doesn't overlap with the first lines of copilot suggestions."
+  :type 'number
+  :group 'company-box)
+
 (make-obsolete-variable 'company-box-highlight-prefix nil nil)
 
 (defcustom company-box-highlight-prefix nil
@@ -582,7 +589,7 @@ It doesn't nothing if a font icon is used."
           (window-tab-line-height (if (fboundp 'window-tab-line-height)
                                       (window-tab-line-height)
                                     0))
-          (top (+ top window-tab-line-height))
+          (top (+ top window-tab-line-height company-box-frame-top-margin))
           (char-height (frame-char-height frame))
           (char-width (frame-char-width frame))
           (height (* (min company-candidates-length company-tooltip-limit) char-height))
