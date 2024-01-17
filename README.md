@@ -50,3 +50,20 @@ Notes:
 By default, images are used to display icons.  
 You can also use [font icons](https://github.com/sebastiencs/company-box/wiki/icons)  
 With images, you can't change icons colors
+
+### Top margin
+
+You can position the frame downwards by setting the variable `company-box-frame-top-margin` to a positive number. This is useful if your base code/text has an enlarged line height, and company box is intruding into the line above. It's also useful, if you're using copilot and want to see a few lines of suggested code unobscured by the company box. See [PR #205](https://github.com/sebastiencs/company-box/pull/205) for details.
+
+You can set the top margin mode-dependent via mode hooks, if you want. E.g. in Doom Emacs:
+
+``` el
+(use-package! company-box
+  :defer t
+  :config
+  (setq-hook! 'prog-mode-hook
+    company-box-frame-top-margin 20)
+  (setq-hook! 'text-mode-hook
+    company-box-frame-top-margin 75)
+)
+```

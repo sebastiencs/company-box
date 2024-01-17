@@ -204,6 +204,7 @@ character (see `frame-char-width'), set `0.5' to get half width of a character."
 
 (defcustom company-box-frame-top-margin 0
   "Set extra space above the top of the frame, in pixels.
+This is useful if the company box intrudes on the code/text above it.
 For example, set '70' if you're using copilot, to make sure
 the frame doesn't overlap with the first lines of copilot suggestions."
   :type 'number
