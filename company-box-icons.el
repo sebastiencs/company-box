@@ -291,7 +291,8 @@ Each element have the form:
 
 Where KIND correspond to a number, the CompletionItemKind from the LSP [1]
 
-See `company-box-icons-images' or `company-box-icons-all-the-icons' for the ICON-TYPEs
+See `company-box-icons-images' or `company-box-icons-all-the-icons' for
+the ICON-TYPEs
 
 [1] https://github.com/Microsoft/language-server-protocol/blob/gh-pages/\
 specification.md#completion-request-leftwards_arrow_with_hook.")

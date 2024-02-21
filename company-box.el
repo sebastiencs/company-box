@@ -164,8 +164,8 @@ An ICON can be either a SYMBOL, an IMAGE, a LIST, a STRING:
 - SYMBOL:  It is the name of the icon (from `company-box--icons-in-terminal').
 - IMAGE:   An image descriptor [1]
            Example: '(image :type png :file \"/path/to/image.png\")
-- LIST:    The list is then `apply' to `company-box--icons-in-terminal' function.
-           Example: '(fa_icon :face some-face :foreground \"red\")
+- LIST:    The list is then `apply' to `company-box--icons-in-terminal'
+           function. Example: '(fa_icon :face some-face :foreground \"red\")
 - STRING:  A simple string which is inserted, should be of length 1
 
 If a function returns nil, it call the next function in the list.
