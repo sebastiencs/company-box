@@ -172,7 +172,7 @@ If a function returns nil, it call the next function in the list.
 If all functions returns nil, `company-box-icons-unknown' is used.
 
 [1] https://www.gnu.org/software/emacs/manual/html_node/elisp/Image-Descriptors.html"
-  :type 'list
+  :type '(repeat symbol)
   :group 'company-box)
 
 (defcustom company-box-scrollbar t
