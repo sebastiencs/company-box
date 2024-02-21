@@ -50,7 +50,8 @@
   :group 'company-box-doc)
 
 (defcustom company-box-doc-no-wrap nil
-  "Specify whether or not to wrap the documentation box at the edge of the Emacs frame."
+  "Specify whether or not to wrap the documentation box at the edge of
+ the Emacs frame."
   :type 'boolean
   :group 'company-box-doc)
 
