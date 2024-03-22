@@ -307,6 +307,10 @@ Examples:
 (defvar company-box-selection-hook nil
   "Hook run when the selection changed.")
 
+(defcustom company-box-buffer-hook nil
+  "Hook run on new company-box buffers."
+  :type 'hook
+  :group 'company-box)
 
 (defalias 'company-box--icons-in-terminal
   (if (require 'icons-in-terminal nil t)
@@ -329,8 +333,11 @@ Examples:
 
 (defun company-box--get-buffer (&optional suffix)
   "Construct the buffer name, it should be unique for each frame."
-  (get-buffer-create
-   (concat " *company-box-" (company-box--get-id) suffix "*")))
+  (let ((buf (get-buffer-create
+              (concat " *company-box-" (company-box--get-id) suffix "*"))))
+    (with-current-buffer buf
+      (run-hooks 'company-box-buffer-hook))
+    buf))
 
 (defun company-box--with-icons-p nil
   (let ((spaces (+ (- (current-column) (string-width company-prefix))
